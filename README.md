@@ -16,11 +16,9 @@
   <a href="#-quick-start"><b>🚀 Quick Start</b></a>
 </p>
 
-<video src="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4" autoplay loop muted playsinline controls width="100%">
-  <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
-    <img src="screenshot/non_svegliate_il_wox.webp" width="100%" alt="Non svegliate il WOX — Wox Cinema Studio [PRO]" />
-  </a>
-</video>
+<a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
+  <img src="screenshot/non_svegliate_il_wox.webp?v=3" width="100%" alt="Non svegliate il WOX — Wox Cinema Studio [PRO]" />
+</a>
 
 <p>
   <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
@@ -34,6 +32,12 @@
 > **⚠️ Content Disclaimer / Avviso sui Contenuti**:
 > - **🇬🇧 EN**: *Viewer discretion is advised. This AI-generated short film contains cinematic action sequences and **scenes of violence**.*
 > - **🇮🇹 IT**: *Attenzione: questo cortometraggio generato con l'IA contiene sequenze d'azione cinematografiche e **scene di violenza**.*
+
+---
+
+![Wox Cinema Studio Pro — Video Workspace](screenshot/01_video.jpg?v=3)
+
+![Wox Cinema Studio Pro — Image Workspace](screenshot/02_immagini.jpg?v=3)
 
 ---
 

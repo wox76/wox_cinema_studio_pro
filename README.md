@@ -16,36 +16,30 @@
   <a href="#-quick-start"><b>🚀 Quick Start</b></a>
 </p>
 
-![Wox Cinema Studio Pro — Video Workspace](screenshot/01_video.jpg)
+<video src="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4" autoplay loop muted playsinline controls width="100%">
+  <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
+    <img src="screenshot/non_svegliate_il_wox.webp" width="100%" alt="Non svegliate il WOX — Wox Cinema Studio [PRO]" />
+  </a>
+</video>
 
-![Wox Cinema Studio Pro — Image Workspace](screenshot/02_immagini.jpg)
+<p>
+  <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
+    <b>🔊 Clicca sul video (o qui) per aprirlo in Full HD con Audio • Click to open Full HD MP4 with Audio</b>
+  </a>
+</p>
 
 </div>
-
----
-
-## 🎞️ Demo Reel — *"Non svegliate il WOX"* (Created with Wox Cinema Studio [PRO])
 
 > [!WARNING]
 > **⚠️ Content Disclaimer / Avviso sui Contenuti**:
 > - **🇬🇧 EN**: *Viewer discretion is advised. This AI-generated short film contains cinematic action sequences and **scenes of violence**.*
 > - **🇮🇹 IT**: *Attenzione: questo cortometraggio generato con l'IA contiene sequenze d'azione cinematografiche e **scene di violenza**.*
 
-<div align="center">
+---
 
-<video src="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4" controls width="100%" poster="screenshot/non_svegliate_il_wox_poster.jpg">
-  <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
-    <img src="screenshot/non_svegliate_il_wox_poster.jpg" width="100%" alt="Non svegliate il WOX — Click to watch video" />
-  </a>
-</video>
+![Wox Cinema Studio Pro — Video Workspace](screenshot/01_video.jpg)
 
-<p>
-  <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
-    <b>▶️ Click here to play / download "Non svegliate il WOX" (Full HD MP4 + Audio) • Clicca qui per guardare il video completo</b>
-  </a>
-</p>
-
-</div>
+![Wox Cinema Studio Pro — Image Workspace](screenshot/02_immagini.jpg)
 
 ---
 

@@ -16,7 +16,30 @@
   <a href="#-quick-start"><b>🚀 Quick Start</b></a>
 </p>
 
-![Wox Cinema Studio Pro — Video Workspace](screenshot/01_video.jpg)
+</div>
+
+---
+
+## 🎞️ Demo Reel — *"Non svegliate il WOX"* (Created with Wox Cinema Studio [PRO])
+
+> [!WARNING]
+> **⚠️ Content Disclaimer / Avviso sui Contenuti**:
+> - **🇬🇧 EN**: *Viewer discretion is advised. This AI-generated short film contains cinematic action sequences and **scenes of violence**.*
+> - **🇮🇹 IT**: *Attenzione: questo cortometraggio generato con l'IA contiene sequenze d'azione cinematografiche e **scene di violenza**.*
+
+<div align="center">
+
+<video src="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4" controls width="100%" poster="screenshot/non_svegliate_il_wox_poster.jpg">
+  <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
+    <img src="screenshot/non_svegliate_il_wox_poster.jpg" width="100%" alt="Non svegliate il WOX — Click to watch video" />
+  </a>
+</video>
+
+<p>
+  <a href="https://github.com/wox76/wox_cinema_studio_pro/raw/main/screenshot/non_svegliate_il_wox.mp4">
+    <b>▶️ Click here to play / download "Non svegliate il WOX" (Full HD MP4 + Audio) • Clicca qui per guardare il video completo</b>
+  </a>
+</p>
 
 </div>
 
@@ -294,7 +317,7 @@ wox_cinema_studio_pro/
 ├── web/                         # Frontend Studio UI (ES Modules, zero-build fast reload)
 │   ├── js/                      # Workspace, Cinema Studio composer, Settings/Installer UI
 │   └── editor/                  # Compiled Video Studio Timeline Editor bundle
-├── screenshot/                  # Official UI screenshots for documentation
+├── screenshot/                  # Official UI screenshots & demo reel video
 └── Wox_cinema_studio_pro.sh     # All-in-one desktop/CLI launcher
 ```
 

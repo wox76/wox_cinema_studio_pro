@@ -16,6 +16,10 @@
   <a href="#-quick-start"><b>🚀 Quick Start</b></a>
 </p>
 
+![Wox Cinema Studio Pro — Video Workspace](screenshot/01_video.jpg)
+
+![Wox Cinema Studio Pro — Image Workspace](screenshot/02_immagini.jpg)
+
 </div>
 
 ---

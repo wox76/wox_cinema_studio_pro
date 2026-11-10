@@ -1,0 +1,4758 @@
+/* WOX Cinema Studio UI Styles for ComfyUI */
+
+.wox-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #e2e8f0;
+    background: #0b0d12;
+    border-radius: 20px;
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    min-width: 780px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    user-select: none;
+    visibility: visible !important;
+}
+
+/* Top 3 Videos Gallery */
+.wox-top-gallery {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0 6px 0;
+    perspective: 1000px;
+    user-select: none;
+}
+
+.wox-gallery-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    padding: 2px 0 4px 0;
+}
+
+.wox-gallery-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wox-gallery-dot:hover {
+    background: rgba(212, 255, 50, 0.6);
+    transform: scale(1.25);
+}
+
+.wox-gallery-dot.active {
+    width: 20px;
+    border-radius: 4px;
+    background: #d4ff32;
+    box-shadow: 0 0 10px rgba(212, 255, 50, 0.6);
+}
+
+.wox-card {
+    position: relative;
+    width: 190px;
+    height: 110px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #161a22;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
+    cursor: grab;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.wox-card:active {
+    cursor: grabbing;
+}
+
+.wox-card.center-card {
+    width: 230px;
+    height: 130px;
+    z-index: 2;
+    transform: translateY(-4px) scale(1.05);
+    border: 2px solid rgba(212, 255, 50, 0.45);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.85), 0 0 18px rgba(212, 255, 50, 0.18);
+}
+
+.wox-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    border-color: rgba(212, 255, 50, 0.7);
+}
+
+.wox-card.center-card:hover {
+    transform: translateY(-8px) scale(1.08);
+}
+
+.wox-card video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wox-card-overlay {
+    position: relative;
+    z-index: 2;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, transparent 0%, rgba(8, 10, 14, 0.92) 100%);
+}
+
+.wox-card-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    text-transform: uppercase;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.wox-card-tag {
+    font-size: 9px;
+    color: #d4ff32;
+    font-weight: 600;
+}
+
+.wox-drag-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 4;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 9px;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wox-card-actions {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wox-card-action-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
+    outline: none;
+}
+
+.wox-card-action-icon:hover {
+    transform: scale(1.15);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.wox-card-action-icon.btn-fullscreen:hover {
+    color: #38bdf8;
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.25);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.wox-card-action-icon.btn-timeline:hover {
+    color: #d4ff32;
+    border-color: #d4ff32;
+    background: rgba(212, 255, 50, 0.25);
+    box-shadow: 0 0 8px rgba(212, 255, 50, 0.4);
+}
+
+.wox-card-action-icon.btn-edit:hover {
+    color: #f59e0b;
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.25);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.wox-ref-card .wox-card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+
+.wox-ref-card:hover .wox-card-actions {
+    opacity: 1;
+}
+
+
+/* Slogan Title */
+.wox-main-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+    color: #f1f5f9;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 2px 0 6px 0;
+}
+
+/* Top Control Pills Bar */
+.wox-pills-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: #12151d;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 6px 10px;
+    border-radius: 14px;
+}
+
+.wox-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1b1f2b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.wox-pill:hover {
+    background: #262c3d;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.wox-pill-icon {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+}
+
+.wox-pill-thumb {
+    width: 28px;
+    height: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #090b10;
+    border: 1px solid rgba(212, 255, 50, 0.4);
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.wox-pill-thumb svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wox-pill-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.wox-pill-label {
+    font-size: 9px;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.wox-pill-value {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+/* Bottom Main Input Area */
+.wox-prompt-section {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Left Switcher (Image vs Video) */
+.wox-mode-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: #12151d;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    padding: 4px;
+    width: 68px;
+    align-items: center;
+    justify-content: center;
+}
+
+.wox-mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    padding: 6px 2px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 9.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wox-mode-btn.active {
+    background: #232938;
+    color: #f8fafc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.wox-mode-btn:hover:not(.active) {
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Right Main Box (Textarea + Quick Tools + Generate) */
+.wox-main-box {
+    flex: 1;
+    min-width: 0;
+    background: #12151d;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+.wox-textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: 78px;
+    min-height: 52px;
+    background: transparent;
+    border: none;
+    color: #f1f5f9;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.wox-textarea::placeholder {
+    color: #64748b;
+}
+
+/* Quick Bar & Generate Button */
+.wox-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.wox-chips-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 2px 0;
+}
+
+.wox-chips-row::-webkit-scrollbar {
+    display: none;
+}
+
+.wox-chip {
+    background: #1c202c;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.wox-chip:hover {
+    background: #272f3f;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.wox-chip.wox-chip-icon-labeled {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3px 6px;
+    gap: 0;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.wox-chip-icon-labeled .chip-icon {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.wox-chip-icon-labeled .chip-sublabel {
+    font-size: 7px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
+    line-height: 1;
+}
+
+.wox-chip-icon-labeled:hover .chip-sublabel {
+    color: #d4ff32;
+}
+
+.wox-chip.active-frame {
+    background: rgba(212, 255, 50, 0.12);
+    border-color: rgba(212, 255, 50, 0.4);
+    color: #d4ff32;
+}
+
+.wox-clear-frames-chip {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    padding: 5px 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wox-clear-frames-chip svg {
+    display: block;
+    pointer-events: none;
+}
+
+.wox-clear-frames-chip:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+.wox-chip.model-chip {
+    background: rgba(212, 255, 50, 0.08);
+    border-color: rgba(212, 255, 50, 0.3);
+    color: #d4ff32;
+    font-weight: 700;
+}
+
+.wox-chip.safe-chip {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #a7f3d0;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.wox-chip.safe-chip:hover {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #ffffff;
+}
+
+.wox-chip.safe-chip.safe-chip-active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #34d399;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.wox-chip.safe-chip.safe-chip-warning {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: #f59e0b;
+    color: #fbbf24;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+    animation: woxSafePulse 2s infinite ease-in-out;
+}
+
+.wox-chip.safe-chip.safe-chip-critical {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: #ef4444;
+    color: #f87171;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.45);
+    animation: woxSafePulse 1s infinite ease-in-out;
+}
+
+@keyframes woxSafePulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.03); opacity: 0.85; }
+}
+
+/* Split Generate Container with AI Checkbox */
+.wox-generate-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #181d28;
+    border: 1px solid rgba(212, 255, 50, 0.35);
+    border-radius: 12px;
+    padding: 3px 6px 3px 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s;
+    height: 44px;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0 !important;
+}
+
+.wox-generate-group:hover {
+    border-color: rgba(212, 255, 50, 0.65);
+}
+
+.wox-gen-progress-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    display: none;
+    z-index: 10;
+}
+
+.wox-gen-progress-track.active {
+    display: block;
+}
+
+.wox-gen-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #d4ff32;
+    box-shadow: 0 0 8px rgba(212, 255, 50, 0.85);
+    transition: width 0.15s ease-out;
+}
+
+.wox-gen-progress-pct {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 8px;
+    font-weight: 800;
+    color: #d4ff32;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 11;
+}
+
+.wox-gen-progress-pct.active {
+    opacity: 0.9;
+}
+
+
+.wox-enhance-checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-right: 8px;
+    cursor: pointer;
+    user-select: none;
+    color: #cbd5e1;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    height: 100%;
+}
+
+.wox-enhance-checkbox-wrap:hover {
+    color: #ffffff;
+}
+
+.wox-enhance-checkbox-wrap input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #64748b;
+    border-radius: 4px;
+    background: #0f1219;
+    cursor: pointer;
+    position: relative;
+    outline: none;
+    transition: all 0.15s;
+    display: grid;
+    place-content: center;
+    margin: 0;
+}
+
+.wox-enhance-checkbox-wrap input[type="checkbox"]:checked {
+    background: #d4ff32;
+    border-color: #d4ff32;
+}
+
+.wox-enhance-checkbox-wrap input[type="checkbox"]:checked::before {
+    content: "✓";
+    font-size: 11px;
+    font-weight: 900;
+    color: #0b0d11;
+}
+
+.wox-enhance-tag {
+    color: #d4ff32;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+/* Save Prompt Button */
+.wox-save-prompt-btn {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 10px;
+    padding: 0 11px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 36px;
+    white-space: nowrap;
+    margin: 0;
+    flex-shrink: 0 !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wox-save-prompt-btn:hover {
+    background: rgba(56, 189, 248, 0.24);
+    border-color: #38bdf8;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    transform: scale(1.02);
+}
+
+.wox-save-prompt-btn:active {
+    transform: scale(0.98);
+}
+
+.wox-save-prompt-btn.saved {
+    background: rgba(34, 197, 94, 0.25) !important;
+    border-color: #22c55e !important;
+    color: #4ade80 !important;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4) !important;
+}
+
+/* Generate Neon Button */
+.wox-generate-btn {
+    background: #d4ff32;
+    color: #0b0d11;
+    border: none;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(212, 255, 50, 0.35);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+    min-width: 96px;
+    height: 36px;
+    margin: 0;
+    flex-shrink: 0 !important;
+}
+
+.wox-generate-btn:hover {
+    background: #e1ff5a;
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(212, 255, 50, 0.55);
+}
+
+.wox-generate-btn:active {
+    transform: scale(0.98);
+}
+
+.wox-generate-btn.enhancing {
+    background: #ffcc00;
+    color: #000;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
+    animation: woxPulse 0.8s infinite alternate;
+}
+
+@keyframes woxPulse {
+    from { opacity: 0.85; }
+    to { opacity: 1; filter: brightness(1.2); }
+}
+
+/* ==========================================================================
+   Video Montage & Timeline Sequencer System (Montaggio Video)
+   ========================================================================== */
+.wox-timeline-editor {
+    background: #0d1017;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.wox-timeline-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
+}
+
+.wox-timeline-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-timeline-title {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wox-timeline-badge {
+    background: rgba(212, 255, 50, 0.12);
+    border: 1px solid rgba(212, 255, 50, 0.3);
+    color: #d4ff32;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.wox-timeline-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wox-tl-btn {
+    background: #1a202c;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
+    padding: 8px 14px;
+    min-height: 34px;
+    color: #e2e8f0;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.wox-tl-btn:hover {
+    background: #273142;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.wox-tl-btn.play-btn {
+    background: #d4ff32;
+    color: #0b0d11;
+    border: none;
+    font-weight: 900;
+    padding: 4px 12px;
+    box-shadow: 0 2px 8px rgba(212, 255, 50, 0.3);
+}
+
+.wox-tl-btn.play-btn:hover {
+    background: #e1ff5a;
+    box-shadow: 0 4px 12px rgba(212, 255, 50, 0.5);
+}
+
+.wox-tl-btn.play-btn.playing {
+    background: #f59e0b;
+    color: #000;
+}
+
+.wox-tl-time {
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    background: #090b10;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    letter-spacing: 0.5px;
+}
+
+/* Timeline Preview Monitor */
+.wox-timeline-monitor-wrap {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    background: #080a0f;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+}
+
+.wox-timeline-monitor {
+    width: 440px;
+    height: 248px;
+    border-radius: 12px;
+    background: #000000;
+    object-fit: contain;
+    border: 1.5px solid rgba(255, 255, 255, 0.16);
+    flex-shrink: 0;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
+}
+
+.wox-timeline-monitor-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+}
+
+.wox-monitor-clip-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.3px;
+}
+
+.wox-monitor-clip-status {
+    font-size: 12px;
+    color: #94a3b8;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Timeline Toolbar between Preview Monitor and Track Area */
+.wox-timeline-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #0d121c;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9px;
+    padding: 5px 10px;
+    margin: 2px 0;
+}
+
+.wox-tl-tools-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wox-tl-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #141a24;
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 5px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+
+.wox-tl-tool-btn:hover {
+    background: #1f2736;
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.wox-tl-tool-btn.active {
+    background: #d4ff32;
+    color: #0b0d11;
+    border-color: #d4ff32;
+    font-weight: 800;
+    box-shadow: 0 0 10px rgba(212, 255, 50, 0.35);
+}
+
+.wox-tl-tool-btn.active.tool-delete {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.wox-tl-tool-btn.active.tool-cut {
+    background: #38bdf8;
+    color: #0b0d11;
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.wox-tl-tool-hint {
+    font-size: 11px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Timeline Track Area */
+.wox-timeline-track-area {
+    position: relative;
+    background: #07090e;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px 8px;
+    overflow-x: auto;
+    min-height: 105px;
+    user-select: none;
+}
+
+.wox-timeline-ruler {
+    position: relative;
+    height: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+.wox-ruler-tick {
+    position: absolute;
+    top: 0;
+    font-size: 9px;
+    font-family: monospace;
+    font-weight: 600;
+    color: #64748b;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    height: 100%;
+    padding-left: 3px;
+    line-height: 16px;
+    pointer-events: none;
+}
+
+.wox-timeline-track {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-height: 75px;
+    padding-bottom: 4px;
+    cursor: pointer;
+    position: relative;
+}
+
+.wox-timeline-empty {
+    width: 100%;
+    padding: 22px 10px;
+    text-align: center;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1.5px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.wox-timeline-empty.dragover {
+    border-color: #d4ff32;
+    background: rgba(212, 255, 50, 0.05);
+    color: #d4ff32;
+}
+
+/* Timeline Clip Card */
+.wox-timeline-clip {
+    position: relative;
+    height: 72px;
+    min-width: 80px;
+    max-width: none;
+    background: #141924;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px;
+    transition: transform 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.wox-timeline-clip:hover {
+    border-color: rgba(212, 255, 50, 0.5);
+    transform: translateY(-2px);
+}
+
+.wox-timeline-clip.active-playing {
+    border-color: #d4ff32;
+    box-shadow: 0 0 12px rgba(212, 255, 50, 0.35);
+}
+
+.wox-timeline-clip.selected {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* Tool Mode Specific Styling on Timeline & Clips */
+.wox-timeline-track-area.mode-move .wox-timeline-clip {
+    cursor: grab;
+}
+
+.wox-timeline-track-area.mode-cut .wox-timeline-clip {
+    cursor: crosshair;
+}
+
+.wox-timeline-track-area.mode-cut .wox-timeline-clip:hover {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    transform: none; /* No vertical jump on hover so cutting coordinates remain rock-solid */
+}
+
+.wox-timeline-track-area.mode-delete .wox-timeline-clip {
+    cursor: pointer;
+}
+
+.wox-timeline-track-area.mode-delete .wox-timeline-clip:hover {
+    border-color: #ef4444;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Cut indicator line (Razor / Taglia) */
+.wox-clip-cut-guide {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #38bdf8;
+    box-shadow: 0 0 6px #38bdf8;
+    pointer-events: none;
+    z-index: 25;
+    display: none;
+}
+
+.wox-clip-cut-guide::before {
+    content: "✂";
+    position: absolute;
+    top: -3px;
+    left: -7px;
+    font-size: 11px;
+    color: #38bdf8;
+    text-shadow: 0 0 4px #000;
+    pointer-events: none;
+}
+
+/* Right Trim Handle (Accorcia/Allunga durata trascinando verso sinistra) */
+.wox-clip-trim-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 14px;
+    height: 100%;
+    cursor: ew-resize !important;
+    background: linear-gradient(90deg, transparent, rgba(212, 255, 50, 0.2));
+    border-right: 3px solid #d4ff32;
+    z-index: 20;
+    opacity: 0.7;
+    transition: opacity 0.15s, background 0.15s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 1px;
+}
+
+.wox-clip-trim-handle::after {
+    content: "⋮";
+    color: #d4ff32;
+    font-size: 12px;
+    font-weight: 900;
+    pointer-events: none;
+    line-height: 1;
+}
+
+.wox-clip-trim-handle:hover,
+.wox-clip-trim-handle.trimming {
+    opacity: 1;
+    background: linear-gradient(90deg, transparent, rgba(212, 255, 50, 0.45));
+    border-right: 3.5px solid #ffffff;
+    box-shadow: 0 0 8px rgba(212, 255, 50, 0.6);
+}
+
+.wox-timeline-clip.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
+}
+
+.wox-clip-bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.wox-clip-top-info {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+}
+
+.wox-clip-idx-badge {
+    background: rgba(0, 0, 0, 0.7);
+    color: #d4ff32;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 3px;
+    border: 1px solid rgba(212, 255, 50, 0.3);
+}
+
+.wox-clip-del-btn {
+    background: rgba(0, 0, 0, 0.6);
+    color: #94a3b8;
+    border: none;
+    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.wox-clip-del-btn svg {
+    display: block;
+    pointer-events: none;
+}
+
+.wox-clip-del-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.wox-clip-bottom-info {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.65);
+    padding: 2px 4px;
+    border-radius: 4px;
+    gap: 4px;
+}
+
+.wox-clip-name {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+.wox-clip-dur {
+    font-size: 9px;
+    font-family: monospace;
+    font-weight: 700;
+    color: #d4ff32;
+    flex-shrink: 0;
+}
+
+/* Playhead Scrubber */
+.wox-timeline-playhead {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: #ef4444;
+    z-index: 25;
+    pointer-events: auto;
+    cursor: ew-resize;
+    transition: none;
+}
+
+.wox-timeline-playhead::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -6px;
+    width: 14px;
+    height: 12px;
+    background: #ef4444;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    cursor: ew-resize;
+    pointer-events: auto;
+}
+
+.wox-timeline-playhead.playing {
+    background: #d4ff32;
+}
+
+.wox-timeline-playhead.playing::before {
+    background: #d4ff32;
+}
+
+/* ==========================================================================
+   Reference Modal Popup (Matching HIGGSFIELD / WOX reference asset manager)
+   ========================================================================== */
+.wox-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(10px);
+    z-index: 10090;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.wox-modal-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.wox-modal {
+    width: 1100px;
+    max-width: 94vw;
+    height: 740px;
+    max-height: 90vh;
+    background: #181a20;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.96);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wox-modal-backdrop.open .wox-modal {
+    transform: scale(1);
+}
+
+/* Modal Header Tabs */
+.wox-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wox-modal-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wox-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.wox-tab-btn.active {
+    background: #ffffff;
+    color: #0b0d11;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.wox-modal-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.wox-modal-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: rotate(90deg);
+}
+
+/* Sub-Bar Filters & Top Actions */
+.wox-modal-subbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+    background: #14161b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.wox-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.wox-subbar-pill {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wox-subbar-pill:hover {
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.wox-subbar-pill.active {
+    background: #272a34;
+    color: #f1f5f9;
+}
+
+.wox-modal-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.wox-modal-search-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 4px 12px;
+    height: 32px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.wox-modal-search-box:focus-within {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #d4ff32;
+    box-shadow: 0 0 0 2px rgba(212, 255, 50, 0.15);
+}
+
+.wox-modal-search-box .wox-search-icon {
+    color: #64748b;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.wox-modal-search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f1f5f9;
+    font-size: 12px;
+    width: 170px;
+    font-family: inherit;
+}
+
+.wox-modal-search-input::placeholder {
+    color: #64748b;
+}
+
+.wox-modal-search-clear {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+}
+
+.wox-modal-search-clear:hover {
+    color: #ef4444;
+}
+
+.wox-modal-top-upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #d4ff32;
+    color: #0b0d11;
+    border: none;
+    border-radius: 18px;
+    padding: 6px 15px;
+    height: 32px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(212, 255, 50, 0.2);
+}
+
+.wox-modal-top-upload-btn:hover {
+    background: #e2ff66;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(212, 255, 50, 0.35);
+}
+
+.wox-modal-top-upload-btn:active {
+    transform: translateY(0);
+}
+
+.wox-modal-top-upload-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* References Grid */
+.wox-modal-body {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.wox-ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+/* 1st Card: Upload Media */
+.wox-upload-card {
+    height: 260px;
+    background: #1e2129;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    text-align: center;
+    padding: 16px;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.wox-upload-card:hover {
+    border-color: #d4ff32;
+    background: #252a35;
+    transform: translateY(-2px);
+}
+
+.wox-upload-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #cbd5e1;
+}
+
+.wox-upload-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.wox-upload-sub {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+/* Reference Item Card */
+.wox-ref-card {
+    position: relative;
+    height: 260px;
+    background: #14171e;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.wox-ref-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(212, 255, 50, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 255, 50, 0.15);
+}
+
+.wox-ref-thumb {
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    background: #0f1117;
+    display: block;
+}
+
+.wox-ref-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #191c24;
+}
+
+.wox-ref-tag {
+    font-size: 12px;
+    font-weight: 700;
+    color: #d4ff32;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.wox-ref-delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    color: #94a3b8;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    opacity: 0;
+    transition: all 0.2s;
+}
+
+.wox-ref-delete-btn svg {
+    display: block;
+    pointer-events: none;
+}
+
+.wox-ref-card:hover .wox-ref-delete-btn {
+    opacity: 1;
+}
+
+.wox-ref-delete-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   @ Mention Dropdown Autocomplete Menu
+   ========================================================================== */
+.wox-mention-popup {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 14px;
+    width: 280px;
+    max-height: 240px;
+    background: #181b22;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(212, 255, 50, 0.15);
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.wox-mention-popup.visible {
+    display: flex;
+}
+
+.wox-mention-header {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #64748b;
+    padding: 6px 8px 4px 8px;
+}
+
+.wox-mention-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.wox-mention-item:hover,
+.wox-mention-item.selected {
+    background: #262c3a;
+}
+
+.wox-mention-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #0f1115;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.wox-mention-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.wox-mention-tag {
+    font-size: 12px;
+    font-weight: 700;
+    color: #d4ff32;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wox-mention-name {
+    font-size: 10px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Active References Preview Tray (below prompt)
+   ========================================================================== */
+.wox-active-refs-bar {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px 12px 6px 12px;
+}
+
+.wox-active-refs-bar.has-items {
+    display: flex;
+}
+
+.wox-active-ref-chip {
+    position: relative;
+    width: 120px;
+    height: 68px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #151821;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: fadeIn 0.2s ease;
+    user-select: none;
+}
+
+.wox-active-ref-chip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(212, 255, 50, 0.8);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.85), 0 0 12px rgba(212, 255, 50, 0.3);
+}
+
+.wox-active-ref-media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    z-index: 1;
+}
+
+.wox-active-ref-type-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 3;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 7.5px;
+    font-weight: 800;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.wox-active-ref-type-badge .badge-icon {
+    color: #d4ff32;
+    font-size: 7px;
+}
+
+.wox-active-ref-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    padding: 4px 6px 5px 6px;
+    background: linear-gradient(180deg, transparent 0%, rgba(8, 10, 14, 0.96) 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wox-active-ref-title {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: #94a3b8;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wox-active-ref-chip .remove-ref-btn {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    z-index: 4;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #cbd5e1;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.15s;
+    opacity: 0.8;
+}
+
+.wox-active-ref-chip .remove-ref-btn svg {
+    display: block;
+    pointer-events: none;
+}
+
+.wox-active-ref-chip:hover .remove-ref-btn {
+    opacity: 1;
+}
+
+.wox-active-ref-chip .remove-ref-btn:hover {
+    background: rgba(239, 68, 68, 0.85);
+    border-color: #ef4444;
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+/* ==========================================================================
+   Image Preview Lightbox Modal & Media Gallery Generations UI
+   ========================================================================== */
+.wox-card-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.wox-preview-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(14px);
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.wox-preview-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.wox-preview-modal {
+    min-width: 540px;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: #11141a;
+    border: 1px solid rgba(212, 255, 50, 0.35);
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.95), 0 0 32px rgba(212, 255, 50, 0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wox-preview-backdrop.open .wox-preview-modal {
+    transform: scale(1);
+}
+
+.wox-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: #161922;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 12px;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.wox-preview-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.wox-preview-badge {
+    background: rgba(212, 255, 50, 0.15);
+    border: 1px solid rgba(212, 255, 50, 0.5);
+    color: #d4ff32;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+}
+
+.wox-preview-filename {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 320px;
+}
+
+/* Chips speciali per Modalità Immagine (GUARDA ed Edit) */
+.wox-watch-chip {
+    background: rgba(212, 255, 50, 0.16) !important;
+    border: 1px solid rgba(212, 255, 50, 0.6) !important;
+    color: #d4ff32 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 0 10px rgba(212, 255, 50, 0.15) !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.wox-watch-chip:hover {
+    background: rgba(212, 255, 50, 0.3) !important;
+    border-color: #d4ff32 !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 0 16px rgba(212, 255, 50, 0.35) !important;
+}
+
+.wox-edit-chip {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.wox-edit-chip:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+    transform: scale(1.05) !important;
+}
+
+.wox-preview-header-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;
+}
+
+.wox-preview-btn-action {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+}
+
+.wox-preview-btn-action:hover {
+    background: rgba(212, 255, 50, 0.2);
+    border-color: #d4ff32;
+    color: #ffffff;
+}
+
+.wox-preview-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+}
+
+.wox-preview-close:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: rotate(90deg);
+}
+
+.wox-preview-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #090b0e;
+    overflow: hidden;
+    padding: 10px;
+    min-height: 260px;
+}
+
+.wox-preview-main-img {
+    max-width: 86vw;
+    max-height: 68vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    transition: transform 0.2s ease;
+}
+
+.wox-preview-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: #141720;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 16px;
+}
+
+.wox-preview-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.wox-preview-prompt {
+    font-size: 12px;
+    color: #cbd5e1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: italic;
+}
+
+.wox-preview-meta {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+.wox-preview-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-preview-action-btn {
+    padding: 7px 14px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    border: none;
+}
+
+.wox-preview-action-btn.primary {
+    background: #d4ff32;
+    color: #0b0d11;
+    box-shadow: 0 2px 10px rgba(212, 255, 50, 0.3);
+}
+
+.wox-preview-action-btn.primary:hover {
+    background: #e1ff5a;
+    box-shadow: 0 4px 16px rgba(212, 255, 50, 0.5);
+    transform: translateY(-1px);
+}
+
+.wox-preview-action-btn.secondary {
+    background: #232836;
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.wox-preview-action-btn.secondary:hover {
+    background: #2e3547;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.wox-ref-preview-btn {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #cbd5e1;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0;
+    transition: all 0.2s;
+    z-index: 5;
+}
+
+.wox-ref-card:hover .wox-ref-preview-btn {
+    opacity: 1;
+}
+
+.wox-ref-preview-btn:hover {
+    background: #d4ff32;
+    color: #0b0d11;
+    border-color: #d4ff32;
+    transform: scale(1.15);
+}
+
+.wox-ref-badge {
+    position: absolute;
+    bottom: 40px;
+    right: 6px;
+    background: rgba(212, 255, 50, 0.2);
+    border: 1px solid rgba(212, 255, 50, 0.5);
+    color: #d4ff32;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.wox-ref-badge.video-badge {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: rgba(96, 165, 250, 0.6);
+    color: #93c5fd;
+}
+
+.wox-ref-badge.prompt-badge {
+    background: rgba(56, 189, 248, 0.25);
+    border-color: rgba(56, 189, 248, 0.6);
+    color: #38bdf8;
+}
+
+/* Saved Prompt Media Gallery Card Styling */
+.wox-prompt-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 210px;
+    background: linear-gradient(180deg, rgba(15, 20, 31, 0.45) 0%, rgba(15, 20, 31, 0.85) 55%, rgba(15, 20, 31, 0.98) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    z-index: 3;
+}
+
+.wox-prompt-card-text {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #f8fafc;
+    max-height: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.wox-prompt-card-refs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    max-width: 100%;
+}
+
+.wox-prompt-card-refs-label {
+    font-size: 9px;
+    font-weight: 800;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-right: 2px;
+    flex-shrink: 0;
+}
+
+.wox-prompt-mini-ref {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: #0f1219;
+    flex-shrink: 0;
+}
+
+.wox-prompt-mini-ref img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.wox-prompt-mini-ref .mini-vid-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 7px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #38bdf8;
+    padding: 0 2px;
+    line-height: 1;
+    border-radius: 2px 0 0 0;
+}
+
+.wox-ref-video-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 2px solid rgba(212, 255, 50, 0.8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d4ff32;
+    font-size: 18px;
+    pointer-events: none;
+    z-index: 3;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s ease;
+}
+
+.wox-ref-card:hover .wox-ref-video-indicator {
+    background: rgba(212, 255, 50, 0.9);
+    color: #0b0d11;
+    transform: translate(-50%, -60%) scale(1.1);
+}
+
+/* ========================================================================== */
+/* WOX CINEMA - AI IMAGE EDIT MODAL (QWEN IMAGE EDIT LIGHTNING)               */
+/* ========================================================================== */
+.wox-edit-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 7, 12, 0.88);
+    backdrop-filter: blur(10px);
+    z-index: 10060;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.wox-edit-backdrop.open {
+    display: flex;
+    animation: woxFadeIn 0.2s ease-out;
+}
+
+.wox-edit-modal {
+    background: #0f131c;
+    border: 1px solid rgba(212, 255, 50, 0.35);
+    border-radius: 18px;
+    width: 960px;
+    max-width: 95vw;
+    height: 640px;
+    max-height: 90vh;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 255, 50, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #e2e8f0;
+}
+
+.wox-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: #141926;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.wox-edit-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wox-edit-header-badge {
+    background: linear-gradient(135deg, #d4ff32 0%, #a3e635 100%);
+    color: #0b0d11;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.wox-edit-header-filename {
+    font-size: 13px;
+    color: #94a3b8;
+    max-width: 380px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wox-edit-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-edit-gallery-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.wox-edit-gallery-btn:hover {
+    background: rgba(212, 255, 50, 0.15);
+    color: #d4ff32;
+    border-color: rgba(212, 255, 50, 0.4);
+    box-shadow: 0 0 10px rgba(212, 255, 50, 0.2);
+}
+
+.wox-edit-close {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.wox-edit-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.wox-edit-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    padding: 16px 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .wox-edit-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wox-edit-preview-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.wox-edit-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 390px;
+    min-height: 240px;
+    max-height: 420px;
+    background: #080a0f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wox-edit-img-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    cursor: zoom-in;
+    transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.wox-edit-img-wrap img:hover {
+    transform: scale(1.01);
+}
+
+.wox-edit-zoom-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(15, 20, 30, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 5;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    user-select: none;
+}
+
+.wox-edit-zoom-btn:hover {
+    background: #d4ff32;
+    color: #0b0d12;
+    border-color: #d4ff32;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(212, 255, 50, 0.4);
+}
+
+.wox-edit-zoom-btn:active {
+    transform: translateY(0);
+}
+
+.wox-edit-spinner-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 11, 18, 0.85);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 10;
+    animation: woxFadeIn 0.2s ease;
+}
+
+.wox-edit-spinner-ring {
+    width: 52px;
+    height: 52px;
+    border: 4px solid rgba(212, 255, 50, 0.2);
+    border-top-color: #d4ff32;
+    border-radius: 50%;
+    animation: woxSpin 1s linear infinite;
+    box-shadow: 0 0 20px rgba(212, 255, 50, 0.3);
+}
+
+.wox-edit-spinner-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.wox-edit-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #64748b;
+    padding: 0 4px;
+}
+
+.wox-edit-controls-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.wox-edit-section-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wox-edit-prompt-input {
+    width: 100%;
+    min-height: 75px;
+    max-height: 100px;
+    background: #090c13;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.5;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: all 0.2s;
+    min-width: 0;
+}
+
+.wox-edit-prompt-input:focus {
+    border-color: #d4ff32;
+    box-shadow: 0 0 16px rgba(212, 255, 50, 0.25);
+    background: #0b0f18;
+}
+
+.wox-edit-quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.wox-edit-chip-btn {
+    background: #181d2a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.wox-edit-chip-btn:hover {
+    background: rgba(212, 255, 50, 0.15);
+    color: #d4ff32;
+    border-color: rgba(212, 255, 50, 0.4);
+    transform: translateY(-1px);
+}
+
+.wox-edit-pipeline-box {
+    background: #121724;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #94a3b8;
+}
+
+.wox-edit-pipeline-box strong {
+    color: #d4ff32;
+}
+
+.wox-edit-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+    min-width: 0;
+}
+
+.wox-edit-gen-btn {
+    background: linear-gradient(135deg, #d4ff32 0%, #b8f01b 100%);
+    color: #0b0d11;
+    border: none;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 16px rgba(212, 255, 50, 0.35);
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.wox-edit-gen-btn:hover:not(:disabled) {
+    background: #e2ff5f;
+    box-shadow: 0 6px 22px rgba(212, 255, 50, 0.55);
+    transform: translateY(-1px);
+}
+
+.wox-edit-gen-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.wox-edit-status-msg {
+    font-size: 11px;
+    min-height: 18px;
+    text-align: center;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.wox-edit-status-msg.success {
+    color: #a3e635;
+    font-weight: 600;
+}
+
+.wox-edit-status-msg.error {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* Reference selection in Edit Modal */
+.wox-edit-refs-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #121622;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 8px 10px;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.wox-edit-add-ref-btn {
+    background: rgba(212, 255, 50, 0.14);
+    border: 1px solid rgba(212, 255, 50, 0.4);
+    color: #d4ff32;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wox-edit-add-ref-btn:hover {
+    background: #d4ff32;
+    color: #0b0d11;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(212, 255, 50, 0.35);
+}
+
+.wox-edit-active-refs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 20px;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.wox-edit-ref-chip {
+    background: #181e2b;
+    border: 1px solid rgba(212, 255, 50, 0.45);
+    border-radius: 6px;
+    padding: 2px 6px 2px 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #f1f5f9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    animation: woxFadeIn 0.2s ease;
+    max-width: 100%;
+}
+
+.wox-edit-ref-chip img {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    object-fit: cover;
+    background: #090c13;
+}
+
+.wox-edit-ref-chip-tag {
+    color: #d4ff32;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wox-edit-ref-chip-del {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+
+.wox-edit-ref-chip-del svg {
+    display: block;
+    pointer-events: none;
+}
+
+.wox-edit-ref-chip-del:hover {
+    color: #ef4444;
+}
+
+.wox-edit-quick-refs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scrollbar-width: thin;
+    max-width: 100%;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.wox-edit-quick-ref-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 2px 7px 2px 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #cbd5e1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.wox-edit-quick-ref-pill span {
+    max-width: 95px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wox-edit-quick-ref-pill:hover {
+    border-color: #d4ff32;
+    background: rgba(212, 255, 50, 0.15);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.wox-edit-quick-ref-pill img {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #090c13;
+}
+
+/* ========================================================================== */
+/* WOX CINEMA - SETUP & NODES INSTALLER MODAL                                 */
+/* ========================================================================== */
+.wox-circle-action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #cbd5e1;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.wox-circle-action-btn:hover {
+    background: rgba(212, 255, 50, 0.25);
+    border-color: #d4ff32;
+    color: #ffffff;
+    transform: scale(1.08);
+    box-shadow: 0 4px 14px rgba(212, 255, 50, 0.3);
+}
+
+.wox-circle-action-btn:active {
+    transform: scale(0.96);
+}
+
+.wox-circle-action-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.wox-setup-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #cbd5e1;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.wox-setup-btn:hover {
+    background: rgba(212, 255, 50, 0.25);
+    border-color: #d4ff32;
+    color: #ffffff;
+    transform: scale(1.08) rotate(45deg);
+    box-shadow: 0 4px 14px rgba(212, 255, 50, 0.3);
+}
+
+.wox-setup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 7, 12, 0.88);
+    backdrop-filter: blur(10px);
+    z-index: 10005;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.wox-setup-backdrop.open {
+    display: flex;
+    animation: woxFadeIn 0.2s ease-out;
+}
+
+.wox-setup-modal {
+    background: #0f131c;
+    border: 1px solid rgba(212, 255, 50, 0.35);
+    border-radius: 18px;
+    width: 720px;
+    max-width: 95vw;
+    max-height: 85vh;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 255, 50, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #e2e8f0;
+}
+
+.wox-setup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: #141926;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.wox-setup-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wox-setup-header-badge {
+    background: linear-gradient(135deg, #d4ff32 0%, #a3e635 100%);
+    color: #0b0d11;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.wox-setup-body {
+    padding: 18px 22px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+}
+
+.wox-setup-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.wox-setup-install-btn {
+    background: linear-gradient(135deg, #d4ff32 0%, #a3e635 100%);
+    color: #0b0d11;
+    border: none;
+    border-radius: 9px;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(212, 255, 50, 0.35);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-setup-install-btn:hover {
+    background: #e1ff5a;
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(212, 255, 50, 0.5);
+}
+
+.wox-setup-install-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Progress bar container (Dual Bars: Generic & Item-specific) */
+.wox-setup-progress-container {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    background: #090c13;
+    border: 1px solid rgba(212, 255, 50, 0.25);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.wox-setup-progress-container.active {
+    display: flex;
+}
+
+.wox-setup-progress-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.wox-setup-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #cbd5e1;
+}
+
+.wox-setup-progress-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.wox-progress-badge {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.wox-progress-badge.generic {
+    background: rgba(212, 255, 50, 0.12);
+    color: #d4ff32;
+    border: 1px solid rgba(212, 255, 50, 0.35);
+}
+
+.wox-progress-badge.item {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.wox-progress-pct-text {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 800;
+    color: #f8fafc;
+}
+
+.wox-setup-progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.wox-setup-progress-fill {
+    width: 0%;
+    height: 100%;
+    transition: width 0.2s ease;
+}
+
+.wox-setup-progress-fill.generic-fill {
+    background: linear-gradient(90deg, #84cc16, #d4ff32);
+    box-shadow: 0 0 10px rgba(212, 255, 50, 0.8);
+}
+
+.wox-setup-progress-fill.item-fill {
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+
+.wox-setup-progress-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.wox-setup-progress-log {
+    font-size: 10px;
+    color: #94a3b8;
+    font-family: monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.wox-setup-speed-tag {
+    display: none;
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.wox-setup-section-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #d4ff32;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-setup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wox-setup-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #141822;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    transition: border-color 0.15s;
+}
+
+.wox-setup-item:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.wox-setup-item.item-active-download {
+    border-color: #d4ff32;
+    background: rgba(212, 255, 50, 0.05);
+}
+
+.wox-setup-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wox-setup-item-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wox-setup-item-desc {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.wox-setup-status-badge {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.wox-setup-status-badge.installed {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.wox-setup-status-badge.missing {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.wox-setup-status-badge.downloading {
+    background: rgba(212, 255, 50, 0.2);
+    color: #d4ff32;
+    border: 1px solid rgba(212, 255, 50, 0.5);
+    animation: woxPulse 0.8s infinite alternate;
+}
+
+/* ==========================================================================
+   Film Setup & Style Selector Modal
+   ========================================================================== */
+.wox-film-modal {
+    width: 1040px;
+    max-width: 95vw;
+    height: 760px;
+    max-height: 92vh;
+    background: #11141b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.96);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wox-modal-backdrop.open .wox-film-modal {
+    transform: scale(1);
+}
+
+.wox-film-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #151821;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wox-film-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wox-film-header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(212, 255, 50, 0.12);
+    border: 1px solid rgba(212, 255, 50, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d4ff32;
+}
+
+.wox-film-header-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.wox-film-header-subtitle {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.wox-film-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wox-film-current-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.wox-film-current-badge strong {
+    color: #d4ff32;
+    font-weight: 800;
+}
+
+.wox-film-subbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 24px;
+    background: #0d1017;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.wox-film-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wox-film-tab {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wox-film-tab:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.wox-film-tab.active {
+    background: #252a36;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.wox-film-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.wox-film-search-icon {
+    position: absolute;
+    left: 10px;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.wox-film-search-input {
+    background: #161922;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 12px;
+    padding: 6px 12px 6px 30px;
+    border-radius: 20px;
+    width: 220px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.wox-film-search-input:focus {
+    border-color: #d4ff32;
+    background: #1c202c;
+    width: 260px;
+}
+
+.wox-film-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+}
+
+.wox-film-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.wox-film-card {
+    background: #161a23;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.wox-film-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(212, 255, 50, 0.6);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65), 0 0 16px rgba(212, 255, 50, 0.18);
+}
+
+.wox-film-card.selected {
+    border: 2px solid #d4ff32;
+    background: #1c2230;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75), 0 0 20px rgba(212, 255, 50, 0.3);
+}
+
+.wox-film-thumb {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    overflow: hidden;
+    background: #090b10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wox-film-thumb svg {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.35s ease;
+}
+
+.wox-film-card:hover .wox-film-thumb svg {
+    transform: scale(1.06);
+}
+
+.wox-film-tag-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 7px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border-radius: 5px;
+    background: rgba(11, 13, 18, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.wox-film-check-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 6px;
+    background: #d4ff32;
+    color: #0b0d12;
+    box-shadow: 0 2px 8px rgba(212, 255, 50, 0.5);
+}
+
+.wox-film-card.selected .wox-film-check-badge {
+    display: flex;
+}
+
+.wox-film-card-info {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    background: #141720;
+}
+
+.wox-film-card-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wox-film-card-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Palette Swatches Bar in Card */
+.wox-palette-swatches {
+    display: flex;
+    height: 14px;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 4px 0 2px 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wox-palette-swatch-item {
+    flex: 1;
+    height: 100%;
+}
+
+/* ========================================================================== */
+/* WOX CINEMA - TEMPLATE GALLERY & BLOCKOUT MODAL STYLES                       */
+/* ========================================================================== */
+.wox-template-gallery-backdrop,
+.wox-blockout-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 7, 12, 0.88);
+    backdrop-filter: blur(12px);
+    z-index: 10030;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.wox-template-gallery-backdrop.open,
+.wox-blockout-modal-backdrop.open {
+    display: flex;
+    animation: woxFadeIn 0.2s ease-out;
+}
+
+.wox-template-modal,
+.wox-blockout-modal {
+    background: #0e121a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85);
+    width: 100%;
+    max-width: 980px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #f1f5f9;
+}
+
+.wox-template-header,
+.wox-blockout-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 24px 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: #121622;
+}
+
+.wox-template-header-title h2,
+.wox-blockout-header-title h2 {
+    font-size: 19px;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 4px 0 3px 0;
+    letter-spacing: -0.3px;
+}
+
+.wox-template-header-title p,
+.wox-blockout-header-title p {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.wox-template-badge,
+.wox-blockout-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #d4ff32;
+    background: rgba(212, 255, 50, 0.12);
+    border: 1px solid rgba(212, 255, 50, 0.3);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.wox-template-close-btn,
+.wox-blockout-close-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    font-size: 16px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.wox-template-close-btn:hover,
+.wox-blockout-close-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: scale(1.08);
+}
+
+/* Template Gallery Grid */
+.wox-template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.wox-template-card {
+    background: #141824;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+}
+
+.wox-template-card.featured {
+    border-color: rgba(212, 255, 50, 0.45);
+    background: linear-gradient(180deg, rgba(212, 255, 50, 0.05) 0%, #141824 100%);
+    box-shadow: 0 8px 24px rgba(212, 255, 50, 0.08);
+}
+
+.wox-template-card:hover {
+    transform: translateY(-4px);
+    border-color: #d4ff32;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 255, 50, 0.2);
+}
+
+.wox-template-card-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #d4ff32;
+    background: rgba(212, 255, 50, 0.12);
+    border: 1px solid rgba(212, 255, 50, 0.3);
+    padding: 2px 7px;
+    border-radius: 5px;
+    letter-spacing: 0.5px;
+}
+
+.wox-template-card-preview {
+    position: relative;
+    height: 124px;
+    border-radius: 11px;
+    background: #090c13;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.tmpl-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wox-template-card:hover .tmpl-preview-img {
+    transform: scale(1.08);
+}
+
+.tmpl-preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(5, 7, 12, 0.85) 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.tmpl-preview-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #d4ff32;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    padding: 3px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(212, 255, 50, 0.3);
+}
+
+.wox-template-card-type {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 4px;
+}
+
+.wox-template-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 0 0 6px 0;
+}
+
+.wox-template-card-desc {
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.45;
+    margin: 0 0 10px 0;
+}
+
+.wox-template-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.wox-tmpl-pill {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wox-template-select-btn {
+    width: 100%;
+    padding: 9px 12px;
+    background: rgba(212, 255, 50, 0.12);
+    border: 1px solid rgba(212, 255, 50, 0.4);
+    color: #d4ff32;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.wox-template-select-btn:hover {
+    background: #d4ff32;
+    color: #0b0d12;
+    box-shadow: 0 0 14px rgba(212, 255, 50, 0.4);
+}
+
+/* Blockout Template Config Modal Styles */
+.wox-blockout-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.wox-tmpl-row {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 14px;
+    transition: border-color 0.2s;
+}
+
+.wox-tmpl-row:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.wox-tmpl-row-media {
+    width: 230px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wox-tmpl-row-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: #cbd5e1;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.wox-tmpl-row-label .badge-required {
+    font-size: 9px;
+    color: #d4ff32;
+    background: rgba(212, 255, 50, 0.12);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.wox-tmpl-media-empty {
+    flex: 1;
+    min-height: 105px;
+    border: 1.5px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+
+.wox-tmpl-media-empty:hover {
+    border-color: #d4ff32;
+    background: rgba(212, 255, 50, 0.05);
+    transform: scale(1.01);
+}
+
+.wox-tmpl-media-icon {
+    font-size: 24px;
+}
+
+.wox-tmpl-media-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.wox-tmpl-media-sub {
+    font-size: 10px;
+    color: #64748b;
+}
+
+.wox-tmpl-media-preview {
+    position: relative;
+    width: 100%;
+    height: 105px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid rgba(212, 255, 50, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+.wox-tmpl-media-preview img,
+.wox-tmpl-media-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wox-tmpl-media-meta {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 8px;
+    background: linear-gradient(180deg, transparent 0%, rgba(5, 7, 12, 0.95) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+}
+
+.wox-tmpl-tag-badge {
+    font-weight: 800;
+    color: #d4ff32;
+}
+
+.wox-tmpl-media-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.wox-tmpl-action-btn {
+    flex: 1;
+    padding: 5px 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.wox-tmpl-action-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.wox-tmpl-action-btn.btn-remove:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.wox-tmpl-row-prompt {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wox-tmpl-prompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: #cbd5e1;
+}
+
+.wox-tmpl-ai-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-tmpl-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(212, 255, 50, 0.12);
+    color: #d4ff32;
+    border: 1px solid rgba(212, 255, 50, 0.3);
+    transition: all 0.25s ease;
+}
+
+.wox-tmpl-ai-badge.loading {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.4);
+    animation: woxPulseGlow 1.4s infinite ease-in-out;
+}
+
+.wox-tmpl-ai-badge.done {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.4);
+}
+
+.wox-tmpl-ai-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.wox-tmpl-ai-btn:hover {
+    background: rgba(212, 255, 50, 0.15);
+    color: #d4ff32;
+    border-color: rgba(212, 255, 50, 0.4);
+    transform: translateY(-1px);
+}
+
+.wox-tmpl-ai-btn:active {
+    transform: translateY(0);
+}
+
+.wox-tmpl-prompt-textarea {
+    width: 100%;
+    flex: 1;
+    min-height: 80px;
+    background: rgba(8, 10, 15, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #f8fafc;
+    font-size: 12.5px;
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.wox-tmpl-prompt-textarea:focus {
+    border-color: #d4ff32;
+    box-shadow: 0 0 0 2px rgba(212, 255, 50, 0.15);
+}
+
+.wox-tmpl-role-select {
+    background: #171c28;
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+}
+
+.wox-tmpl-role-select:focus {
+    border-color: #d4ff32;
+}
+
+/* Extra References Section */
+.wox-tmpl-extra-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.wox-tmpl-add-ref-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+}
+
+.wox-add-ref-dropdown-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.wox-add-ref-main-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #d4ff32;
+    border-radius: 9px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.wox-add-ref-main-btn:hover {
+    background: rgba(212, 255, 50, 0.12);
+    border-color: #d4ff32;
+}
+
+.wox-add-ref-dropdown-menu {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    background: #151a26;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+    z-index: 20;
+    min-width: 230px;
+    overflow: hidden;
+    display: none;
+}
+
+.wox-add-ref-dropdown-menu.open {
+    display: block;
+    animation: woxFadeIn 0.15s ease-out;
+}
+
+.wox-add-ref-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.wox-add-ref-dropdown-item:hover {
+    background: rgba(212, 255, 50, 0.15);
+    color: #d4ff32;
+}
+
+/* Modal Footer */
+.wox-blockout-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: #121622;
+}
+
+.wox-blockout-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wox-blockout-back-btn,
+.wox-blockout-cancel-btn {
+    padding: 9px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wox-blockout-back-btn:hover,
+.wox-blockout-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.wox-blockout-apply-btn {
+    padding: 10px 22px;
+    background: #d4ff32;
+    border: 1px solid #d4ff32;
+    color: #0b0d12;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 16px rgba(212, 255, 50, 0.35);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-blockout-apply-btn:hover {
+    background: #e2ff66;
+    transform: translateY(-1px);
+    box-shadow: 0 0 24px rgba(212, 255, 50, 0.6);
+}
+
+
+
+/* ========================================================================== */
+/* WOX CINEMA STUDIO - STORYBOARD NODES STYLES                                */
+/* ========================================================================== */
+
+.wox-sb-scene-card {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: #e2e8f0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    user-select: none;
+    width: 100%;
+}
+
+.wox-sb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.wox-sb-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(212, 255, 50, 0.15);
+    border: 1px solid rgba(212, 255, 50, 0.4);
+    color: #d4ff32;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.wox-sb-mode-tag {
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+/* THUMBNAIL CONTAINER */
+.wox-sb-thumb-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #161b22;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wox-sb-thumb-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.wox-sb-thumb-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    background: radial-gradient(circle, rgba(30, 41, 59, 0.8) 0%, rgba(13, 17, 23, 0.95) 100%);
+    width: 100%;
+    height: 100%;
+}
+
+.wox-sb-thumb-overlay-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    color: #f1f5f9;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+}
+
+@keyframes wox-sb-pulse {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.03); }
+}
+
+.wox-sb-thumb-overlay-badge.loading {
+    color: #d4ff32 !important;
+    border-color: rgba(212, 255, 50, 0.6) !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    animation: wox-sb-pulse 1.3s infinite ease-in-out;
+}
+
+
+/* PROMPT PREVIEW */
+.wox-sb-prompt-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wox-sb-prompt-lbl {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.wox-sb-prompt-text {
+    font-size: 11px;
+    line-height: 1.4;
+    color: #cbd5e1;
+    max-height: 48px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* SETTINGS PILLS GRID */
+.wox-sb-pills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+
+.wox-sb-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.wox-sb-pill.span-2 {
+    grid-column: span 2;
+}
+
+.wox-sb-pill.span-3 {
+    grid-column: span 3;
+}
+
+.wox-sb-pill-k {
+    font-size: 8px;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wox-sb-pill-v {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wox-sb-pill-v.accent {
+    color: #d4ff32;
+}
+
+/* ACTION BUTTONS */
+.wox-sb-actions-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.wox-sb-action-btn {
+    flex: 1;
+    background: rgba(212, 255, 50, 0.12);
+    border: 1px solid rgba(212, 255, 50, 0.35);
+    color: #d4ff32;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+.wox-sb-action-btn:hover {
+    background: rgba(212, 255, 50, 0.25);
+    border-color: #d4ff32;
+    transform: translateY(-1px);
+}
+
+.wox-sb-action-btn.secondary {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+}
+
+.wox-sb-action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* RENDER NODE CARD */
+.wox-sb-render-card {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0d1117;
+    border: 1px solid rgba(212, 255, 50, 0.3);
+    border-radius: 14px;
+    padding: 14px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: #e2e8f0;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+    width: 100%;
+}
+
+.wox-sb-render-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wox-sb-render-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #d4ff32;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+.wox-sb-render-progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.wox-sb-render-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #10b981 0%, #d4ff32 100%);
+    transition: width 0.3s ease;
+}
+
+.wox-sb-render-status-text {
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* ========================================================================== */
+/* STORYBOARD INTERACTIVE CONTROLS & COMPACT SLOTS                            */
+/* ========================================================================== */
+
+.wox-sb-prompt-textarea {
+    width: 100%;
+    min-height: 48px;
+    max-height: 90px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 6px 8px;
+    outline: none;
+    color: #f1f5f9;
+    font-size: 11px;
+    line-height: 1.4;
+    resize: vertical;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+.wox-sb-prompt-textarea:focus {
+    border-color: #d4ff32;
+    background: rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0 8px rgba(212, 255, 50, 0.2);
+}
+
+.wox-sb-select {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f1f5f9;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    padding: 0;
+    font-family: inherit;
+}
+
+.wox-sb-select option {
+    background: #161b22;
+    color: #f1f5f9;
+}
+
+.wox-sb-select.accent {
+    color: #d4ff32;
+}
+
+.wox-sb-slots-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    padding: 2px 2px 4px 2px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.wox-sb-slots-bar .slot-indicator.out {
+    color: #d4ff32;
+    font-weight: 900;
+}
+
+/* Pulsante rapido rigenera thumbnail su card Storyboard */
+.wox-sb-quick-thumb-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(212, 255, 50, 0.4);
+    color: #d4ff32;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.wox-sb-quick-thumb-btn:hover {
+    background: rgba(212, 255, 50, 0.25);
+    border-color: #d4ff32;
+    transform: scale(1.05);
+}
+
+/* Bottone Principale RENDER STORYBOARD */
+.wox-sb-render-btn-main {
+    width: 100%;
+    background: #d4ff32;
+    color: #0b0d12;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(212, 255, 50, 0.35);
+    margin: 4px 0;
+}
+
+.wox-sb-render-btn-main:hover {
+    background: #e2ff66;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 255, 50, 0.55);
+}
+
+.wox-sb-render-btn-main:active {
+    transform: translateY(0);
+}
+
+.wox-sb-render-btn-main:disabled {
+    background: rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ==========================================================================
+   WOX Window Topbar & Toggle Native Node Button ("V" icon)
+   ========================================================================== */
+.wox-window-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 14px;
+    background: #0f131a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    margin-bottom: 2px;
+    user-select: none;
+}
+
+.wox-window-branding {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-window-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d4ff32;
+    box-shadow: 0 0 8px #d4ff32;
+}
+
+.wox-window-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #e2e8f0;
+}
+
+.wox-window-subtitle {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wox-window-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #cbd5e1;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wox-window-toggle-btn:hover {
+    background: rgba(212, 255, 50, 0.15);
+    border-color: #d4ff32;
+    color: #d4ff32;
+    box-shadow: 0 0 10px rgba(212, 255, 50, 0.35);
+}
+
+.wox-window-toggle-btn.active {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+

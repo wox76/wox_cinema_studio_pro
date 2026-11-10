@@ -1,0 +1,121 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "face-swap",
+  "name": "Face Swap",
+  "section": "image",
+  "summary": "Fast, high-fidelity neural face swap powered by InsightFace and GFPGAN face restoration.",
+  "higgsfield_feature": "Face Swap",
+  "pack": "core",
+  "status": "ready",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "reactor_face_swap",
+    "comfyui": "0.34.0",
+    "notes": "InsightFace inswapper with GFPGAN / CodeFormer neural restoration for instant, photorealistic face replacement without hallucinations or bleed."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Photo to edit",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "help": "Target photo containing the person, pose, clothing, and background to keep.",
+      "bind": [
+        {
+          "node": "11",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "image2",
+      "type": "image",
+      "label": "Photo of the face",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "help": "Source photo of the face to transfer onto the target person.",
+      "bind": [
+        {
+          "node": "21",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "face_restore_model",
+      "type": "select",
+      "label": "Face restoration",
+      "default": "GFPGANv1.4.pth",
+      "help": "Enhances facial resolution, skin texture, and sharpness.",
+      "options": [
+        {
+          "value": "GFPGANv1.4.pth",
+          "label": "GFPGAN v1.4 (Sharp & Photorealistic)"
+        },
+        {
+          "value": "codeformer-v0.1.0.pth",
+          "label": "CodeFormer (Smooth & Cinematic)"
+        },
+        {
+          "value": "GPEN-BFR-512.onnx",
+          "label": "GPEN BFR (Portrait Detail)"
+        },
+        {
+          "value": "none",
+          "label": "None (Raw Face Swap)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "10",
+          "field": "face_restore_model"
+        }
+      ]
+    },
+    {
+      "id": "face_restore_visibility",
+      "type": "slider",
+      "label": "Restoration strength",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.05,
+      "default": 1,
+      "help": "Blending strength of face restoration (1.0 = full restoration).",
+      "bind": [
+        {
+          "node": "10",
+          "field": "face_restore_visibility"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "9",
+      "type": "image",
+      "label": "Result"
+    }
+  ],
+  "models": [],
+  "custom_nodes": [
+    {
+      "repo": "https://github.com/Gourieff/comfyui-reactor-node",
+      "commit": "0763f707e3f791323f2e7450d100a25860df546c"
+    }
+  ],
+  "credits": [
+    "InsightFace (deepinsight)",
+    "ComfyUI-ReActor by Gourieff",
+    "GFPGAN by Tencent ARC",
+    "CodeFormer by SCZhou"
+  ],
+  "test": {
+    "image": "test/portrait.png",
+    "image2": "test/portrait.png"
+  }
+}

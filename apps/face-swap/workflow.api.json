@@ -1,0 +1,60 @@
+{
+  "11": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "target.png"
+    },
+    "_meta": {
+      "title": "Photo to edit (Target)"
+    }
+  },
+  "21": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "face.png"
+    },
+    "_meta": {
+      "title": "Photo of the face (Source)"
+    }
+  },
+  "10": {
+    "class_type": "ReActorFaceSwap",
+    "inputs": {
+      "enabled": true,
+      "input_image": [
+        "11",
+        0
+      ],
+      "source_image": [
+        "21",
+        0
+      ],
+      "swap_model": "inswapper_128.onnx",
+      "facedetection": "retinaface_resnet50",
+      "face_restore_model": "GFPGANv1.4.pth",
+      "face_restore_visibility": 1.0,
+      "codeformer_weight": 0.5,
+      "detect_gender_input": "no",
+      "detect_gender_source": "no",
+      "input_faces_index": "0",
+      "source_faces_index": "0",
+      "console_log_level": 1
+    },
+    "_meta": {
+      "title": "ReActor Face Swap"
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "10",
+        0
+      ],
+      "filename_prefix": "wox-cinema-studio-pro/face-swap"
+    },
+    "_meta": {
+      "title": "Save Result"
+    }
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "music",
+  "name": "Music",
+  "section": "audio",
+  "pack": "audio",
+  "status": "ready",
+  "higgsfield_feature": "Audio",
+  "summary": "A full song from a style description and optional lyrics, with MiniMax Music 3.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "audio_minimax_music_3.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "reference_audio",
+      "type": "audio",
+      "label": "Traccia di Riferimento (Opzionale)",
+      "required": false,
+      "limits": {
+        "max_mb": 50,
+        "seconds": [
+          3,
+          180
+        ]
+      },
+      "help": "Carica uno spezzone audio (mp3/wav) da usare come ispirazione per ritmo, bpm e sonorità (il brano generato sarà originale, non una copia).",
+      "bind": [
+        {
+          "node": "37:50",
+          "field": "audio_file"
+        }
+      ]
+    },
+    {
+      "id": "reference_mode",
+      "type": "select",
+      "label": "Stile del Riferimento",
+      "default": "vibe_and_tempo",
+      "options": [
+        {
+          "value": "vibe_and_tempo",
+          "label": "Ritmo & Vibe (BPM, groove e feeling di riferimento, melodia originale)"
+        },
+        {
+          "value": "creative_reimagining",
+          "label": "Variazione Creativa (Ispirazione libera da sound, atmosfera e arrangiamento)"
+        },
+        {
+          "value": "acoustic_essence",
+          "label": "Essenza Acustica (Timbro e sonorità degli strumenti)"
+        },
+        {
+          "value": "disabled",
+          "label": "Disattiva Riferimento (Ignora audio e usa solo testo)"
+        }
+      ],
+      "help": "Scegli come estrarre e interpretare l'ispirazione dalla traccia audio caricata.",
+      "bind": [
+        {
+          "node": "37:50",
+          "field": "reference_mode"
+        }
+      ]
+    },
+    {
+      "id": "creativity",
+      "type": "slider",
+      "label": "Variazione & Originalità (Non uguale)",
+      "min": 0.5,
+      "max": 0.98,
+      "step": 0.02,
+      "default": 0.8,
+      "help": "Valori alti (0.80 - 0.98) garantiscono una canzone completamente originale e distinta, mantenendo solo l'ispirazione e il feeling del brano di riferimento.",
+      "bind": [
+        {
+          "node": "37:50",
+          "field": "creativity"
+        }
+      ]
+    },
+    {
+      "id": "genre",
+      "type": "select",
+      "label": "Genere Musicale (Genre)",
+      "default": "energetic Italian rock, driving electric guitars, punchy drums, passionate male vocals",
+      "options": [
+        {
+          "value": "energetic Italian rock, driving electric guitars, punchy drums, passionate male vocals",
+          "label": "Rock Italiano (Italian Rock)"
+        },
+        {
+          "value": "catchy Italian pop, modern acoustic guitars, synths, melodic vocals, 115 bpm",
+          "label": "Pop Italiano (Italian Pop)"
+        },
+        {
+          "value": "emotional Italian ballad, gentle piano, acoustic guitar, string quartet, expressive vocals",
+          "label": "Ballata / Acustica (Italian Ballad)"
+        },
+        {
+          "value": "heavy metal, distorted high-gain electric guitars, energetic double-bass drums, aggressive vocals, 140 bpm",
+          "label": "Hard Rock / Metal"
+        },
+        {
+          "value": "80s italo disco, synthesizer, punchy groove bassline, upbeat drums, 124 bpm",
+          "label": "Italo Disco / Dance"
+        },
+        {
+          "value": "upbeat cumbia with accordion, Latin percussion, modern synths, 100 bpm",
+          "label": "Cumbia / Latin"
+        },
+        {
+          "value": "lofi chillhop, smooth acoustic piano, soft vinyl crackle, relaxed beats",
+          "label": "Lo-Fi Piano (Strumentale)"
+        },
+        {
+          "value": "",
+          "label": "Personalizzato (usa solo il campo Stile)"
+        }
+      ]
+    },
+    {
+      "id": "style",
+      "type": "textarea",
+      "label": "Stile & Strumenti (Style)",
+      "required": false,
+      "default": "130 bpm, melodic guitar solo",
+      "help": "Tag di stile, strumenti o bpm (es. 130 bpm, electric guitar solo, energetic).",
+      "bind": [
+        {
+          "node": "37:50",
+          "field": "caption",
+          "template": "{genre} {style}"
+        }
+      ]
+    },
+    {
+      "id": "lyrics",
+      "type": "textarea",
+      "label": "Testo della canzone (Lyrics)",
+      "default": "[verse]\nCammino nella notte tra le luci della città\nSento il battito che sale e non si fermerà\nLa chitarra suona forte dentro la realtà\n\n[chorus]\nÈ rock and roll, fuoco che brucia dentro noi\nGrida più forte, siamo liberi ormai\nQuesta è la notte dei sogni tuoi",
+      "help": "FONDAMENTALE per cantare in italiano! Scrivi le strofe con i tag [verse] e [chorus]. Se lasciato vuoto, il modello genererà solo musica strumentale.",
+      "bind": [
+        {
+          "node": "37:50",
+          "field": "lyrics"
+        }
+      ]
+    },
+    {
+      "id": "seconds",
+      "type": "slider",
+      "label": "Durata max (secondi)",
+      "min": 10,
+      "max": 240,
+      "step": 5,
+      "default": 60,
+      "bind": [
+        {
+          "node": "37:50",
+          "field": "duration_seconds"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 picks a random seed",
+      "bind": [
+        {
+          "node": "37:38",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "35",
+      "type": "audio",
+      "label": "Song"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-Music-3",
+      "file": "diffusion_models/minimax_music3_dit_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 4.91,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-Music-3",
+      "file": "text_encoders/minimax_music3_text_encoder_pruned_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.2,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-Music-3",
+      "file": "vae/minimax_music3_dav.safetensors",
+      "dir": "vae",
+      "gb": 0.22,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "MiniMax Music 3 (Apache-2.0)"
+  ],
+  "test": {
+    "style": "lofi piano",
+    "seconds": 10
+  }
+}

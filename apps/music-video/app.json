@@ -1,0 +1,161 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "music-video",
+  "name": "Music Video",
+  "section": "video",
+  "summary": "Crea un videoclip musicale sincronizzato con la tua musica e voce cantata tramite MiniMax H3.",
+  "higgsfield_feature": "Create Video",
+  "pack": "video-h3",
+  "status": "ready",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "video_minimax_h3_i2v.json + MiniMaxH3AddGuide + CreateVideo",
+    "comfyui": "0.42.0",
+    "notes": "Genera videoclip musicale guidato dall'audio con MiniMax H3 (fl2va int8 + Qwen3-VL 32B int8) con sincronizzazione vocale e traccia audio inserita nel filmato finale."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto Cantante / Frame iniziale",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "114",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "type": "audio",
+      "label": "Traccia Musicale (.mp3 / .wav)",
+      "required": true,
+      "limits": {
+        "max_mb": 50,
+        "seconds": [
+          2,
+          30
+        ]
+      },
+      "bind": [
+        {
+          "node": "200",
+          "field": "audio"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Regia & Performance",
+      "required": true,
+      "default": "The singer sings passionately looking into camera, expressive mouth movement synchronized with singing, cinematic music video lighting, atmospheric smoke and neon reflections",
+      "help": "Descrivi l'esibizione, il movimento scenico, lo stile di ripresa e le luci del videoclip.",
+      "bind": [
+        {
+          "node": "105:104",
+          "field": "prompt"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Durata (secondi)",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "help": "MiniMax H3 sintetizza fino a 10 secondi per clip ad altissima coerenza.",
+      "bind": [
+        {
+          "node": "105:111",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Passi (Steps)",
+      "min": 8,
+      "max": 30,
+      "step": 1,
+      "default": 20,
+      "help": "20 passi offre la massima qualità e definizione.",
+      "bind": [
+        {
+          "node": "105:124",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 seleziona un seme casuale",
+      "bind": [
+        {
+          "node": "105:15",
+          "field": "noise_seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "92",
+      "type": "video",
+      "label": "Music Video"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 27.14,
+      "phase": "encode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 2.81,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    }
+  ],
+  "credits": [
+    "MiniMax H3 (MiniMax H3 Community License)"
+  ],
+  "test": {
+    "image": "test/portrait.png",
+    "audio": "test/voice.wav",
+    "prompt": "the artist sings looking into camera",
+    "duration": 4
+  }
+}

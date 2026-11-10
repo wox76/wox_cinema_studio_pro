@@ -1,0 +1,395 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { loadRegistry } from "../server/registry.ts";
+import { applyInputs, explainSubmitError, InputError, renderTemplate, resolveValues, Runner, type Settable } from "../server/runner.ts";
+
+const { apps } = loadRegistry();
+const byId = (id: string) => apps.find((a) => a.id === id)!;
+
+function recorder(): Settable & { sets: Record<string, unknown> } {
+  const sets: Record<string, unknown> = {};
+  return { sets, setInput: (node: string, field: string, value: unknown) => (sets[`${node}.${field}`] = value) };
+}
+
+test("defaults fill in and a -1 seed becomes a real seed", () => {
+  const values = resolveValues(byId("z-image"), { prompt: "a cat" });
+  assert.equal(values.prompt, "a cat");
+  assert.equal(values.steps, 8);
+  assert.equal(typeof values.seed, "number");
+  assert.ok((values.seed as number) >= 0);
+});
+
+test("numbers are coerced and range-checked", () => {
+  const app = byId("z-image");
+  assert.equal(resolveValues(app, { prompt: "x", steps: "12" }).steps, 12);
+  assert.throws(() => resolveValues(app, { prompt: "x", steps: 99 }), InputError);
+});
+
+test("an empty select option is a choice, not a request for the default", () => {
+  const app = byId("ai-influencer");
+  const values = resolveValues(app, { feature: "", hair: "" , seed: 1 });
+  assert.equal(values.hair, "", "Any stays Any even though the default is long curly hair");
+  assert.deepEqual(values.feature, [], "and a multiple select left empty stays empty instead of taking its default, Freckles");
+  const wf = recorder();
+  applyInputs(app, values, wf, () => null);
+  const text = wf.sets["18:17.value"] as string;
+  assert.ok(!/Freckles|curly/.test(text), text);
+  assert.match(text, /^A vertical photo for social media of a made-up character: an ordinary, believable person\. A woman aged around 28 of Latin American descent\. Dark brown hair\./);
+  assert.equal(resolveValues(byId("upscale"), { image: { bytes: new Uint8Array([1]), name: "a.png" }, scale: "" }).scale, 2, "a select without an empty option falls back to its default");
+});
+
+test("select values must be one of the options", () => {
+  const app = byId("upscale");
+  const file = { bytes: new Uint8Array([1, 2, 3]), name: "a.png" };
+  assert.equal(resolveValues(app, { image: file, scale: "4" }).scale, 4);
+  assert.throws(() => resolveValues(app, { image: file, scale: 3 }), InputError);
+});
+
+test("missing files are rejected", () => {
+  assert.throws(() => resolveValues(byId("edit"), { instruction: "x" }), /image: required/);
+});
+
+test("cinema studio composes the prompt from every select", () => {
+  const app = byId("cinema-studio");
+  const values = resolveValues(app, { prompt: "a fox in snow", seed: 1 });
+  const wf = recorder();
+  applyInputs(app, values, wf, () => null);
+  const text = wf.sets["18:17.value"] as string;
+  assert.match(text, /^A cinematic film still: a fox in snow\. The look: the full-frame digital cinema look, natural and smooth; a classic anamorphic widescreen look with oval bokeh and blue streak flares; a natural 35mm perspective; aperture f\/1\.4/);
+  assert.ok(!/camera|lens/i.test(text), "the options describe the look, not the gear, so no camera is drawn");
+  assert.ok(!text.includes("{"), "no placeholder left behind");
+});
+
+test("a multiple select keeps the picks in order and templates get them joined", () => {
+  const app = byId("cinema-video");
+  const values = resolveValues(app, { prompt: "a fox in snow", moves: JSON.stringify(["slowly dollies in toward the subject", "pans left", "pans left"]), seed: 1 });
+  assert.deepEqual(values.moves, ["slowly dollies in toward the subject", "pans left"], "the form's JSON list, repeats dropped, order kept");
+  const wf = recorder();
+  applyInputs(app, values, wf, () => null);
+  const motion = wf.sets["398:376.value"] as string;
+  assert.match(motion, /^The camera slowly dollies in toward the subject, then pans left\. a fox in snow\. The look of a film: /);
+  assert.ok(!(wf.sets["still:18:17.value"] as string).includes("dollies"), "the first frame gets the look, not the moves");
+  assert.ok(!/camera|lens/i.test(wf.sets["still:18:17.value"] as string), "and no gear words, so Klein draws no camera");
+  // none picked is a choice: the moves vanish from the prompt instead of falling back to the default
+  const none = resolveValues(app, { prompt: "a fox in snow", moves: "[]", seed: 1 });
+  const wf2 = recorder();
+  applyInputs(app, none, wf2, () => null);
+  assert.match(wf2.sets["398:376.value"] as string, /^a fox in snow\. The look/);
+  assert.deepEqual(resolveValues(app, { prompt: "x", seed: 1 }).moves, ["slowly dollies in toward the subject"], "no value at all takes the default list");
+  assert.throws(() => resolveValues(app, { prompt: "x", moves: JSON.stringify(["flies to the moon"]) }), /not one of the options/);
+  assert.throws(() => resolveValues(app, { prompt: "x", moves: JSON.stringify(["pans left", "pans right", "tilts up", "tilts down"]) }), /at most 3/);
+});
+
+test("cinema-video supports optional first_frame input", () => {
+  const app = byId("cinema-video");
+  // 1. Without first_frame: nodes are cleaned up and MiniMax operates in T2V mode
+  const valuesWithout = resolveValues(app, {
+    prompt: "A neon night shot",
+    seed: 1,
+  });
+  const mockWfWithout: any = {
+    sets: {},
+    json: {
+      "140:131": { inputs: { prompt: "neon", first_frame: ["first_frame_scale", 0] } },
+      "still:9": { inputs: { images: ["90", 0] } },
+      "first_frame": { class_type: "LoadImage", inputs: { image: "" } },
+      "first_frame_scale": { class_type: "ImageScaleToTotalPixels", inputs: { image: ["first_frame", 0] } },
+    },
+    setInput(node: string, field: string, val: unknown) {
+      this.sets[`${node}.${field}`] = val;
+    },
+  };
+  applyInputs(app, valuesWithout, mockWfWithout, (f) => `asset:${f.name}`);
+  assert.equal(mockWfWithout.json["140:131"].inputs.first_frame, undefined);
+  assert.equal(mockWfWithout.json["first_frame"], undefined);
+  assert.equal(mockWfWithout.json["first_frame_scale"], undefined);
+
+  // 2. With first_frame: scaled frame is wired to MiniMax first_frame and still:9 save node
+  const valuesWith = resolveValues(app, {
+    prompt: "A neon night shot",
+    first_frame: { bytes: new Uint8Array([1, 2, 3]), name: "initial.png", type: "image/png" },
+    seed: 1,
+  });
+  const mockWfWith: any = {
+    sets: {},
+    json: {
+      "140:131": { inputs: { prompt: "neon" } },
+      "still:9": { inputs: { images: ["90", 0] } },
+      "first_frame": { class_type: "LoadImage", inputs: { image: "" } },
+      "first_frame_scale": { class_type: "ImageScaleToTotalPixels", inputs: { image: ["first_frame", 0] } },
+    },
+    setInput(node: string, field: string, val: unknown) {
+      this.sets[`${node}.${field}`] = val;
+    },
+  };
+  applyInputs(app, valuesWith, mockWfWith, (f) => `asset:${f.name}`);
+  assert.equal(mockWfWith.sets["first_frame.image"], "asset:initial.png");
+  assert.deepEqual(mockWfWith.json["140:131"].inputs.first_frame, ["first_frame_scale", 0]);
+  assert.deepEqual(mockWfWith.json["still:9"].inputs.images, ["first_frame_scale", 0]);
+});
+
+test("cinema-video supports dynamic references with @ref tags", () => {
+  const app = byId("cinema-video");
+  const values = resolveValues(app, {
+    prompt: "A scene using character from @ref1 and style from @ref2 and lighting from @ref6",
+    ref1: { bytes: new Uint8Array([1, 2, 3]), name: "character.png", type: "image/png" },
+    ref2: { bytes: new Uint8Array([4, 5, 6]), name: "style.mp4", type: "video/mp4" },
+    ref6: { bytes: new Uint8Array([7, 8, 9]), name: "lighting.png", type: "image/png" },
+    seed: 1,
+  });
+  const wf = recorder();
+  applyInputs(app, values, wf, (f) => `asset:${f.name}`);
+  assert.equal(wf.sets["1.image"], "asset:character.png");
+  assert.equal(wf.sets["still:18:11.file"], "asset:style.mp4");
+  assert.equal(wf.sets["ref_node_6.image"], "asset:lighting.png");
+});
+
+test("cinema-studio supports dynamic references with @ref tags", () => {
+  const app = byId("cinema-studio");
+  const values = resolveValues(app, {
+    prompt: "A film still of @ref1 in the lighting of @ref2 with background of @ref7",
+    ref1: { bytes: new Uint8Array([1, 2, 3]), name: "actor.png", type: "image/png" },
+    ref2: { bytes: new Uint8Array([4, 5, 6]), name: "mood.jpg", type: "image/jpeg" },
+    ref7: { bytes: new Uint8Array([7, 8, 9]), name: "city.png", type: "image/png" },
+    seed: 1,
+  });
+  const wf = recorder();
+  applyInputs(app, values, wf, (f) => `asset:${f.name}`);
+  assert.equal(wf.sets["1.image"], "asset:actor.png");
+  assert.equal(wf.sets["still:18:11.image"], "asset:mood.jpg");
+  assert.equal(wf.sets["ref_node_7.image"], "asset:city.png");
+  const text = wf.sets["18:17.value"] as string;
+  assert.ok(text.includes("@ref1") && text.includes("@ref2") && text.includes("@ref7"));
+
+  // Verify real workflow graph upgrade to Qwen-Image-Edit when references are attached
+  const wfGraph: Settable & { json: Record<string, any> } = {
+    json: structuredClone(app.graph!),
+    setInput(node, field, value) {
+      this.json[node] ??= { class_type: "", inputs: {} };
+      this.json[node].inputs ??= {};
+      this.json[node].inputs[field] = value;
+    },
+  };
+  applyInputs(app, values, wfGraph, (f) => `asset:${f.name}`);
+  assert.equal(wfGraph.json["qwen_ref_unet"].inputs.unet_name, "qwen_image_edit_2509_fp8_e4m3fn.safetensors");
+  assert.equal(wfGraph.json["qwen_ref_clip"].inputs.clip_name, "qwen_2.5_vl_7b_fp8_scaled.safetensors");
+  assert.deepEqual(wfGraph.json["qwen_ref_pos"].inputs.image1, ["qwen_ref_scale_1", 0]);
+  assert.deepEqual(wfGraph.json["qwen_ref_pos"].inputs.image2, ["qwen_ref_scale_2", 0]);
+  assert.deepEqual(wfGraph.json["qwen_ref_pos"].inputs.image3, ["qwen_ref_scale_3", 0]);
+  assert.deepEqual(wfGraph.json["qwen_ref_scale_3"].inputs.image, ["ref_node_7", 0], "non-contiguous @ref7 is compacted into slot 3");
+  const graphPrompt = wfGraph.json["18:17"].inputs.value as string;
+  assert.ok(graphPrompt.includes("Picture 1") && graphPrompt.includes("Picture 2") && graphPrompt.includes("Picture 3"), graphPrompt);
+  assert.equal(wfGraph.json["30:10"], undefined, "old Krea 2 T2I node is removed when references are active");
+});
+
+test("character-studio handles optional background reference correctly", () => {
+  const app = byId("character-studio");
+  const faceFile = { bytes: new Uint8Array([1]), name: "face.png" };
+  const outfitFile = { bytes: new Uint8Array([2]), name: "outfit.png" };
+  const bgFile = { bytes: new Uint8Array([3]), name: "bg.jpg" };
+
+  // Case 1: Without background
+  const valuesWithoutBg = resolveValues(app, {
+    face: faceFile,
+    outfit: outfitFile,
+    action: "drinking espresso at a sidewalk cafe",
+    seed: 123,
+  });
+  const mockWfWithoutBg: Settable & { json: Record<string, any>; sets: Record<string, unknown> } = {
+    sets: {},
+    json: {
+      "4": { class_type: "TextEncodeQwenImageEditPlus", inputs: { image1: ["12", 0], image2: ["22", 0], image3: ["32", 0], prompt: "" } },
+      "14": { class_type: "TextEncodeQwenImageEditPlus", inputs: { image1: ["12", 0], image2: ["22", 0], image3: ["32", 0] } },
+      "31": { class_type: "LoadImage", inputs: { image: "example.png" } },
+      "32": { class_type: "FluxKontextImageScale", inputs: { image: ["31", 0] } },
+    },
+    setInput(node, field, value) {
+      this.sets[`${node}.${field}`] = value;
+      if (this.json[node]?.inputs) this.json[node].inputs[field] = value;
+    },
+  };
+  applyInputs(app, valuesWithoutBg, mockWfWithoutBg, (f) => `asset:${f.name}`);
+  assert.equal(mockWfWithoutBg.sets["11.image"], "asset:face.png");
+  assert.equal(mockWfWithoutBg.sets["21.image"], "asset:outfit.png");
+  assert.equal(mockWfWithoutBg.json["4"].inputs.image3, undefined);
+  assert.equal(mockWfWithoutBg.json["14"].inputs.image3, undefined);
+  assert.equal(mockWfWithoutBg.json["31"], undefined);
+  assert.equal(mockWfWithoutBg.json["32"], undefined);
+  const pNoBg = mockWfWithoutBg.sets["4.prompt"] as string;
+  assert.ok(!pNoBg.includes("Picture 3"));
+  assert.ok(pNoBg.includes("Picture 1") && pNoBg.includes("Picture 2"));
+
+  // Case 2: With background
+  const valuesWithBg = resolveValues(app, {
+    face: faceFile,
+    outfit: outfitFile,
+    background: bgFile,
+    action: "drinking espresso at a sidewalk cafe",
+    seed: 123,
+  });
+  const mockWfWithBg: Settable & { json: Record<string, any>; sets: Record<string, unknown> } = {
+    sets: {},
+    json: {
+      "4": { class_type: "TextEncodeQwenImageEditPlus", inputs: { image1: ["12", 0], image2: ["22", 0], image3: ["32", 0], prompt: "" } },
+      "14": { class_type: "TextEncodeQwenImageEditPlus", inputs: { image1: ["12", 0], image2: ["22", 0], image3: ["32", 0] } },
+      "31": { class_type: "LoadImage", inputs: { image: "example.png" } },
+      "32": { class_type: "FluxKontextImageScale", inputs: { image: ["31", 0] } },
+    },
+    setInput(node, field, value) {
+      this.sets[`${node}.${field}`] = value;
+      if (this.json[node]?.inputs) this.json[node].inputs[field] = value;
+    },
+  };
+  applyInputs(app, valuesWithBg, mockWfWithBg, (f) => `asset:${f.name}`);
+  assert.equal(mockWfWithBg.sets["31.image"], "asset:bg.jpg");
+  assert.deepEqual(mockWfWithBg.json["4"].inputs.image3, ["32", 0]);
+  assert.ok(mockWfWithBg.json["31"] !== undefined);
+  const pWithBg = mockWfWithBg.sets["4.prompt"] as string;
+  assert.ok(pWithBg.includes("Picture 3"));
+});
+
+test("the influencer takes several traits per group, and its photo mode keeps the face unless a pick changes something", () => {
+  const app = byId("ai-influencer");
+  const values = resolveValues(app, { trait: JSON.stringify(["A nose piercing.", "Braces on the teeth."]), accessory: "[]", seed: 1 });
+  const wf = recorder();
+  applyInputs(app, values, wf, () => null);
+  const text = wf.sets["18:17.value"] as string;
+  assert.ok(text.includes("Freckles. Dark brown") || text.includes("Freckles."), "the default facial feature is still a list of one");
+  assert.ok(text.includes("A nose piercing. Braces on the teeth."), text);
+  assert.ok(!/Glasses|Headphones/.test(text));
+  const photo = byId("ai-influencer-photo");
+  assert.deepEqual(photo.modes, ["ai-influencer", "ai-influencer-photo"]);
+  const wf2 = recorder();
+  applyInputs(photo, resolveValues(photo, { image: { bytes: new Uint8Array([1]), name: "a.png" }, seed: 1 }), wf2, () => null);
+  const p = (wf2.sets["4.prompt"] ?? wf2.sets["4.text"]) as string;
+  assert.match(p, /^A vertical photo for social media of the same person as in (?:<ref_image_0>|the photo), as an influencer\. Standing in a plain light-gray photo studio/);
+  assert.ok(!/hair\.|Freckles/.test(p), "nothing about hair or face is written until picked");
+});
+
+test("the aspect select sizes the first frame and the video together", () => {
+  const app = byId("cinema-video");
+  const wf = recorder();
+  applyInputs(app, resolveValues(app, { prompt: "x", aspect: "9:16 (Portrait Widescreen)", seed: 1 }), wf, () => null);
+  assert.equal(wf.sets["403.aspect_ratio"], "9:16 (Portrait Widescreen)");
+  assert.equal(wf.sets["still:18:6.width"], 768);
+  assert.equal(wf.sets["still:18:6.height"], 1344);
+});
+
+test("file inputs go through the asset function", () => {
+  const app = byId("edit");
+  const file = { bytes: new Uint8Array([1]), name: "me.png" };
+  const values = resolveValues(app, { image: file, instruction: "make it night" });
+  const wf = recorder();
+  applyInputs(app, values, wf, (f) => `asset:${f.name}`);
+  assert.equal(wf.sets["11.image"], "asset:me.png");
+  assert.equal(wf.sets["4.prompt"], "make it night");
+});
+
+test("a select option writes its extra fields (style → LoRA file)", () => {
+  const app = byId("styles");
+  const values = resolveValues(app, { prompt: "a fox", style: "monochrome ink wash style", seed: 1 });
+  const wf = recorder();
+  applyInputs(app, values, wf, () => null);
+  assert.equal(wf.sets["30:27.string_b"], "monochrome ink wash style");
+  assert.equal(wf.sets["30:15.lora_name"], "krea2_darkbrush.safetensors");
+  assert.throws(() => resolveValues(app, { prompt: "a fox", style: "not a style" }), InputError);
+});
+
+test("an option's string values are templates: the effect's prompt is written around the subject", () => {
+  const app = byId("effects");
+  const file = { bytes: new Uint8Array([1]), name: "teddy.png" };
+  const values = resolveValues(app, { image: file, effect: "squish", subject: "a plush teddy bear", aspect: "square", seed: 1 });
+  const wf = recorder();
+  applyInputs(app, values, wf, () => null);
+  assert.equal(wf.sets["ff_effect.lora_name"], "squish_18.safetensors");
+  const text = wf.sets["6.text"] as string;
+  assert.match(text, /^In the video, a plush teddy bear is presented/);
+  assert.match(text, /further showing the sq41sh squish effect\.$/, "an empty {details} leaves nothing behind");
+  assert.ok(!text.includes("{"), "no placeholder left behind");
+  assert.equal(wf.sets["50.width"], 624);
+  assert.equal(wf.sets["50.height"], 624);
+  assert.equal(wf.sets["ff_lora_fast.strength_model"], undefined, "the fast LoRA stays off without the preset");
+
+  const extra = recorder();
+  applyInputs(app, resolveValues(app, { image: file, effect: "squish", subject: "a teddy", details: "on a pink rug", seed: 1 }), extra, () => null, "fast");
+  assert.match(extra.sets["6.text"] as string, /squish effect\. on a pink rug$/);
+  assert.equal(extra.sets["ff_lora_fast.strength_model"], 1.0);
+  assert.equal(extra.sets["3.steps"], 6);
+});
+
+test("a template app writes its prompt even when Extra direction is left empty", () => {
+  const app = byId("headshot");
+  const file = { bytes: new Uint8Array([1]), name: "me.png" };
+  const wf = recorder();
+  applyInputs(app, resolveValues(app, { image: file, seed: 1 }), wf, () => null);
+  const text = wf.sets["4.text"] as string;
+  assert.match(text, /^A professional studio headshot of the same person as in <ref_image_0>, plain light grey backdrop, wearing a navy blazer/);
+  assert.match(text, /build identical\.$/, "nothing dangles after the prompt");
+  const more = recorder();
+  applyInputs(app, resolveValues(app, { image: file, backdrop: "dark charcoal backdrop", details: "slight smile", seed: 1 }), more, () => null);
+  assert.match(more.sets["4.text"] as string, /, dark charcoal backdrop, .*identical\. slight smile$/);
+});
+
+test("every effect writes its own LoRA and a prompt with its trigger words", () => {
+  const app = byId("effects");
+  const effect = app.inputs.find((i) => i.id === "effect")!;
+  const files = new Set<unknown>();
+  for (const o of effect.options!) {
+    const lora = o.sets!.find((s) => s.field === "lora_name")!.value;
+    const prompt = o.sets!.find((s) => s.node === "6")!.value as string;
+    files.add(lora);
+    assert.ok(app.models.some((m) => m.file.endsWith(String(lora))), `${o.value}: ${String(lora)} is not in models`);
+    assert.match(prompt, /\{subject\}/, `${o.value} uses the subject`);
+  }
+  assert.equal(files.size, effect.options!.length, "one LoRA per effect");
+});
+
+test("validation errors name the node and, for a missing model file, the pack to download", () => {
+  const app = byId("inpaint");
+  // the shape ComfyUI returns (captured from a real /prompt rejection), relayed by comfy-api-proxy
+  const nodeErrors = {
+    "1": { class_type: "UNETLoader", errors: [{ type: "value_not_in_list", message: "Value not in list",
+      details: "unet_name: 'flux3-image-klein-int8-convrot.safetensors' not in (list of length 74)",
+      extra_info: { input_name: "unet_name", received_value: "flux3-image-klein-int8-convrot.safetensors" } }] },
+    "7": { class_type: "KSampler", errors: [{ type: "value_bigger_than_max", message: "Value bigger than max", details: "steps: 999" }] },
+  };
+  const msg = explainSubmitError(app, { code: "invalid_workflow", message: "Prompt outputs failed validation", details: { node_errors: nodeErrors } })!;
+  assert.match(msg, /UNETLoader \(node 1\): model file flux3-image-klein-int8-convrot\.safetensors is not on the backend/);
+  assert.match(msg, /KSampler \(node 7\): Value bigger than max \(steps: 999\)/);
+  assert.match(msg, /--pack image-flux3/);
+  assert.equal(explainSubmitError(app, new Error("network down")), null);
+});
+
+test("renderTemplate tidies empty placeholders", () => {
+  assert.equal(renderTemplate("{a}, {b}, {c}", { a: "x", c: "z" }), "x, z");
+});
+
+function fakeFetch(status: (url: string) => number, seen: string[] = []): typeof fetch {
+  return (async (input: RequestInfo | URL) => {
+    const url = String(input instanceof Request ? input.url : input);
+    seen.push(url);
+    return new Response(status(url) === 200 ? JSON.stringify({ freed: true }) : "{}", { status: status(url) });
+  }) as typeof fetch;
+}
+
+test("prepare: a backend without the gateway (404) is skipped, auth errors are not", async () => {
+  const bare = new Runner({ baseUrl: "http://backend.test", token: "t", fetch: fakeFetch(() => 404) });
+  assert.deepEqual(await bare.prepare(byId("z-image")), { freed: false, skipped: true });
+  const gateway = new Runner({ baseUrl: "http://backend.test", token: "t", fetch: fakeFetch(() => 200) });
+  assert.deepEqual(await gateway.prepare(byId("z-image")), { freed: true });
+  const denied = new Runner({ baseUrl: "http://backend.test", token: "bad", fetch: fakeFetch(() => 401) });
+  await assert.rejects(denied.prepare(byId("z-image")), /answered 401/);
+});
+
+test("drafts run only when allowed", async () => {
+  // every app is ready now, so the test marks a copy of one as a draft
+  const draft = { ...byId("reshoot"), status: "draft" as const };
+  const values = Object.fromEntries(draft.inputs.filter((i) => ["image", "video", "audio"].includes(i.type))
+    .map((i) => [i.id, { bytes: new Uint8Array([1]), name: "x.bin" }]));
+  const closed = new Runner({ baseUrl: "http://backend.test", fetch: fakeFetch(() => 500), allowDrafts: false });
+  await assert.rejects(closed.submit(draft, values), (e: unknown) => e instanceof InputError && /draft/.test((e as Error).message));
+  const seen: string[] = [];
+  const open = new Runner({ baseUrl: "http://backend.test", fetch: fakeFetch(() => 500, seen), allowDrafts: true });
+  await assert.rejects(open.submit(draft, values), (e: unknown) => !(e instanceof InputError));
+  assert.ok(seen[0]?.endsWith("/wox/prepare") || seen[0]?.endsWith("/freefield/prepare"), "got past the draft gate and asked the gateway");
+});

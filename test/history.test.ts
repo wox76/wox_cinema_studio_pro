@@ -1,0 +1,259 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { ComfyEvent } from "@comfyorg/sdk";
+import { loadRegistry } from "../server/registry.ts";
+import { resolveValues } from "../server/runner.ts";
+import { History, Meter, pickOutputs, type JobLike } from "../server/history.ts";
+import { parseSse, type Frame } from "../server/runner.ts";
+
+const { apps } = loadRegistry();
+const byId = (id: string) => apps.find((a) => a.id === id)!;
+const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]);
+
+/** A job that runs through queued → running → its end state when wait() is called. */
+function fakeJob(end: "succeeded" | "failed", events: ComfyEvent[] = []): JobLike & { canceled: boolean } {
+  let status = "queued";
+  const started = new Date();
+  return {
+    id: "job-1",
+    canceled: false,
+    get status() { return status; },
+    get outputs() {
+      return status === "succeeded"
+        ? [{ name: "ComfyUI_00001_.png", type: "image", nodeId: "9", contentType: "image/png", toBytes: async () => PNG },
+           // core SaveVideo reports its mp4 under `images`, so the SDK says "image"
+           { name: "video_00001_.mp4", type: "image", nodeId: "68", contentType: "video/mp4", toBytes: async () => PNG },
+           { name: "latent.bin", type: "latent", nodeId: "3", contentType: "application/octet-stream", toBytes: async () => new Uint8Array() }]
+        : [];
+    },
+    get error() { return status === "failed" ? { message: "CUDA out of memory", class_type: "KSampler", node_id: "3" } : null; },
+    get startedAt() { return status === "queued" ? null : started; },
+    get completedAt() { return status === "succeeded" || status === "failed" ? new Date(started.getTime() + 2500) : null; },
+    async *events() { for (const e of events) yield e; },
+    async wait() { status = "running"; await new Promise((r) => setTimeout(r, 20)); status = end; },
+    async cancel() { this.canceled = true; status = "canceled"; },
+  };
+}
+
+function tempHistory() {
+  const dir = mkdtempSync(join(tmpdir(), "ff-history-"));
+  return { dir, history: new History(dir), done: () => rmSync(dir, { recursive: true, force: true }) };
+}
+
+test("a run is recorded before it is submitted, with its inputs and the seed that was picked", () => {
+  const { dir, history, done } = tempHistory();
+  try {
+    const app = byId("edit");
+    const values = resolveValues(app, { image: { bytes: PNG, name: "me.PNG", type: "image/png" }, instruction: "add a hat" });
+    const entry = history.start(app, values);
+    assert.equal(entry.status, "starting");
+    assert.equal(entry.values.instruction, "add a hat");
+    assert.equal(typeof entry.values.seed, "number", "the resolved seed is kept, so the run can be repeated");
+    assert.equal(entry.values.image, undefined, "files are not copied into the values");
+    assert.deepEqual(entry.inputs.map((i) => i.file), ["input-image.png"]);
+    assert.deepEqual([...readFileSync(join(dir, entry.id, "input-image.png"))], [...PNG]);
+    assert.equal(history.list("edit")[0].inputs[0].url, `/api/history/${entry.id}/files/input-image.png`);
+
+    // Dynamic references (ref1, ref2) in cinema-studio are also persisted into history inputs
+    const csApp = byId("cinema-studio");
+    const csValues = resolveValues(csApp, {
+      prompt: "A scene with @ref1 and @ref2",
+      ref1: { bytes: PNG, name: "face.png", type: "image/png" },
+      ref2: { bytes: PNG, name: "outfit.jpg", type: "image/jpeg" },
+    });
+    const csEntry = history.start(csApp, csValues);
+    assert.deepEqual(csEntry.inputs.map((i) => [i.id, i.file, i.name]), [
+      ["ref1", "input-ref1.png", "face.png"],
+      ["ref2", "input-ref2.jpg", "outfit.jpg"],
+    ]);
+    assert.ok(existsSync(join(dir, csEntry.id, "input-ref1.png")));
+    assert.ok(existsSync(join(dir, csEntry.id, "input-ref2.jpg")));
+  } finally { done(); }
+});
+
+test("following a job stores its media outputs and timings", async () => {
+  const { dir, history, done } = tempHistory();
+  try {
+    const app = byId("z-image");
+    const entry = history.start(app, resolveValues(app, { prompt: "a fox" }));
+    const progress: ComfyEvent = { kind: "progress", value: 0.5, message: null, nodesDone: 1, nodesTotal: 3, currentNode: "3",
+      currentNodeClass: "KSampler", step: 4, steps: 8 };
+    const done1 = await history.follow(entry, fakeJob("succeeded", [progress]));
+    assert.equal(done1.status, "succeeded");
+    assert.equal(done1.job, "job-1");
+    assert.deepEqual(done1.outputs.map((o) => [o.file, o.type]), [["out-01.png", "image"], ["out-02.mp4", "video"]],
+      "latents are skipped; an mp4 is a video whatever the SDK called it");
+    assert.ok(existsSync(join(dir, entry.id, "out-01.png")));
+    assert.equal(done1.seconds, 2.5);
+    assert.equal(history.get(entry.id)!.progress, null, "live progress is dropped once the run ends");
+    assert.equal(JSON.parse(readFileSync(join(dir, entry.id, "meta.json"), "utf-8")).status, "succeeded");
+  } finally { done(); }
+});
+
+test("the app's declared output nodes come first; the backend also lists what LoadVideo was given", () => {
+  const given = { name: "clip.mp4", type: "video", nodeId: "5001" };
+  const made = { name: "mixed-media_00001_.mp4", type: "video", nodeId: "4852" };
+  const latent = { name: "x.latent", type: "latent", nodeId: "3" };
+  assert.deepEqual(pickOutputs([given, made, latent], ["4852"]), [made]);
+  assert.deepEqual(pickOutputs([given, made], ["ff_hdr_save", "4852"]), [made], "declared nodes that made nothing are skipped");
+  assert.deepEqual(pickOutputs([given, made, latent], []), [given, made], "no declaration: every media output");
+  assert.deepEqual(pickOutputs([given, made], ["999"]), [given, made], "a wrong declaration still shows the results");
+});
+
+test("the progress bar is ours: nodes finished over the workflow's node count, never backwards, never full", () => {
+  const m = new Meter(20, (id) => ({ "3": "KSampler" })[id] ?? null);
+  // comfy-api-proxy's first progress_state: the one node touched so far has finished → it says 1/1 = 1.0
+  assert.equal(m.feed({ value: 1, nodes_done: 1, nodes_total: 1, step: null, steps: null }).value, 0.05);
+  // a per-node frame (nodes_total 0) carries the sampler steps of the running node
+  const p = m.feed({ value: 0.5, nodes_done: 0, nodes_total: 0, step: 4, steps: 8, current_node: "3" });
+  assert.deepEqual(p, { value: 0.075, step: 4, steps: 8, node: "KSampler" });
+  // a lower frame after a drop does not move it back
+  assert.equal(m.feed({ value: 0.1, nodes_done: 0, nodes_total: 0, step: 1, steps: 8 }).value, 0.075);
+  // all nodes done but the job not over yet: 0.99, not 1
+  assert.equal(m.feed({ value: 1, nodes_done: 20, nodes_total: 20 }).value, 0.99);
+});
+
+test("a job is followed through the raw event stream when the history has one", async () => {
+  const { history, done } = tempHistory();
+  const sent: Frame[] = [
+    { event: "status", data: { status: "running", queue_position: null } },
+    { event: "progress", data: { value: 1, nodes_done: 1, nodes_total: 1 } },
+    { event: "progress", data: { value: 0.25, nodes_done: 0, nodes_total: 0, step: 2, steps: 8, current_node: "3" } },
+  ];
+  const seen: number[] = [];
+  let entryId = "";
+  const withFrames = new History(history.dir, {
+    appInfo: () => ({ outputs: ["9"], nodes: 10, classOf: () => "KSampler" }),
+    frames: async function* (jobId) { assert.equal(jobId, "job-1"); for (const f of sent) { yield f; seen.push(withFrames.get(entryId)!.progress?.value ?? -1); await new Promise((r) => setTimeout(r, 1)); } },
+  });
+  try {
+    const app = byId("z-image");
+    const entry = withFrames.start(app, resolveValues(app, { prompt: "a fox" }));
+    entryId = entry.id;
+    const ended = await withFrames.follow(entry, fakeJob("succeeded"));
+    assert.equal(ended.status, "succeeded");
+    assert.deepEqual(seen, [-1, 0.1, 0.125], "1/1 reads as one node of ten, then the sampler's 2/8 adds a quarter node");
+  } finally { done(); }
+});
+
+test("server-sent events are read frame by frame, across chunk boundaries", async () => {
+  const text = "event: progress\ndata: {\"value\": 0.5}\n\n: comment\nevent: preview\ndata: {\"data_base64\": \"AA==\",\ndata: \"content_type\": \"image/jpeg\"}\n\ndata: tail";
+  const chunks = [text.slice(0, 17), text.slice(17, 40), text.slice(40)];
+  const body = new ReadableStream<Uint8Array>({ start(c) { for (const ch of chunks) c.enqueue(new TextEncoder().encode(ch)); c.close(); } });
+  const frames: Frame[] = [];
+  for await (const f of parseSse(body)) frames.push(f);
+  assert.deepEqual(frames, [
+    { event: "progress", data: { value: 0.5 } },
+    { event: "preview", data: { data_base64: "AA==", content_type: "image/jpeg" } },
+    { event: "message", data: { text: "tail" } },
+  ]);
+});
+
+test("a failed job keeps the node and the message", async () => {
+  const { history, done } = tempHistory();
+  try {
+    const app = byId("z-image");
+    const entry = await history.follow(history.start(app, resolveValues(app, { prompt: "x" })), fakeJob("failed"));
+    assert.equal(entry.status, "failed");
+    assert.deepEqual(entry.error, { message: "CUDA out of memory", class_type: "KSampler", node: "3" });
+  } finally { done(); }
+});
+
+test("a submit that never reached the backend is marked failed with the reason", () => {
+  const { history, done } = tempHistory();
+  try {
+    const app = byId("z-image");
+    const entry = history.start(app, resolveValues(app, { prompt: "x" }));
+    history.fail(entry, "Set COMFY_BASE_URL to the gateway URL");
+    assert.equal(history.get(entry.id)!.status, "failed");
+    assert.equal(history.get(entry.id)!.error!.message, "Set COMFY_BASE_URL to the gateway URL");
+  } finally { done(); }
+});
+
+test("deleting a run that is still being submitted cancels its job once it exists", async () => {
+  const { dir, history, done } = tempHistory();
+  try {
+    const app = byId("z-image");
+    const entry = history.start(app, resolveValues(app, { prompt: "x" }));
+    assert.ok(history.remove(entry.id));
+    assert.ok(!existsSync(join(dir, entry.id)));
+    const job = fakeJob("succeeded");
+    await history.follow(entry, job);
+    assert.ok(job.canceled);
+    assert.equal(history.list().length, 0);
+  } finally { done(); }
+});
+
+test("runs that were going when the server stopped are lost or followed again", async () => {
+  const { dir, history, done } = tempHistory();
+  try {
+    const app = byId("z-image");
+    const orphan = history.start(app, resolveValues(app, { prompt: "never submitted" }));
+    const pending = history.start(app, resolveValues(app, { prompt: "submitted" }));
+    const asFile = JSON.parse(readFileSync(join(dir, pending.id, "meta.json"), "utf-8"));
+    asFile.job = "job-1"; asFile.status = "running";
+    const { writeFileSync } = await import("node:fs");
+    writeFileSync(join(dir, pending.id, "meta.json"), JSON.stringify(asFile));
+
+    const stale = history.start(app, resolveValues(app, { prompt: "submitted yesterday" }));
+    const staleFile = JSON.parse(readFileSync(join(dir, stale.id, "meta.json"), "utf-8"));
+    staleFile.job = "job-old"; staleFile.status = "running"; staleFile.created = new Date(Date.now() - 864e5).toISOString();
+    writeFileSync(join(dir, stale.id, "meta.json"), JSON.stringify(staleFile));
+
+    const restarted = new History(dir);
+    const asked: string[] = [];
+    restarted.resume(async (id) => { asked.push(id); return fakeJob("succeeded"); });
+    await new Promise((r) => setTimeout(r, 100));
+    assert.equal(restarted.get(orphan.id)!.status, "lost");
+    assert.equal(restarted.get(pending.id)!.status, "succeeded");
+    assert.equal(restarted.get(stale.id)!.status, "lost");
+    assert.deepEqual(asked, ["job-1"], "an old run is not looked up (that could start a GPU for nothing)");
+  } finally { done(); }
+});
+
+test("file names are checked before touching the disk", () => {
+  const { history, done } = tempHistory();
+  try {
+    const app = byId("z-image");
+    const entry = history.start(app, resolveValues(app, { prompt: "x" }));
+    assert.equal(history.file(entry.id, "../meta.json"), null);
+    assert.equal(history.file(entry.id, "meta.json"), null);
+    assert.equal(history.file("../../etc", "out-01.png"), null);
+    assert.equal(history.remove("../x"), false);
+  } finally { done(); }
+});
+
+test("addUpload writes the file and records a succeeded entry", () => {
+  const { dir, history, done } = tempHistory();
+  try {
+    const entry = history.addUpload("portrait.png", "image/png", PNG);
+    assert.equal(entry.status, "succeeded");
+    assert.equal(entry.outputs.length, 1);
+    assert.equal(entry.outputs[0].type, "image");
+    assert.ok(existsSync(join(dir, entry.id, entry.outputs[0].file)));
+    assert.equal(history.list().length, 1);
+    assert.equal(history.list()[0].id, entry.id);
+  } finally { done(); }
+});
+
+test("a poll that cannot reach the backend is retried; a backend answer that the job is gone is not", async () => {
+  const { waitPatiently, isTransient } = await import("../server/history.ts");
+  let calls = 0;
+  const flaky = { async wait() { calls++; if (calls < 3) throw Object.assign(new TypeError("fetch failed"), { cause: { code: "ECONNRESET" } }); } };
+  const log: string[] = [];
+  const t0 = Date.now();
+  await waitPatiently(flaky, 60_000, 60_000, (m) => log.push(m));
+  assert.equal(calls, 3);
+  assert.equal(log.length, 2);
+  assert.ok(Date.now() - t0 >= 2000, "backs off between attempts");
+
+  const gone = { async wait() { throw Object.assign(new Error("job not found"), { httpStatus: 404 }); } };
+  await assert.rejects(() => waitPatiently(gone, 60_000, 60_000), /job not found/);
+  const proxy = Object.assign(new Error("Bad Gateway"), { httpStatus: 502 });
+  assert.equal(isTransient(proxy), true);
+  assert.equal(isTransient(new Error("job x not terminal after 10ms (status=running)")), false);
+  assert.equal(isTransient(Object.assign(new Error("bad request"), { httpStatus: 400 })), false);
+});

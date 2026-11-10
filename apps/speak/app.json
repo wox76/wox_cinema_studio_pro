@@ -1,0 +1,163 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "speak",
+  "name": "Speak",
+  "section": "video",
+  "pack": "video-h3",
+  "status": "ready",
+  "higgsfield_feature": "Speak",
+  "summary": "A portrait comes alive and speaks your line out loud with voice and lip-sync powered by MiniMax H3.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "video_minimax_h3_i2v.json",
+    "comfyui": "0.42.0",
+    "notes": "MiniMax H3 Image-to-Video with synchronized voice and lip movement."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Portrait",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "114",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "line",
+      "type": "textarea",
+      "label": "What they say",
+      "required": true,
+      "default": "Ciao! Sto parlando direttamente dalla mia fotografia grazie all'intelligenza artificiale.",
+      "help": "Scrivi la battuta che il personaggio deve pronunciare"
+    },
+    {
+      "id": "voice",
+      "type": "select",
+      "label": "Voice",
+      "default": "a warm, friendly female voice",
+      "options": [
+        {
+          "value": "a warm, friendly female voice",
+          "label": "Warm, female"
+        },
+        {
+          "value": "a calm, deep male voice",
+          "label": "Calm, male"
+        },
+        {
+          "value": "an excited, energetic voice",
+          "label": "Excited"
+        },
+        {
+          "value": "a soft, close whisper",
+          "label": "Whisper"
+        },
+        {
+          "value": "the clear, confident voice of a news anchor",
+          "label": "News anchor"
+        },
+        {
+          "value": "a relaxed voice with a slight smile",
+          "label": "Relaxed"
+        }
+      ]
+    },
+    {
+      "id": "scene",
+      "type": "textarea",
+      "label": "Shot (optional)",
+      "default": "Medium close-up portrait, looking into camera, natural facial expressions and synchronized lip movement",
+      "bind": [
+        {
+          "node": "105:104",
+          "field": "prompt",
+          "template": "{scene}. The person looks into the camera and speaks with {voice}, saying clearly: \"{line}\". Clear synchronized speech, realistic mouth movement, subtle head gestures."
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Duration (s)",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 4,
+      "bind": [
+        {
+          "node": "105:111",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 picks a random seed",
+      "bind": [
+        {
+          "node": "105:15",
+          "field": "noise_seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "92",
+      "type": "video",
+      "label": "Video"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 27.14,
+      "phase": "encode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 2.81,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    }
+  ],
+  "credits": [
+    "MiniMax H3 (MiniMax H3 Community License)"
+  ],
+  "test": {
+    "image": "test/portrait.png",
+    "line": "Hello there",
+    "duration": 2
+  }
+}

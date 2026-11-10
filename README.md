@@ -37,12 +37,6 @@
 
 ---
 
-![Wox Cinema Studio Pro — Video Workspace](screenshot/01_video.jpg)
-
-![Wox Cinema Studio Pro — Image Workspace](screenshot/02_immagini.jpg)
-
----
-
 # 🇬🇧 English Documentation
 
 ## ✨ Overview
@@ -64,10 +58,10 @@
 Full cinematographic control over cameras, prime/anamorphic lenses, focal lengths, apertures, camera movements, multi-reference `@ref` tags, and prompt enhancement.
 
 #### Cinema Studio — Video Workspace
-![Video Workspace](screenshot/01_video.jpg)
+![Video Workspace](screenshot/01_video.jpg?v=2)
 
 #### Cinema Studio — Image Workspace
-![Image Workspace](screenshot/02_immagini.jpg)
+![Image Workspace](screenshot/02_immagini.jpg?v=2)
 
 ---
 
@@ -196,10 +190,10 @@ Then open **`http://localhost:3000`** in your browser, click the **⚙️ (Optio
 Controllo totale su cinepresa, ottiche cinematografiche, focale, apertura, movimenti di camera, tag `@ref` multipli e miglioramento automatico del prompt (*Enhance prompt*).
 
 #### Workspace Video — Cinema Studio
-![Workspace Video](screenshot/01_video.jpg)
+![Workspace Video](screenshot/01_video.jpg?v=2)
 
 #### Workspace Immagine — Cinema Studio
-![Workspace Immagine](screenshot/02_immagini.jpg)
+![Workspace Immagine](screenshot/02_immagini.jpg?v=2)
 
 ---
 

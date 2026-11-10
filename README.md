@@ -12,7 +12,7 @@
 <p align="center">
   <a href="#-english-documentation"><b>🇬🇧 English Documentation</b></a> •
   <a href="#-documentazione-in-italiano"><b>🇮🇹 Documentazione in Italiano</b></a> •
-  <a href="#-1-click-auto-installer-nodes--models"><b>⚙️ 1-Click Auto-Installer</b></a> •
+  <a href="#%EF%B8%8F-1-click-auto-installer-nodes--models"><b>⚙️ 1-Click Auto-Installer</b></a> •
   <a href="#-quick-start"><b>🚀 Quick Start</b></a>
 </p>
 
@@ -42,18 +42,22 @@
 ### 1. Cinema Studio [PRO] — Video & Image Composers
 Full cinematographic control over cameras, prime/anamorphic lenses, focal lengths, apertures, camera movements, multi-reference `@ref` tags, and prompt enhancement.
 
-| Cinema Studio — Video Workspace | Cinema Studio — Image Workspace |
-| :---: | :---: |
-| ![Video Workspace](screenshot/01_video.jpg) | ![Image Workspace](screenshot/02_immagini.jpg) |
+#### Cinema Studio — Video Workspace
+![Video Workspace](screenshot/01_video.jpg)
+
+#### Cinema Studio — Image Workspace
+![Image Workspace](screenshot/02_immagini.jpg)
 
 ---
 
 ### 2. Explore 120+ AI Apps & 50+ Choreographed Camera Moves
 Browse and search specialized apps across **Image**, **Video**, and **Audio** categories, with instant previews and camera choreography controls (`Dolly in → Static shot`, `Orbit`, `FPV Drone`, `Whip Pan`, `Vertigo Zoom`, `Bullet Time`, and more).
 
-| Image Apps Catalog & Search | Video Apps Catalog & Camera Moves |
-| :---: | :---: |
-| ![Explore Image Apps](screenshot/Screenshot_20261110_181738.jpg) | ![Explore Video Apps & Camera Moves](screenshot/Screenshot_20261110_181757.jpg) |
+#### Image Apps Catalog & Search
+![Explore Image Apps](screenshot/Screenshot_20261110_181738.jpg)
+
+#### Video Apps Catalog & Camera Moves
+![Explore Video Apps & Camera Moves](screenshot/Screenshot_20261110_181757.jpg)
 
 ---
 
@@ -67,25 +71,30 @@ Open the **Video Studio** drawer from the top bar at any time to assemble scenes
 ### 4. Frame-Exact Player, Fluid Handoff ("Flusso Rapido") & "Send To..."
 Inspect every generation with frame-accurate stepping (`-1 Frame`, `+1 Frame`, `Esporta Frame`) and route any video or extracted frame directly into another AI workflow or into the Video Studio timeline.
 
-| Frame-by-Frame Inspector (`-1 / +1 Frame`, `Export Frame`) | Fluid Handoff ("Flusso Rapido") Sidebar |
-| :---: | :---: |
-| ![Frame Controls](screenshot/Screenshot_20261110_182123.jpg) | ![Fluid Handoff](screenshot/Screenshot_20261110_182150.jpg) |
+#### Frame-by-Frame Inspector (`-1 / +1 Frame`, `Export Frame`)
+![Frame Controls](screenshot/Screenshot_20261110_182123.jpg)
 
-<div align="center">
-  <img src="screenshot/Screenshot_20261110_182206.jpg" alt="Send To Modal Menu" width="420" />
-  <p><i>One-click "Send To..." context menu for chaining AI pipelines together.</i></p>
-</div>
+#### Fluid Handoff ("Flusso Rapido") Sidebar
+![Fluid Handoff](screenshot/Screenshot_20261110_182150.jpg)
+
+#### One-Click "Send To..." Context Menu
+![Send To Modal Menu](screenshot/Screenshot_20261110_182206.jpg)
 
 ---
 
 ### 5. Live ComfyUI Terminal, GPU Safe Mode & Phase-by-Phase VRAM Map
 Monitor your GPU in real time, stream ComfyUI console logs directly inside the web UI, enforce thermal power limits so long video renders never overheat your GPU, and inspect exact VRAM requirements per workflow stage.
 
-| Live ComfyUI Terminal & Execution Monitor | GPU Safe Mode (Anti-Overheat) & Multi-Language UI |
-| :---: | :---: |
-| ![ComfyUI Live Terminal](screenshot/Screenshot_20261110_181824.jpg) | ![GPU Safe Mode](screenshot/Screenshot_20261110_181842.jpg)<br/><br/>![Language Selector](screenshot/Screenshot_20261110_181855.jpg) |
+#### Live ComfyUI Terminal & Execution Monitor
+![ComfyUI Live Terminal](screenshot/Screenshot_20261110_181824.jpg)
 
-#### 📊 Phase-by-Phase VRAM Map
+#### GPU Safe Mode (Anti-Overheat Protection)
+![GPU Safe Mode](screenshot/Screenshot_20261110_181842.jpg)
+
+#### Multi-Language Interface (`Italiano`, `English`, `Español`)
+![Language Selector](screenshot/Screenshot_20261110_181855.jpg)
+
+#### Phase-by-Phase VRAM Map
 ![VRAM Map](screenshot/Screenshot_20261110_181909.jpg)
 
 ---
@@ -165,18 +174,22 @@ Then open **`http://localhost:3000`** in your browser, click the **⚙️ (Optio
 ### 1. Cinema Studio [PRO] — Workspace Video & Immagine
 Controllo totale su cinepresa, ottiche cinematografiche, focale, apertura, movimenti di camera, tag `@ref` multipli e miglioramento automatico del prompt (*Enhance prompt*).
 
-| Workspace Video — Cinema Studio | Workspace Immagine — Cinema Studio |
-| :---: | :---: |
-| ![Workspace Video](screenshot/01_video.jpg) | ![Workspace Immagine](screenshot/02_immagini.jpg) |
+#### Workspace Video — Cinema Studio
+![Workspace Video](screenshot/01_video.jpg)
+
+#### Workspace Immagine — Cinema Studio
+![Workspace Immagine](screenshot/02_immagini.jpg)
 
 ---
 
 ### 2. Esplora Tutte le App & Movimenti di Macchina
 Cerca e filtra tra oltre 120 app suddivise per categorie (**Immagine**, **Video**, **Audio**) e seleziona movimenti di camera cinematografici (`Dolly in → Static shot`, `Orbit`, `FPV Drone`, `Whip Pan`, `Vertigo Zoom`, `Bullet Time`, ecc.).
 
-| Catalogo App Immagine | Catalogo App Video & Movimenti Camera |
-| :---: | :---: |
-| ![Esplora App Immagine](screenshot/Screenshot_20261110_181738.jpg) | ![Esplora App Video](screenshot/Screenshot_20261110_181757.jpg) |
+#### Catalogo App Immagine
+![Esplora App Immagine](screenshot/Screenshot_20261110_181738.jpg)
+
+#### Catalogo App Video & Movimenti Camera
+![Esplora App Video](screenshot/Screenshot_20261110_181757.jpg)
 
 ---
 
@@ -190,25 +203,30 @@ Apri o espandi il **Video Studio** dalla barra in alto per montare le tue clip s
 ### 4. Player Frame-by-Frame, Flusso Rapido & Menu "Invia a..."
 Controlla la riproduzione con precisione al singolo fotogramma (`-1 Frame`, `+1 Frame`, `Esporta Frame`) e concatena più strumenti IA in sequenza tramite i pulsanti rapidi di **Flusso Rapido** o il menu **"Invia a..."**.
 
-| Controlli Frame (`-1 / +1 Frame`, `Esporta Frame`) | Flusso Rapido & Dettagli Telecamera |
-| :---: | :---: |
-| ![Controlli Frame](screenshot/Screenshot_20261110_182123.jpg) | ![Flusso Rapido](screenshot/Screenshot_20261110_182150.jpg) |
+#### Controlli Frame (`-1 / +1 Frame`, `Esporta Frame`)
+![Controlli Frame](screenshot/Screenshot_20261110_182123.jpg)
 
-<div align="center">
-  <img src="screenshot/Screenshot_20261110_182206.jpg" alt="Menu Invia a..." width="420" />
-  <p><i>Menu contestuale "Invia a..." per inviare qualsiasi creazione o frame ad altre app o alla Timeline Video.</i></p>
-</div>
+#### Flusso Rapido & Dettagli Telecamera
+![Flusso Rapido](screenshot/Screenshot_20261110_182150.jpg)
+
+#### Menu Contestuale "Invia a..."
+![Menu Invia a...](screenshot/Screenshot_20261110_182206.jpg)
 
 ---
 
 ### 5. Terminale ComfyUI Live, GPU Safe Mode & Mappa VRAM
 Monitora in tempo reale lo stato della scheda video, leggi i log di esecuzione di ComfyUI senza uscire dal browser, imposta il limite termico anti-surriscaldamento e consulta la mappa della VRAM per ogni fase della pipeline.
 
-| Terminale Live ComfyUI & Monitor Esecuzione | GPU Safe Mode (Anti-Overheat) & Selettore Lingua |
-| :---: | :---: |
-| ![Terminale ComfyUI](screenshot/Screenshot_20261110_181824.jpg) | ![GPU Safe Mode](screenshot/Screenshot_20261110_181842.jpg)<br/><br/>![Selettore Lingua](screenshot/Screenshot_20261110_181855.jpg) |
+#### Terminale Live ComfyUI & Monitor Esecuzione
+![Terminale ComfyUI](screenshot/Screenshot_20261110_181824.jpg)
 
-#### 📊 Mappa della VRAM Fase per Fase
+#### GPU Safe Mode (Anti-Overheat)
+![GPU Safe Mode](screenshot/Screenshot_20261110_181842.jpg)
+
+#### Selettore Lingua (`Italiano`, `English`, `Español`)
+![Selettore Lingua](screenshot/Screenshot_20261110_181855.jpg)
+
+#### Mappa della VRAM Fase per Fase
 ![Mappa VRAM](screenshot/Screenshot_20261110_181909.jpg)
 
 ---

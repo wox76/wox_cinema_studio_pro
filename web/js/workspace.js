@@ -11,6 +11,8 @@ import { flags, flagButton } from "./flags.js";
 import { feed, hooks, statusText } from "./feed.js";
 import { openPainter, maskPreview } from "./paint.js";
 import { sendToVideoEditor } from "./video_editor.js";
+import { resolveGlbUrl, sendToActionForge } from "./actionforge.js";
+import { createCamera3DWidget } from "./camera3d.js";
 
 // ------------------------------------------------------------------ form state (per app, kept while the page is open)
 const forms = new Map();
@@ -529,6 +531,7 @@ export async function recreate(item, { run = false } = {}) {
 /** Where a result usually goes next, by the kind of file it is (the rest of the apps that take it follow). */
 const NEXT = {
   image: [
+    "trellis-3d",
     "cinema-studio",
     "music-video",
     "remove-bg",
@@ -675,8 +678,25 @@ export function useIn(anchor, item, done) {
     el("span", { class: "tag ghost mini", style: { marginLeft: "auto", fontSize: "10px" } }, "Studio")
   );
 
+  const glbUrl = resolveGlbUrl(item);
+  const actionForgeRow = glbUrl ? el("button", {
+    class: "opt wox-editor-opt",
+    type: "button",
+    style: { borderBottom: "1px solid var(--line, rgba(255,255,255,0.12))", marginBottom: "6px", paddingBottom: "8px" },
+    onclick: () => {
+      closePopover();
+      done?.();
+      sendToActionForge(item);
+    }
+  },
+    el("span", { class: "thumb glyph" }, "🦴"),
+    el("span", { class: "two" }, el("b", {}, "ActionForge 3D Rigging"), el("small", {}, "Rigga e anima il modello 3D (.GLB)")),
+    el("span", { class: "tag lime mini", style: { marginLeft: "auto", fontSize: "10px" } }, "3D Rig")
+  ) : null;
+
   popover(anchor, el("div", { class: "usein" },
     el("h4", {}, t("act.usein")),
+    actionForgeRow,
     editorRow,
     el("div", { class: "usein-list" }, ...first.map(row)),
     rest.length ? el("details", {}, el("summary", {}, t("usein.more", { n: rest.length })), ...rest.map(row)) : null
@@ -694,7 +714,11 @@ export function quickHandoffBar(item, done) {
   );
   bar.appendChild(head);
 
+  const glbUrl = resolveGlbUrl(item);
   const targets = type === "image" ? [
+    ...(glbUrl ? [{ id: "actionforge", label: "🦴 Rigga 3D in ActionForge", badge: ".GLB", isActionForge: true }] : []),
+    { id: "qwen-multiangle", label: "📐 Cambia Angolo Camera", badge: "Qwen" },
+    { id: "trellis-3d", label: "🧊 Crea Oggetto 3D", badge: "TRELLIS" },
     { id: "editor", label: "🎞 Editor Video", badge: "Timeline", isEditor: true },
     { id: "remove-bg", label: "✂ Rimuovi sfondo", badge: "BiRefNet" },
     { id: "video", label: "🎬 Anima in Video", badge: "H3" },
@@ -702,6 +726,7 @@ export function quickHandoffBar(item, done) {
     { id: "face-swap", label: "👤 Face Swap", badge: "ReActor" },
     { id: "upscale", label: "🔍 Upscale", badge: "Clarity" },
   ] : [
+    ...(glbUrl ? [{ id: "actionforge", label: "🦴 Rigga 3D in ActionForge", badge: ".GLB", isActionForge: true }] : []),
     { id: "editor", label: "🎞 Editor Video", badge: "Timeline", isEditor: true },
     { id: "director", label: "🎥 AI Director", badge: "@ref1" },
     { id: "upscale-video", label: "🔍 Upscale Video", badge: "Topaz/LTX" },
@@ -711,6 +736,23 @@ export function quickHandoffBar(item, done) {
 
   const pills = el("div", { class: "qh-pills" });
   for (const tgt of targets) {
+    if (tgt.isActionForge) {
+      const btn = el("button", {
+        class: "qh-pill",
+        type: "button",
+        style: { borderColor: "rgba(232,255,90,0.45)", background: "rgba(232,255,90,0.12)" },
+        onclick: (e) => {
+          e.stopPropagation();
+          done?.();
+          sendToActionForge(item);
+        }
+      },
+        el("span", { class: "qh-pill-text", style: { color: "#e8ff5a", fontWeight: "600" } }, tgt.label),
+        tgt.badge ? el("span", { class: "qh-pill-badge" }, tgt.badge) : null
+      );
+      pills.appendChild(btn);
+      continue;
+    }
     if (tgt.isEditor) {
       const btn = el("button", {
         class: "qh-pill",
@@ -1446,7 +1488,38 @@ function composerBar(app, rerenderBar) {
       attach.querySelector(`[data-slot="${id}"]`)?.classList.add("missing");
     },
   };
-  const go = async () => { if (await submit(app, ui) && wsTab !== "history") { wsTab = "history"; hooks.rerender?.(); } };
+  const build2509AnglePrompt = (hz, vt, zoom) => {
+    const h = ((Math.round(hz) % 360) + 360) % 360;
+    const parts = [];
+    if (h >= 22.5 && h < 67.5) parts.push("将镜头向右旋转45度 Rotate the camera 45 degrees to the right.");
+    else if (h >= 67.5 && h < 112.5) parts.push("将镜头向右移动 Move the camera right, 90 degrees side view.");
+    else if (h >= 112.5 && h < 157.5) parts.push("将镜头向右旋转135度 Rotate the camera 135 degrees to the right, back-right view.");
+    else if (h >= 157.5 && h < 202.5) parts.push("将镜头旋转180度到背面 Rotate the camera 180 degrees to the back view.");
+    else if (h >= 202.5 && h < 247.5) parts.push("将镜头向左旋转135度 Rotate the camera 135 degrees to the left, back-left view.");
+    else if (h >= 247.5 && h < 292.5) parts.push("将镜头向左移动 Move the camera left, 90 degrees side view.");
+    else if (h >= 292.5 && h < 337.5) parts.push("将镜头向左旋转45度 Rotate the camera 45 degrees to the left.");
+
+    if (vt <= -15) parts.push("将镜头转为仰视 Turn the camera to a low-angle view looking up.");
+    else if (vt >= 40) parts.push("将镜头转为俯视 Turn the camera to a top-down high-angle view.");
+    else if (vt >= 15) parts.push("将镜头向上移动 Move the camera up, elevated view.");
+
+    if (zoom < 2.5) parts.push("将镜头向后移动 Move the camera backward, wide shot.");
+    else if (zoom > 6.5) parts.push("将镜头向前移动 Move the camera forward, close-up.");
+    return parts.join(" ");
+  };
+  const go = async () => {
+    let prevDetails = null;
+    if (app.id === "qwen-multiangle") {
+      prevDetails = f.values.details ?? "";
+      const dir = build2509AnglePrompt(f.values.horizontal_angle ?? 0, f.values.vertical_angle ?? 0, f.values.zoom ?? 5);
+      if (dir) f.values.details = prevDetails ? `${dir} ${prevDetails}` : dir;
+    }
+    try {
+      if (await submit(app, ui) && wsTab !== "history") { wsTab = "history"; hooks.rerender?.(); }
+    } finally {
+      if (prevDetails !== null) f.values.details = prevDetails;
+    }
+  };
   const gen = genButton(app, go);
   if (!app.runnable) { hint.hidden = false; hint.textContent = app.status === "draft" ? t("ws.draft") : t("ws.noworkflow"); }
 
@@ -1828,14 +1901,56 @@ function sidebarPanel(app, rerenderSide) {
   card.append(change);
 
   const main = [], adv = [];
+  let cam3dWidget = null;
+  if (app.id === "qwen-multiangle") {
+    const imgInp = app.inputs.find((x) => isMedia(x.type));
+    const initImgUrl = imgInp && f.files[imgInp.id]
+      ? (f.files[imgInp.id].url || (f.files[imgInp.id].file instanceof Blob ? URL.createObjectURL(f.files[imgInp.id].file) : null))
+      : null;
+
+    cam3dWidget = createCamera3DWidget({
+      f,
+      inpHz: "horizontal_angle",
+      inpVt: "vertical_angle",
+      inpZoom: "zoom",
+      initialImageUrl: initImgUrl,
+    });
+
+    cam3dWidget.addEventListener("camchange", () => {
+      persistSoon();
+      // Sync range inputs if present
+      scroll.querySelectorAll("input[type=range]").forEach((ri) => {
+        const id = ri.closest(".field")?.dataset?.id;
+        if (id && f.values[id] !== undefined) ri.value = f.values[id];
+      });
+    });
+  }
+
   for (const inp of app.inputs) {
-    if (isMedia(inp.type)) main.push(dropzone(app, inp, rerenderSide));
-    else (isAdvanced(inp) ? adv : main).push(sideField(app, inp, f, ui));
+    if (isMedia(inp.type)) {
+      const dz = dropzone(app, inp, () => {
+        rerenderSide();
+        if (cam3dWidget && f.files[inp.id]) {
+          const u = f.files[inp.id].url || (f.files[inp.id].file instanceof Blob ? URL.createObjectURL(f.files[inp.id].file) : null);
+          if (u) cam3dWidget._setImage(u);
+        }
+      });
+      main.push(dz);
+      if (cam3dWidget) main.push(cam3dWidget);
+    } else {
+      (isAdvanced(inp) ? adv : main).push(sideField(app, inp, f, ui));
+    }
   }
   if (app.presets?.length) adv.unshift(presetField(app, f));
   const advanced = adv.length ? el("details", { class: "adv" }, el("summary", {}, t("ws.advanced"), icon("chevD", "i-chev")), el("div", { class: "in" }, ...adv)) : null;
 
   const scroll = el("div", { class: "side-scroll" }, card, modeSwitch(app), ...main, advanced);
+  if (cam3dWidget) {
+    // Sliders / presets -> viewport camera
+    const syncCam = () => cam3dWidget._updateVisuals?.();
+    scroll.addEventListener("input", syncCam);
+    scroll.addEventListener("click", () => setTimeout(syncCam, 0));
+  }
   const note = el("p", { class: "side-note" }, !app.runnable ? (app.status === "draft" ? t("ws.draft") : t("ws.noworkflow")) : "");
   ui.clearMissing = () => { scroll.querySelectorAll(".missing").forEach((n) => n.classList.remove("missing")); };
   ui.markMissing = (id) => {
@@ -2105,6 +2220,17 @@ function composerCarousel(app) {
       const prompt = it.values?.prompt || it.values?.scene || "";
       const pNode = prompt ? el("div", { class: "slide-prompt", title: prompt }, prompt) : null;
       const qb = el("div", { class: "slide-quick-bar" },
+        resolveGlbUrl(it) ? el("button", {
+          class: "sqb-btn",
+          type: "button",
+          style: { background: "rgba(232,255,90,0.22)", borderColor: "#e8ff5a", color: "#e8ff5a" },
+          title: "Rigga e Anima l'oggetto 3D (.GLB) in ActionForge",
+          onclick: (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            sendToActionForge(it);
+          }
+        }, el("span", {}, "🦴 RIGGA IN ACTIONFORGE")) : null,
         el("button", {
           class: "sqb-btn",
           type: "button",

@@ -4756,3 +4756,373 @@
     box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
+
+/* ==========================================================================
+   WOX CINEMA STUDIO - 3D MULTI-ANGLE CAMERA CONTROLLER (Qwen Multiangle)
+   ========================================================================== */
+.wox-multiangle-panel {
+    background: #0d111a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+.wox-multiangle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.wox-multiangle-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #e2e8f0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.wox-multiangle-title svg {
+    color: #00ffd0;
+}
+
+.wox-multiangle-view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wox-multiangle-view-toggle:hover {
+    background: rgba(0, 255, 208, 0.15);
+    border-color: #00ffd0;
+    color: #00ffd0;
+}
+
+.wox-multiangle-view-toggle.active {
+    background: rgba(0, 255, 208, 0.22);
+    border-color: #00ffd0;
+    color: #00ffd0;
+    box-shadow: 0 0 8px rgba(0, 255, 208, 0.3);
+}
+
+.wox-multiangle-stage {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #07090e;
+    border: 1px solid rgba(0, 255, 208, 0.25);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 255, 208, 0.05);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.wox-multiangle-canvas-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: block;
+}
+
+.wox-multiangle-canvas-wrap canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    outline: none;
+}
+
+.wox-multiangle-badges {
+    position: absolute;
+    bottom: 6px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    font-size: 10px;
+    font-family: monospace;
+    color: #94a3b8;
+}
+
+.wox-multiangle-badges span {
+    background: rgba(10, 13, 20, 0.75);
+    backdrop-filter: blur(4px);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wox-multiangle-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.wox-angle-preset-btn {
+    background: #151a26;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 10.5px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.wox-angle-preset-btn:hover {
+    background: rgba(0, 255, 208, 0.15);
+    border-color: #00ffd0;
+    color: #00ffd0;
+}
+
+.wox-angle-preset-btn.active {
+    background: rgba(0, 255, 208, 0.25);
+    border-color: #00ffd0;
+    color: #00ffd0;
+    font-weight: 700;
+}
+
+.wox-multiangle-sliders {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+}
+
+.wox-angle-slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wox-angle-slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.wox-angle-slider-input {
+    width: 100%;
+    accent-color: #00ffd0;
+    cursor: pointer;
+    margin: 2px 0;
+}
+
+.wox-edit-save-library-btn {
+    background: rgba(212, 255, 50, 0.12);
+    color: #d4ff32;
+    border: 1px solid rgba(212, 255, 50, 0.35);
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.wox-edit-save-library-btn:hover:not(:disabled) {
+    background: rgba(212, 255, 50, 0.25);
+    border-color: #d4ff32;
+    box-shadow: 0 0 14px rgba(212, 255, 50, 0.35);
+}
+
+.wox-edit-save-library-btn.saved {
+    background: rgba(34, 197, 94, 0.25) !important;
+    border-color: #22c55e !important;
+    color: #4ade80 !important;
+}
+
+
+/* =========================================================================
+   QWEN MULTI-ANGLE 3D CAMERA CONTROLLER (EXACT REPLICA OF THREE.JS WIDGET)
+   ========================================================================= */
+.wox-multiangle-container {
+    width: 100%;
+    position: relative;
+    background: #0a0a0f;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(233, 61, 130, 0.35);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(233, 61, 130, 0.15);
+    margin-bottom: 12px;
+}
+
+.wox-qwen-prompt-overlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    background: rgba(10, 10, 15, 0.92);
+    border: 1px solid rgba(233, 61, 130, 0.4);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #E93D82;
+    backdrop-filter: blur(6px);
+    font-family: 'Consolas', 'Monaco', monospace;
+    word-break: break-all;
+    line-height: 1.4;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.wox-qwen-stage {
+    position: relative;
+    width: 100%;
+    height: 290px;
+    background: #0a0a0f;
+    cursor: default;
+    user-select: none;
+}
+
+.wox-qwen-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    outline: none;
+}
+
+.wox-qwen-controls {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: rgba(10, 10, 15, 0.92);
+    border: 1px solid rgba(233, 61, 130, 0.4);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    backdrop-filter: blur(6px);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+.wox-qwen-info-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 8px;
+}
+
+.wox-qwen-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wox-qwen-dropdown-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.wox-qwen-dropdown-label.azimuth { color: #E93D82; }
+.wox-qwen-dropdown-label.elevation { color: #00FFD0; }
+.wox-qwen-dropdown-label.distance { color: #FFB800; }
+
+.wox-qwen-dropdown {
+    background: rgba(15, 15, 25, 0.95);
+    border: 1px solid rgba(100, 100, 120, 0.5);
+    border-radius: 5px;
+    padding: 3px 6px;
+    font-size: 10px;
+    color: #e0e0e0;
+    cursor: pointer;
+    outline: none;
+    min-width: 0;
+    max-width: 130px;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.wox-qwen-dropdown:hover {
+    border-color: rgba(233, 61, 130, 0.8);
+}
+
+.wox-qwen-dropdown.azimuth:focus { border-color: #E93D82; }
+.wox-qwen-dropdown.elevation:focus { border-color: #00FFD0; }
+.wox-qwen-dropdown.distance:focus { border-color: #FFB800; }
+
+.wox-qwen-dropdown option {
+    background: #141424;
+    color: #e0e0e0;
+}
+
+.wox-qwen-param-value {
+    font-weight: 700;
+    font-size: 13px;
+    font-family: 'Consolas', monospace;
+}
+
+.wox-qwen-param-value.azimuth { color: #E93D82; }
+.wox-qwen-param-value.elevation { color: #00FFD0; }
+.wox-qwen-param-value.distance { color: #FFB800; }
+
+.wox-qwen-reset-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    border: 1px solid rgba(233, 61, 130, 0.5);
+    background: rgba(233, 61, 130, 0.1);
+    color: #E93D82;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.wox-qwen-reset-btn:hover {
+    background: rgba(233, 61, 130, 0.3);
+    border-color: #E93D82;
+    transform: rotate(-45deg);
+}
+
+.wox-card-action-icon.btn-camera {
+    color: #E93D82;
+}
+
+.wox-card-action-icon.btn-camera:hover {
+    background: rgba(233, 61, 130, 0.3);
+    border-color: #E93D82;
+    box-shadow: 0 0 10px rgba(233, 61, 130, 0.4);
+}

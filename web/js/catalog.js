@@ -30,9 +30,9 @@ export async function loadCatalog() {
 
 /** Apps grouped like a store: a card can only sit in one row. */
 export const CATEGORIES = [
-  { id: "create", apps: ["z-image", "h3-video"] },
+  { id: "create", apps: ["trellis-3d", "z-image", "h3-video"] },
   { id: "identity", apps: ["character-studio", "character", "character-3", "speak", "talking", "recast", "motion-transfer", "genjutsu", "dub", "character-swap", "face-swap"] },
-  { id: "camera", apps: ["camera-moves", "camera-copy", "reshoot", "reframe", "extend-video", "transitions", "angles", "shots", "zooms", "whats-next", "bullet-time-scene", "bullet-time-white", "bullet-time-splash"] },
+  { id: "camera", apps: ["qwen-multiangle", "camera-moves", "camera-copy", "reshoot", "reframe", "extend-video", "transitions", "angles", "shots", "zooms", "whats-next", "bullet-time-scene", "bullet-time-white", "bullet-time-splash"] },
   { id: "style", apps: ["relight", "style-reference", "mixed-media", "upscale", "upscale-video", "sdr-hdr", "smooth", "remove-bg", "video-remove-bg", "depth-map", "expand-image"] },
   { id: "vfx", apps: ["effects", "morph", "edit", "inpaint", "vfx-clean-plate", "vfx-day-to-night", "vfx-water"] },
   { id: "ads", apps: ["product-shot", "poster", "packshot", "macro-scene", "macro-product", "giant-product", "billboard", "graffiti-ad", "fridge-ad", "ugc-shot",
@@ -61,20 +61,21 @@ export const IMAGE_TABS = [
   { id: "create", apps: ["cinema-studio", "create-image", "z-image", "moss-image"] },
   { id: "edit", apps: ["edit", "inpaint", "relight", "remove-bg", "upscale", "expand-image", "depth-map", "color-grade", "edit-text"] },
   { id: "identity", apps: ["face-swap", "character-studio", "character", "character-3", "character-swap", "headshot", "ai-influencer", "ai-influencer-photo", "commercial-faces", "style-snap", "skin-enhancer"] },
-  { id: "camera", apps: ["angles", "shots", "zooms", "whats-next"] },
+  { id: "camera", apps: ["qwen-multiangle", "angles", "shots", "zooms", "whats-next"] },
   { id: "ads", apps: ["product-shot", "packshot", "billboard", "poster", "giant-product", "macro-scene", "macro-product", "fridge-ad", "graffiti-ad", "ugc-shot"] },
   { id: "styles", apps: ["styles", "style-reference", "render-3d", "figure-3d", "comic-book", "pixel-game", "brick-toy", "plushie", "sketch-to-real", "paint-app", "mural", "micro-beasts", "meme", "fashion-factory", "try-on", "outfit-swap", "outfit-shot", "outfit-vending", "photodump", "glitter-sticker", "moodboard", "cafe-60s", "renaissance", "giallo", "victory-card", "j-magazine", "j-poster", "mascot", "burning-sunset", "japanese-show", "breakdown", "image-effects", "game-styles"] },
 ];
 export const imageTabOf = (id) => IMAGE_TABS.find((tab) => tab.apps.includes(id))?.id ?? null;
 
 /** Shown in the top bar next to the studios, like a store's front window. */
-export const FEATURED = [{ id: "recast", tag: "featured" }, { id: "speak", tag: "new" }, { id: "relight", tag: null }];
+export const FEATURED = [{ id: "trellis-3d", tag: "new" }, { id: "recast", tag: "featured" }, { id: "speak", tag: "new" }, { id: "relight", tag: null }];
 
 /** The open models behind the apps, for the top bar's menus. `file` is a piece of the model file's name: an app that
  *  downloads a matching file uses the model. `app` runs the model on its own. Order matters for modelOf(): an app is
  *  labelled with the first model it uses, so the video and audio models come before FLUX 3 Klein, which many video
  *  apps use only to prepare a frame. */
 export const MODELS = [
+  { name: "TRELLIS.2 4B (16GB)", file: "trellis_3d_4b", app: "trellis-3d", note: ["PBR 3D mesh (.GLB) + ActionForge Rigging", "Malla 3D PBR (.GLB) + Rigging en ActionForge"] },
   { name: "LTX-2.5 22B", file: "ltx-2.5-22b", app: "video", note: ["Image to video, IC-LoRAs and VFX", "Imagen a video, IC-LoRAs y VFX"] },
   { name: "MiniMax H3", file: "minimax_h3_", app: "h3-video", note: ["Video with sound, extend, reshoot", "Video con sonido, extender y re-shoot"] },
   { name: "Wan 2.1 I2V 14B", file: "wan2.1_i2v", app: "effects", note: ["24 effect LoRAs and Bullet Time", "24 LoRAs de efectos y Bullet Time"] },
@@ -90,7 +91,7 @@ export const MODELS = [
   { name: "Z-Image Turbo", file: "z_image_turbo", app: "z-image", note: ["Fast drafts", "Borradores rápidos"] },
   { name: "FLUX 3 Image Klein", file: "flux3-image-klein", app: "create-image", note: ["Text to image and every edit", "Texto a imagen y todas las ediciones"] },
 ];
-export const usesModel = (app, m) => app.models.some((x) => x.name.includes(m.file));
+export const usesModel = (app, m) => app.id === m.app || app.models.some((x) => x.name.includes(m.file));
 /** The model an app is built on, for a one-line label ("FLUX 3 Image Klein"); null for the model-free apps. */
 export function modelOf(app) {
   return MODELS.find((m) => usesModel(app, m)) ?? null;
@@ -118,6 +119,7 @@ export const HERO = ["effects", "recast", "motion-transfer", "speak", "camera-mo
 
 /** Prompt-first apps get the floating composer; upload-first apps get the sidebar. */
 export function layoutOf(app) {
+  if (app.id === "trellis-3d" || app.id === "qwen-multiangle") return "sidebar";
   if (app.inputs.some((i) => i.paint)) return "sidebar";   // painting a mask needs the photo in a dropzone
   const hasText = app.inputs.some((i) => i.type === "textarea");
   return (app.section === "image" || app.section === "audio" || app.id === "cinema-video" || app.id === "director" || app.layout === "composer") && hasText ? "composer" : "sidebar";
@@ -136,13 +138,14 @@ export function familyOf(app) {
 
 /** Which studio (top-bar entry) an app belongs to. */
 export function studioOf(app) {
+  if (app.section === "3d" || app.id === "trellis-3d") return "3d";
   if (videoTabOf(app.id) || app.section === "video") return "video";
   if (app.section === "audio") return "audio";
   if (imageTabOf(app.id) || app.section === "image") return "image";
   return "apps";
 }
 
-const DEFAULT_APP = { image: "cinema-studio", video: "cinema-video", audio: "music" };
+const DEFAULT_APP = { image: "cinema-studio", video: "cinema-video", audio: "music", "3d": "trellis-3d" };
 export function lastAppFor(studio) {
   const id = store.get(`last.${studio}`);
   if (id && byId.has(id)) return id;
@@ -155,6 +158,7 @@ export function rememberApp(app) {
 }
 
 const TAGLINES = {
+  "trellis-3d": ["Create high-quality PBR 3D objects (.GLB) & rig in ActionForge", "Crea objetos 3D PBR (.GLB) y hazles rig en ActionForge", "Crea oggetti 3D PBR (.GLB) per 16GB VRAM e riggali in ActionForge"],
   "z-image": ["Words to picture in seconds", "De palabras a imagen en segundos"],
   "cinema-studio": ["Shoot it on any camera", "Fílmalo con cualquier cámara"],
   "cinema-video": ["The same film look, now moving", "El mismo look de cine, ahora en movimiento"],
@@ -286,7 +290,7 @@ export function tagline(app) {
 
 /** Icon name per app for chips and tiles. */
 export function iconOf(app) {
-  const byIdIcon = { relight: "sun", "remove-bg": "scissors", "product-shot": "box", character: "user", speak: "user", talking: "user",
+  const byIdIcon = { "trellis-3d": "box", relight: "sun", "remove-bg": "scissors", "product-shot": "box", character: "user", speak: "user", talking: "user",
     recast: "user", "motion-transfer": "hand", "camera-moves": "camera", "camera-copy": "camera", reshoot: "camera", music: "audio", sfx: "audio", effects: "spark" };
   return byIdIcon[app.id] || (app.section === "video" ? "video" : app.section === "audio" ? "audio" : "image");
 }

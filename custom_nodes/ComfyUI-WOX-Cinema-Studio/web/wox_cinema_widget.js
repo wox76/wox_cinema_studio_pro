@@ -4110,6 +4110,9 @@ app.registerExtension({
                     `;
                 } else if (!isVideo) {
                     actionsHtml = `
+                        <button class="wox-preview-action-btn" id="wox-preview-angle-btn" style="background: rgba(233, 61, 130, 0.2); color: #ff6ba8; border: 1px solid rgba(233, 61, 130, 0.6); font-weight: 800;">
+                            🎥 Cambia Angolo Camera
+                        </button>
                         <button class="wox-preview-action-btn" id="wox-preview-edit-btn" style="background: rgba(212, 255, 50, 0.18); color: #d4ff32; border: 1px solid rgba(212, 255, 50, 0.45); font-weight: 700;">
                             ✏️ Modifica con AI
                         </button>
@@ -4215,6 +4218,17 @@ app.registerExtension({
                     galleryBtn.addEventListener("click", () => {
                         closePreview();
                         openRefModal("mention", "Generations");
+                    });
+                }
+
+                // Button: Cambia Angolo Camera 3D (Qwen Multi-Angle)
+                const angleBtn = previewBackdrop.querySelector("#wox-preview-angle-btn");
+                if (angleBtn) {
+                    angleBtn.addEventListener("click", () => {
+                        closePreview();
+                        if (openImageEditModal) {
+                            openImageEditModal(mediaData);
+                        }
                     });
                 }
 
@@ -4420,6 +4434,67 @@ app.registerExtension({
                                     <div class="wox-edit-active-refs" id="wox-edit-active-refs"></div>
                                 </div>
 
+                                <!-- 3D Camera Multi-Angle Control (ComfyUI-qwenmultiangle Exact Widget) -->
+                                <div class="wox-multiangle-container">
+                                    <div class="wox-qwen-prompt-overlay" id="wox-qwen-prompt-overlay">
+                                        &lt;sks&gt; front view eye-level shot medium shot
+                                    </div>
+                                    <div class="wox-qwen-stage" id="wox-qwen-stage">
+                                        <!-- Three.js Interactive Canvas injected dynamically -->
+                                    </div>
+                                    <div class="wox-qwen-controls">
+                                        <div class="wox-qwen-info-row">
+                                            <div class="wox-qwen-control">
+                                                <span class="wox-qwen-dropdown-label azimuth">H</span>
+                                                <select class="wox-qwen-dropdown azimuth" id="wox-qwen-select-az">
+                                                    <option value="0">front view</option>
+                                                    <option value="45">front-right quarter view</option>
+                                                    <option value="90">right side view</option>
+                                                    <option value="135">back-right quarter view</option>
+                                                    <option value="180">back view</option>
+                                                    <option value="225">back-left quarter view</option>
+                                                    <option value="270">left side view</option>
+                                                    <option value="315">front-left quarter view</option>
+                                                </select>
+                                            </div>
+                                            <div class="wox-qwen-control">
+                                                <span class="wox-qwen-dropdown-label elevation">V</span>
+                                                <select class="wox-qwen-dropdown elevation" id="wox-qwen-select-el">
+                                                    <option value="-30">low-angle shot</option>
+                                                    <option value="0" selected>eye-level shot</option>
+                                                    <option value="30">elevated shot</option>
+                                                    <option value="60">high-angle shot</option>
+                                                </select>
+                                            </div>
+                                            <div class="wox-qwen-control">
+                                                <span class="wox-qwen-dropdown-label distance">Z</span>
+                                                <select class="wox-qwen-dropdown distance" id="wox-qwen-select-dist">
+                                                    <option value="1">wide shot</option>
+                                                    <option value="4" selected>medium shot</option>
+                                                    <option value="8">close-up</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="wox-qwen-info-row">
+                                            <div class="param">
+                                                <div style="font-size:9px;color:#888;text-transform:uppercase;">HORIZONTAL</div>
+                                                <div class="wox-qwen-param-value azimuth" id="wox-qwen-val-az">0&deg;</div>
+                                            </div>
+                                            <div class="param">
+                                                <div style="font-size:9px;color:#888;text-transform:uppercase;">VERTICAL</div>
+                                                <div class="wox-qwen-param-value elevation" id="wox-qwen-val-el">0&deg;</div>
+                                            </div>
+                                            <div class="param">
+                                                <div style="font-size:9px;color:#888;text-transform:uppercase;">ZOOM</div>
+                                                <div class="wox-qwen-param-value distance" id="wox-qwen-val-dist">5.0</div>
+                                            </div>
+                                            <button type="button" class="wox-qwen-reset-btn" id="wox-qwen-reset-btn" title="Ripristina Angolo Frontale">
+                                                &#8634;
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="wox-edit-quick-chips">
                                     <button class="wox-edit-chip-btn" data-chip="Rendilo realistico, trasforma gli elementi e personaggi esistenti nella scena in fotorealismo cinematografico, mantieni la composizione originale senza aggiungere persone">📸 Rendilo Realistico</button>
                                     <button class="wox-edit-chip-btn" data-chip="Trasforma in pixel art stile Neo Geo arcade 16-bit, ridisegna i personaggi con sprite 2D ad altissima definizione e dettaglio, completa lo scenario con uno sfondo coerente ed espanso, aggiungi HUD arcade in alto">🕹️ Pixel Art Neo Geo</button>
@@ -4440,6 +4515,9 @@ app.registerExtension({
                                     <button class="wox-edit-gen-btn" id="wox-edit-submit-btn">
                                         ✨ GENERA MODIFICA
                                     </button>
+                                    <button type="button" class="wox-edit-save-library-btn" id="wox-edit-save-lib-btn" title="Salva l'immagine corrente modificata nella Library permanente">
+                                        💾 SALVA NELLA LIBRARY
+                                    </button>
                                     <div class="wox-edit-status-msg" id="wox-edit-status"></div>
                                 </div>
                             </div>
@@ -4448,11 +4526,19 @@ app.registerExtension({
                 `;
 
                 editBackdrop.classList.add("open");
+                if (app && app.ui && app.ui.autoQueueEnabled) {
+                    app.ui.autoQueueEnabled = false;
+                }
 
                 const closeEdit = () => {
                     editBackdrop.classList.remove("open");
                     if (currentEditSession) currentEditSession.active = false;
                     window._woxInsertEditReference = null;
+                    window._woxUpdateAngleScene = null;
+                    if (threeAnimId) cancelAnimationFrame(threeAnimId);
+                    if (threeRenderer) {
+                        try { threeRenderer.dispose(); } catch(e) {}
+                    }
                 };
 
                 const closeBtn = editBackdrop.querySelector("#wox-edit-close-btn");
@@ -4490,6 +4576,460 @@ app.registerExtension({
                 const tagLabel = editBackdrop.querySelector("#wox-edit-tag-label");
                 const activeRefsContainer = editBackdrop.querySelector("#wox-edit-active-refs");
                 const addRefBtn = editBackdrop.querySelector("#wox-edit-add-ref-btn");
+                const saveLibBtn = editBackdrop.querySelector("#wox-edit-save-lib-btn");
+
+                // Multiangle Camera State (Exact ComfyUI-qwenmultiangle Engine)
+                let cameraAngleState = {
+                    azimuth: 0,
+                    elevation: 0,
+                    distance: 5.0,
+                    label: "Frontale"
+                };
+
+                const selectAz = editBackdrop.querySelector("#wox-qwen-select-az");
+                const selectEl = editBackdrop.querySelector("#wox-qwen-select-el");
+                const selectDist = editBackdrop.querySelector("#wox-qwen-select-dist");
+                const valAz = editBackdrop.querySelector("#wox-qwen-val-az");
+                const valEl = editBackdrop.querySelector("#wox-qwen-val-el");
+                const valDist = editBackdrop.querySelector("#wox-qwen-val-dist");
+                const promptOverlay = editBackdrop.querySelector("#wox-qwen-prompt-overlay");
+                const resetBtn = editBackdrop.querySelector("#wox-qwen-reset-btn");
+                const stageContainer = editBackdrop.querySelector("#wox-qwen-stage");
+
+                const computeAnglePrompts = (az, el, dist) => {
+                    const h_angle = ((Math.round(az) % 360) + 360) % 360;
+                    let h_direction = "front view";
+                    let h_chinese = "";
+                    if (h_angle < 22.5 || h_angle >= 337.5) {
+                        h_direction = "front view";
+                    } else if (h_angle < 67.5) {
+                        h_direction = "front-right quarter view";
+                        h_chinese = "将镜头向左旋转45度 Rotate the camera 45 degrees to the left.";
+                    } else if (h_angle < 112.5) {
+                        h_direction = "right side view";
+                        h_chinese = "将镜头向左移动 Move the camera left.";
+                    } else if (h_angle < 157.5) {
+                        h_direction = "back-right quarter view";
+                    } else if (h_angle < 202.5) {
+                        h_direction = "back view";
+                    } else if (h_angle < 247.5) {
+                        h_direction = "back-left quarter view";
+                    } else if (h_angle < 292.5) {
+                        h_direction = "left side view";
+                        h_chinese = "将镜头向右移动 Move the camera right.";
+                    } else {
+                        h_direction = "front-left quarter view";
+                        h_chinese = "将镜头向右旋转45度 Rotate the camera 45 degrees to the right.";
+                    }
+
+                    let v_direction = "eye-level shot";
+                    let v_chinese = "";
+                    if (el < -15) {
+                        v_direction = "low-angle shot";
+                        v_chinese = "将镜头转为仰视 Turn the camera to a low-angle view looking up.";
+                    } else if (el < 15) {
+                        v_direction = "eye-level shot";
+                    } else if (el < 45) {
+                        v_direction = "elevated shot";
+                        v_chinese = "将镜头向上移动 Move the camera up.";
+                    } else {
+                        v_direction = "high-angle shot";
+                        v_chinese = "将镜头转为俯视 Turn the camera to a top-down view.";
+                    }
+
+                    let distance = "medium shot";
+                    let dist_chinese = "";
+                    if (dist < 2.5) {
+                        distance = "wide shot";
+                        dist_chinese = "将镜头向后移动 Move the camera backward.";
+                    } else if (dist < 6.5) {
+                        distance = "medium shot";
+                    } else {
+                        distance = "close-up";
+                        dist_chinese = "将镜头向前移动 Move the camera forward.";
+                    }
+
+                    const sksPrompt = `<sks> ${h_direction} ${v_direction} ${distance}`;
+                    const moves = [h_chinese, v_chinese, dist_chinese].filter(Boolean).join(" ");
+                    return { sksPrompt, moves, h_direction, v_direction, distance };
+                };
+
+                const updateCameraAngleUI = () => {
+                    if (valAz) valAz.innerHTML = `${Math.round(cameraAngleState.azimuth)}&deg;`;
+                    if (valEl) valEl.innerHTML = `${Math.round(cameraAngleState.elevation)}&deg;`;
+                    if (valDist) valDist.textContent = `${parseFloat(cameraAngleState.distance).toFixed(1)}`;
+                    
+                    const { sksPrompt } = computeAnglePrompts(cameraAngleState.azimuth, cameraAngleState.elevation, cameraAngleState.distance);
+                    if (promptOverlay) {
+                        promptOverlay.textContent = sksPrompt;
+                    }
+
+                    // Update dropdown closest values
+                    const azOptions = [0, 45, 90, 135, 180, 225, 270, 315];
+                    const normAz = ((Math.round(cameraAngleState.azimuth) % 360) + 360) % 360;
+                    let closestAz = 0;
+                    let minAzDiff = 999;
+                    azOptions.forEach(val => {
+                        let diff = Math.min(Math.abs(normAz - val), Math.abs(normAz - val - 360), Math.abs(normAz - val + 360));
+                        if (diff < minAzDiff) { minAzDiff = diff; closestAz = val; }
+                    });
+                    if (selectAz) selectAz.value = String(closestAz);
+
+                    const elOptions = [-30, 0, 30, 60];
+                    let closestEl = 0;
+                    let minElDiff = 999;
+                    elOptions.forEach(val => {
+                        let diff = Math.abs(cameraAngleState.elevation - val);
+                        if (diff < minElDiff) { minElDiff = diff; closestEl = val; }
+                    });
+                    if (selectEl) selectEl.value = String(closestEl);
+
+                    if (selectDist) {
+                        if (cameraAngleState.distance < 2.5) selectDist.value = "1";
+                        else if (cameraAngleState.distance < 6.5) selectDist.value = "4";
+                        else selectDist.value = "8";
+                    }
+
+                    if (window._woxUpdateAngleScene) {
+                        window._woxUpdateAngleScene();
+                    }
+                };
+
+                // Dropdown change handlers
+                if (selectAz) {
+                    selectAz.addEventListener("change", (e) => {
+                        cameraAngleState.azimuth = parseFloat(e.target.value);
+                        updateCameraAngleUI();
+                    });
+                }
+                if (selectEl) {
+                    selectEl.addEventListener("change", (e) => {
+                        cameraAngleState.elevation = parseFloat(e.target.value);
+                        updateCameraAngleUI();
+                    });
+                }
+                if (selectDist) {
+                    selectDist.addEventListener("change", (e) => {
+                        cameraAngleState.distance = parseFloat(e.target.value);
+                        updateCameraAngleUI();
+                    });
+                }
+                if (resetBtn) {
+                    resetBtn.addEventListener("click", () => {
+                        cameraAngleState.azimuth = 0;
+                        cameraAngleState.elevation = 0;
+                        cameraAngleState.distance = 5.0;
+                        updateCameraAngleUI();
+                    });
+                }
+
+                // -------------------------------------------------------------
+                // DIRECT FIRST-PERSON CAMERA VIEWPORT ENGINE
+                // The viewport IS the camera: what you see is what Qwen generates!
+                // Rotating and dragging the viewport changes the camera pose without rendering.
+                // -------------------------------------------------------------
+                let threeRenderer = null;
+                let threeAnimId = null;
+                let threeScene = null;
+                let threeCamera = null;
+                let threePlaneMat = null;
+
+                const initThreeAngleScene = async () => {
+                    if (!stageContainer) return;
+                    try {
+                        const threeModuleUrl = new URL("./three.module.min.js", import.meta.url).href;
+                        const THREE = await import(threeModuleUrl);
+                        stageContainer.innerHTML = "";
+
+                        const width = stageContainer.clientWidth || 400;
+                        const height = stageContainer.clientHeight || 290;
+
+                        const CENTER = new THREE.Vector3(0, 0.5, 0);
+
+                        threeScene = new THREE.Scene();
+                        threeScene.background = new THREE.Color(0x0a0a0f);
+
+                        // The viewport camera IS the rendering camera
+                        threeCamera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
+
+                        threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                        threeRenderer.setSize(width, height, false);
+                        threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                        threeRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+                        const canvas = threeRenderer.domElement;
+                        canvas.className = "wox-qwen-canvas";
+                        canvas.style.cursor = "grab";
+                        stageContainer.appendChild(canvas);
+
+                        // Lighting
+                        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                        threeScene.add(ambientLight);
+                        const mainLight = new THREE.DirectionalLight(0xffffff, 0.9);
+                        mainLight.position.set(5, 10, 7);
+                        threeScene.add(mainLight);
+
+                        // Subtle cyber floor grid below the image
+                        const gridHelper = new THREE.GridHelper(6, 24, 0xE93D82, 0x1f1f2e);
+                        gridHelper.position.y = -0.01;
+                        threeScene.add(gridHelper);
+
+                        // Subject: Image plane at center
+                        const makeGridTexture = () => {
+                            const c = document.createElement("canvas");
+                            c.width = 256; c.height = 256;
+                            const ctx = c.getContext("2d");
+                            ctx.fillStyle = "#1a1a2a";
+                            ctx.fillRect(0, 0, 256, 256);
+                            ctx.strokeStyle = "#2a2a3a";
+                            ctx.lineWidth = 1;
+                            for (let i = 0; i <= 256; i += 16) {
+                                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 256); ctx.stroke();
+                                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(256, i); ctx.stroke();
+                            }
+                            const t = new THREE.CanvasTexture(c);
+                            t.wrapS = THREE.RepeatWrapping;
+                            t.wrapT = THREE.RepeatWrapping;
+                            t.repeat.set(4, 4);
+                            return t;
+                        };
+
+                        const cardGeo = new THREE.BoxGeometry(1.2, 1.2, 0.02);
+                        const frontMat = new THREE.MeshBasicMaterial({ color: 0x3a3a4a });
+                        const backMat = new THREE.MeshBasicMaterial({ map: makeGridTexture() });
+                        const edgeMat = new THREE.MeshBasicMaterial({ color: 0x1a1a2a });
+                        const cardMats = [edgeMat, edgeMat, edgeMat, edgeMat, frontMat, backMat];
+                        const imagePlane = new THREE.Mesh(cardGeo, cardMats);
+                        imagePlane.position.copy(CENTER);
+                        threeScene.add(imagePlane);
+                        threePlaneMat = frontMat;
+
+                        // Neon frame around image card
+                        const frameGeo = new THREE.EdgesGeometry(cardGeo);
+                        const frameMat = new THREE.LineBasicMaterial({ color: 0xE93D82, linewidth: 2 });
+                        const imageFrame = new THREE.LineSegments(frameGeo, frameMat);
+                        imageFrame.position.copy(CENTER);
+                        threeScene.add(imageFrame);
+
+                        // Base rotating glow ring
+                        const glowRingGeo = new THREE.RingGeometry(0.55, 0.58, 64);
+                        const glowRingMat = new THREE.MeshBasicMaterial({ color: 0xE93D82, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+                        const glowRing = new THREE.Mesh(glowRingGeo, glowRingMat);
+                        glowRing.position.set(0, 0.01, 0);
+                        glowRing.rotation.x = -Math.PI / 2;
+                        threeScene.add(glowRing);
+
+                        // Load current image texture onto frontMat
+                        const texLoader = new THREE.TextureLoader();
+                        texLoader.setCrossOrigin("anonymous");
+                        const loadTexture = (url) => {
+                            if (!url) return;
+                            texLoader.load(url, (tex) => {
+                                tex.colorSpace = THREE.SRGBColorSpace;
+                                if (threePlaneMat) {
+                                    threePlaneMat.map = tex;
+                                    threePlaneMat.color.setHex(0xffffff);
+                                    threePlaneMat.needsUpdate = true;
+                                }
+                            }, undefined, (err) => {
+                                console.warn("QwenMultiangle Texture load error:", err);
+                            });
+                        };
+                        if (currentMedia.url) loadTexture(currentMedia.url);
+
+                        // Function to align viewport camera directly to current azimuth, elevation and distance
+                        const updateVisuals = () => {
+                            const azRad = (cameraAngleState.azimuth * Math.PI) / 180;
+                            const elRad = (cameraAngleState.elevation * Math.PI) / 180;
+                            // Zoom / Distance: 0 (wide, far) -> 10 (close-up)
+                            const visualDist = 3.2 - (cameraAngleState.distance / 10.0) * 2.2;
+
+                            const camX = visualDist * Math.sin(azRad) * Math.cos(elRad);
+                            const camY = CENTER.y + visualDist * Math.sin(elRad);
+                            const camZ = visualDist * Math.cos(azRad) * Math.cos(elRad);
+
+                            threeCamera.position.set(camX, camY, camZ);
+                            threeCamera.lookAt(CENTER);
+
+                            glowRing.rotation.z += 0.005;
+                            threeRenderer.render(threeScene, threeCamera);
+                        };
+
+                        // -------------------------------------------------------------
+                        // Direct Orbit Dragging on the Viewport (NO auto-render triggered!)
+                        // Dragging adjusts camera angle. Rendering ONLY happens on "GENERA MODIFICA".
+                        // -------------------------------------------------------------
+                        let isOrbitDragging = false;
+                        let startX = 0;
+                        let startY = 0;
+                        let startAzimuth = 0;
+                        let startElevation = 0;
+
+                        const onPointerDown = (e) => {
+                            isOrbitDragging = true;
+                            startX = e.clientX;
+                            startY = e.clientY;
+                            startAzimuth = cameraAngleState.azimuth;
+                            startElevation = cameraAngleState.elevation;
+                            canvas.style.cursor = "grabbing";
+                        };
+
+                        const onPointerMove = (e) => {
+                            if (!isOrbitDragging) return;
+                            const deltaX = e.clientX - startX;
+                            const deltaY = e.clientY - startY;
+
+                            const sensitivity = 0.5;
+
+                            let newAz = startAzimuth - deltaX * sensitivity;
+                            while (newAz < 0) newAz += 360;
+                            while (newAz >= 360) newAz -= 360;
+                            cameraAngleState.azimuth = Math.round(newAz);
+
+                            let newEl = startElevation + deltaY * sensitivity;
+                            newEl = Math.max(-30, Math.min(60, newEl));
+                            cameraAngleState.elevation = Math.round(newEl);
+
+                            updateVisuals();
+                            updateCameraAngleUI();
+                        };
+
+                        const onPointerUp = () => {
+                            if (isOrbitDragging) {
+                                isOrbitDragging = false;
+                                canvas.style.cursor = "grab";
+                            }
+                        };
+
+                        const onWheel = (e) => {
+                            e.preventDefault();
+                            const sensitivity = 0.005;
+                            let newDist = cameraAngleState.distance + e.deltaY * sensitivity;
+                            newDist = Math.max(0, Math.min(10, newDist));
+                            cameraAngleState.distance = Math.round(newDist * 10) / 10;
+                            updateVisuals();
+                            updateCameraAngleUI();
+                        };
+
+                        canvas.addEventListener("mousedown", onPointerDown);
+                        window.addEventListener("mousemove", onPointerMove);
+                        window.addEventListener("mouseup", onPointerUp);
+                        canvas.addEventListener("wheel", onWheel, { passive: false });
+
+                        // Touch support for mobile / tablets
+                        canvas.addEventListener("touchstart", (e) => {
+                            if (e.touches.length === 1) {
+                                e.preventDefault();
+                                onPointerDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+                            }
+                        }, { passive: false });
+
+                        canvas.addEventListener("touchmove", (e) => {
+                            if (e.touches.length === 1) {
+                                e.preventDefault();
+                                onPointerMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+                            }
+                        }, { passive: false });
+
+                        canvas.addEventListener("touchend", () => onPointerUp());
+
+                        // Animation loop for fluid rendering
+                        const animate = () => {
+                            threeAnimId = requestAnimationFrame(animate);
+                            glowRing.rotation.z += 0.003;
+                            threeRenderer.render(threeScene, threeCamera);
+                        };
+                        animate();
+
+                        // Resize observer
+                        if (window.ResizeObserver) {
+                            const ro = new ResizeObserver(() => {
+                                const w = stageContainer.clientWidth;
+                                const h = stageContainer.clientHeight;
+                                if (w > 0 && h > 0) {
+                                    threeCamera.aspect = w / h;
+                                    threeCamera.updateProjectionMatrix();
+                                    threeRenderer.setSize(w, h, false);
+                                    updateVisuals();
+                                }
+                            });
+                            ro.observe(stageContainer);
+                        }
+
+                        window._woxUpdateAngleScene = (newImgUrl) => {
+                            if (newImgUrl && loadTexture) loadTexture(newImgUrl);
+                            updateVisuals();
+                        };
+
+                        updateVisuals();
+                        updateCameraAngleUI();
+                    } catch (threeErr) {
+                        console.error("Could not initialize 3D Camera Scene in modal:", threeErr);
+                        stageContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#E93D82;font-size:12px;">Vista 3D attiva</div>';
+                    }
+                };                setTimeout(initThreeAngleScene, 50);
+
+                // Wire "Salva nella Library" button
+                if (saveLibBtn) {
+                    saveLibBtn.addEventListener("click", async () => {
+                        saveLibBtn.disabled = true;
+                        const originalHtml = saveLibBtn.innerHTML;
+                        saveLibBtn.innerHTML = `<span>⏳ Salvataggio in Library...</span>`;
+
+                        try {
+                            const curFilename = currentMedia.filename || currentMedia.name;
+                            const curSubfolder = currentMedia.subfolder || "wox_cinema_edit";
+                            const curPrompt = (editPromptInput ? editPromptInput.value.trim() : "") || "Modifica angolo / Qwen-Image-Edit";
+
+                            const res = await fetch("/wox_cinema/register_generation", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    filename: curFilename,
+                                    subfolder: curSubfolder,
+                                    prompt: curPrompt
+                                })
+                            });
+
+                            if (!res.ok) {
+                                throw new Error(`HTTP error ${res.status}`);
+                            }
+                            const resData = await res.json();
+                            if (resData && resData.status === "error") {
+                                throw new Error(resData.message || "Errore registrazione library");
+                            }
+
+                            saveLibBtn.classList.add("saved");
+                            saveLibBtn.innerHTML = `✅ Salvato nella Library!`;
+                            if (statusMsg) {
+                                statusMsg.className = "wox-edit-status-msg success";
+                                statusMsg.textContent = "✅ Immagine registrata nella Library con successo!";
+                            }
+
+                            // Aggiorna gallery e reference senza bloccare
+                            if (typeof fetchReferences === "function") fetchReferences();
+                            if (typeof fetchRecentImages === "function") fetchRecentImages();
+                            if (typeof renderGallery === "function") renderGallery();
+
+                            setTimeout(() => {
+                                saveLibBtn.disabled = false;
+                                saveLibBtn.classList.remove("saved");
+                                saveLibBtn.innerHTML = originalHtml;
+                            }, 3000);
+                        } catch (saveErr) {
+                            console.error("Errore durante il salvataggio nella library:", saveErr);
+                            saveLibBtn.disabled = false;
+                            saveLibBtn.innerHTML = `❌ Errore salvataggio`;
+                            if (statusMsg) {
+                                statusMsg.className = "wox-edit-status-msg error";
+                                statusMsg.textContent = `❌ Errore nel salvataggio in Library: ${saveErr.message || saveErr}`;
+                            }
+                            setTimeout(() => {
+                                saveLibBtn.innerHTML = originalHtml;
+                            }, 3000);
+                        }
+                    });
+                }
 
                 let activeEditRefs = [];
 
@@ -4605,6 +5145,7 @@ app.registerExtension({
                         currentMedia.tag = newTag;
                         if (tagLabel) tagLabel.innerHTML = `Reference: <strong style="color:#d4ff32;">${newTag}</strong>`;
                         if (versionLabel) versionLabel.textContent = "✨ Modificato con AI";
+                        if (window._woxUpdateAngleScene) window._woxUpdateAngleScene(newUrl);
                         if (spinner) spinner.style.display = "none";
                         if (submitBtn) {
                             submitBtn.disabled = false;
@@ -4630,9 +5171,11 @@ app.registerExtension({
 
                 // Generate modification button handler
                 submitBtn.addEventListener("click", async () => {
-                    const promptText = editPromptInput.value.trim();
-                    if (!promptText) {
-                        alert("Inserisci una descrizione della modifica che vuoi apportare.");
+                    let promptText = editPromptInput.value.trim();
+                    const isAngleActive = Math.round(cameraAngleState.azimuth) !== 0 || Math.round(cameraAngleState.elevation) !== 0 || Math.abs(cameraAngleState.distance - 5.0) >= 0.2;
+                    
+                    if (!promptText && !isAngleActive) {
+                        alert("Inserisci una descrizione della modifica oppure cambia l'angolo della camera 3D.");
                         editPromptInput.focus();
                         return;
                     }
@@ -4725,9 +5268,21 @@ Every single pixel must be crisp, deliberate, and high-fidelity hand-drawn 2D sp
                             negativePrompt = "blurry, low quality, distorted, extra limbs, bad anatomy, artifacts";
                         }
 
-                        // 3. Build canvas pipeline with Qwen-Image-Edit Lightning 4-steps
+                        // Check if camera angle was modified
+                        const angleInfo = isAngleActive ? computeAnglePrompts(cameraAngleState.azimuth, cameraAngleState.elevation, cameraAngleState.distance) : null;
+                        if (angleInfo) {
+                            const angleTriggers = [angleInfo.sksPrompt, angleInfo.moves].filter(Boolean).join(" ");
+                            if (positivePrompt) {
+                                positivePrompt = `${angleTriggers}, ${positivePrompt}`.trim();
+                            } else {
+                                positivePrompt = angleTriggers;
+                            }
+                            console.log("WOX Cinema Multiangle prompt injected:", positivePrompt, "angleInfo:", angleInfo);
+                        }
+
+                        // 3. Build canvas pipeline with Qwen-Image-Edit Lightning 4-steps + Multi-Angle LoRA if active
                         if (syncOrBuildQwenImageEditPipeline) {
-                            syncOrBuildQwenImageEditPipeline(inputFilename, positivePrompt, negativePrompt);
+                            syncOrBuildQwenImageEditPipeline(inputFilename, positivePrompt, negativePrompt, angleInfo);
                         } else {
                             throw new Error("Pipeline Qwen-Image-Edit non inizializzata.");
                         }
@@ -5218,6 +5773,25 @@ Every single pixel must be crisp, deliberate, and high-fidelity hand-drawn 2D sp
                         });
                         actionsContainer.appendChild(btnTimeline);
                     } else if (!isPrompt) {
+                        const btnCamera = document.createElement("button");
+                        btnCamera.className = "wox-card-action-icon btn-camera";
+                        btnCamera.title = "Cambia Angolo Camera (3D Qwen-Multiangle)";
+                        btnCamera.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
+                        btnCamera.addEventListener("click", (e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            modalBackdrop.classList.remove("open");
+                            if (typeof openImageEditModal === "function") {
+                                openImageEditModal({
+                                    url: ref.url,
+                                    filename: ref.raw_filename || ref.filename,
+                                    tag: ref.tag,
+                                    prompt: ref.prompt
+                                });
+                            }
+                        });
+                        actionsContainer.appendChild(btnCamera);
+
                         const btnEdit = document.createElement("button");
                         btnEdit.className = "wox-card-action-icon btn-edit";
                         btnEdit.title = "Modifica immagine con Qwen-Image-Edit";
@@ -7214,7 +7788,7 @@ Every single pixel must be crisp, deliberate, and high-fidelity hand-drawn 2D sp
                 if (app.canvas && app.canvas.draw) app.canvas.draw(true, true);
             };
 
-            syncOrBuildQwenImageEditPipeline = (inputFilename, promptText, negativeText = "") => {
+            syncOrBuildQwenImageEditPipeline = (inputFilename, promptText, negativeText = "", angleInfo = null) => {
                 if (!app || !app.graph) return;
 
                 // Safe connection helper
@@ -7316,11 +7890,15 @@ Every single pixel must be crisp, deliberate, and high-fidelity hand-drawn 2D sp
                 }
                 app.graph.add(unet);
 
-                // 4. LoraLoaderModelOnly (Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors)
-                let lora = LiteGraph.createNode("LoraLoaderModelOnly");
+                // 4. LoRA Loading
                 let modelSource = unet;
+
+                // 4a. Multi-Angle LoRA FIRST (matching apps/angles workflow: UNET -> Lightning -> Multi-Angle)
+                // We load Lightning LoRA:
+                let lora = LiteGraph.createNode("LoraLoaderModelOnly");
                 if (lora) {
                     lora.pos = [startX + 320, startY + 360];
+                    lora.title = "LoRA (Lightning 4-steps)";
                     if (lora.widgets) {
                         const loraW = lora.widgets.find(w => w.name === "lora_name") || lora.widgets[0];
                         const availableLoras = loraW?.options?.values || [];
@@ -7337,6 +7915,37 @@ Every single pixel must be crisp, deliberate, and high-fidelity hand-drawn 2D sp
                     app.graph.add(lora);
                     safeConnect(unet, 0, lora, 0);
                     modelSource = lora;
+                }
+
+                // 4b. Multi-Angle LoRA (镜头转换.safetensors / qwen-image-edit-2511-multiple-angles-lora.safetensors)
+                if (angleInfo) {
+                    let angleLora = LiteGraph.createNode("LoraLoaderModelOnly");
+                    if (angleLora) {
+                        angleLora.pos = [startX + 480, startY + 360];
+                        angleLora.title = "LoRA (Multiple Angles)";
+                        if (angleLora.widgets) {
+                            const aLoraW = angleLora.widgets.find(w => w.name === "lora_name") || angleLora.widgets[0];
+                            const availableLoras = aLoraW?.options?.values || [];
+                            
+                            // Check exact options list
+                            let chosenLora = "镜头转换.safetensors";
+                            if (availableLoras.includes("镜头转换.safetensors")) {
+                                chosenLora = "镜头转换.safetensors";
+                            } else if (availableLoras.includes("qwen-image-edit-2511-multiple-angles-lora.safetensors")) {
+                                chosenLora = "qwen-image-edit-2511-multiple-angles-lora.safetensors";
+                            } else {
+                                const match = availableLoras.find(v => v.includes("镜头") || v.toLowerCase().includes("multiple-angles") || v.toLowerCase().includes("multiple_angles") || v.toLowerCase().includes("angle"));
+                                if (match) chosenLora = match;
+                            }
+                            aLoraW.value = chosenLora;
+                            const strW = angleLora.widgets.find(w => w.name === "strength_model") || angleLora.widgets[1];
+                            if (strW) strW.value = 1.0;
+                            console.log("WOX Cinema: Connected Multi-Angle LoRA:", chosenLora, "strength: 1.0");
+                        }
+                        app.graph.add(angleLora);
+                        safeConnect(modelSource, 0, angleLora, 0);
+                        modelSource = angleLora;
+                    }
                 }
 
                 // 5. ModelSamplingAuraFlow (shift: 3.0)

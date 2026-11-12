@@ -1,0 +1,273 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "qwen-multiangle",
+  "name": "Qwen Multiangle Camera",
+  "section": "image",
+  "summary": "Cambia l'angolo di visuale della foto (Azimut 0-360°, Elevazione -30°/+60°, Zoom) con Qwen Multiangle Camera e salva direttamente in libreria.",
+  "higgsfield_feature": "3D Camera Angle Shift",
+  "pack": "image-qwen-edit",
+  "status": "ready",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "ComfyUI-qwenmultiangle",
+    "comfyui": "0.42.0",
+    "notes": "Uses QwenMultiangleCameraNode with 3D camera controls (horizontal azimuth, vertical elevation, zoom) driving Qwen-Image-Edit 2511 Multiple Angles LoRA."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Immagine di partenza",
+      "required": true,
+      "limits": {
+        "max_mb": 25
+      },
+      "bind": [
+        {
+          "node": "11",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "horizontal_angle",
+      "type": "slider",
+      "label": "Angolo Orizzontale (Azimut 0° - 360°)",
+      "default": 45,
+      "min": 0,
+      "max": 360,
+      "step": 5,
+      "help": "0° frontale, 45° trequarti destra, 90° profilo destro, 180° vista posteriore, 270° profilo sinistro",
+      "bind": [
+        {
+          "node": "13",
+          "field": "horizontal_angle"
+        }
+      ]
+    },
+    {
+      "id": "vertical_angle",
+      "type": "slider",
+      "label": "Angolo Verticale (Elevazione -30° a +60°)",
+      "default": 0,
+      "min": -30,
+      "max": 60,
+      "step": 2,
+      "help": "0° altezza occhi, <0° dal basso verso l'alto (low-angle / dal basso), >0° dall'alto verso il basso (high-angle / aerea)",
+      "bind": [
+        {
+          "node": "13",
+          "field": "vertical_angle"
+        }
+      ]
+    },
+    {
+      "id": "zoom",
+      "type": "slider",
+      "label": "Zoom / Distanza (0 = Campo Largo, 10 = Primo Piano)",
+      "default": 5.0,
+      "min": 0.0,
+      "max": 10.0,
+      "step": 0.5,
+      "help": "<2 wide shot (campo lungo), 2-6 medium shot (figura/mezza figura), >6 close-up (primo piano)",
+      "bind": [
+        {
+          "node": "13",
+          "field": "zoom"
+        }
+      ]
+    },
+    {
+      "id": "details",
+      "type": "textarea",
+      "label": "Istruzioni aggiuntive (Opzionale)",
+      "default": "",
+      "help": "Dettagli opzionali sulla scena, illuminazione o espressione.",
+      "bind": [
+        {
+          "node": "15",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 sceglie un seed casuale",
+      "bind": [
+        {
+          "node": "10:3",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "12",
+      "type": "image",
+      "label": "Nuovo Angolo di Ripresa"
+    }
+  ],
+  "presets": [
+    {
+      "id": "front-right-45",
+      "label": "↗️ Trequarti Destra (45°)",
+      "sets": [
+        {
+          "node": "13",
+          "field": "horizontal_angle",
+          "value": 45
+        },
+        {
+          "node": "13",
+          "field": "vertical_angle",
+          "value": 0
+        },
+        {
+          "node": "13",
+          "field": "zoom",
+          "value": 5.0
+        }
+      ]
+    },
+    {
+      "id": "front-left-45",
+      "label": "↖️ Trequarti Sinistra (315°)",
+      "sets": [
+        {
+          "node": "13",
+          "field": "horizontal_angle",
+          "value": 315
+        },
+        {
+          "node": "13",
+          "field": "vertical_angle",
+          "value": 0
+        },
+        {
+          "node": "13",
+          "field": "zoom",
+          "value": 5.0
+        }
+      ]
+    },
+    {
+      "id": "high-angle-top",
+      "label": "⬇️ Vista dall'alto (High Angle +45°)",
+      "sets": [
+        {
+          "node": "13",
+          "field": "horizontal_angle",
+          "value": 0
+        },
+        {
+          "node": "13",
+          "field": "vertical_angle",
+          "value": 45
+        },
+        {
+          "node": "13",
+          "field": "zoom",
+          "value": 4.0
+        }
+      ]
+    },
+    {
+      "id": "low-angle-up",
+      "label": "⬆️ Dal basso (Low Angle -25°)",
+      "sets": [
+        {
+          "node": "13",
+          "field": "horizontal_angle",
+          "value": 0
+        },
+        {
+          "node": "13",
+          "field": "vertical_angle",
+          "value": -25
+        },
+        {
+          "node": "13",
+          "field": "zoom",
+          "value": 6.0
+        }
+      ]
+    },
+    {
+      "id": "back-view",
+      "label": "🔄 Vista da Dietro (180°)",
+      "sets": [
+        {
+          "node": "13",
+          "field": "horizontal_angle",
+          "value": 180
+        },
+        {
+          "node": "13",
+          "field": "vertical_angle",
+          "value": 0
+        },
+        {
+          "node": "13",
+          "field": "zoom",
+          "value": 5.0
+        }
+      ]
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+      "file": "split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.43,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.38,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "lightx2v/Qwen-Image-Lightning",
+      "file": "Qwen-Image-Edit-2509/Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors",
+      "dir": "loras",
+      "gb": 0.85,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "jtydhr88/ComfyUI-qwenmultiangle",
+      "file": "qwen-image-edit-2511-multiple-angles-lora.safetensors",
+      "dir": "loras",
+      "gb": 0.28,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Qwen-Image-Edit-2509 by Alibaba Qwen (Apache-2.0)",
+    "ComfyUI-qwenmultiangle by jtydhr88 (MIT)",
+    "Lightning LoRA by lightx2v"
+  ],
+  "test": {
+    "horizontal_angle": 45,
+    "vertical_angle": 0,
+    "zoom": 5.0
+  }
+}

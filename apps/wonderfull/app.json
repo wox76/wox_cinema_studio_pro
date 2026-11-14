@@ -201,9 +201,9 @@
     {
       "id": "hair_style",
       "type": "select",
-      "label": "Capelli & Occhiali",
+      "label": "Capelli",
       "default": "",
-      "help": "Volume, taglio, colore capelli oppure occhiali.",
+      "help": "Volume, taglio e colore dei capelli.",
       "options": [
         {
           "value": "",
@@ -238,8 +238,8 @@
           "label": "Castano"
         },
         {
-          "value": "Add stylish thin-framed modern eyeglasses naturally resting on the nose.",
-          "label": "Occhiali"
+          "value": "Remove any eyeglasses or sunglasses completely, revealing natural clear eyes, eyebrows, nose bridge and smooth skin underneath.",
+          "label": "Senza Occhiali"
         }
       ]
     },
@@ -376,7 +376,7 @@
         {
           "node": "4",
           "field": "prompt",
-          "template": "{impression} {smile} {eyes} {age} {beard} {hair_style} {contouring} {color_effect} {intensity} {details} Keep the same recognizable person, exact original skin tone, color temperature, white balance, ambient lighting and shadow intensity, exact camera framing, background, clothing, accessories, eyeglasses frames, with authentic skin pores and photographic realism."
+          "template": "{impression} {smile} {eyes} {age} {beard} {hair_style} {contouring} {color_effect} {intensity} {details} Keep the same recognizable person, exact original skin tone, color temperature, white balance, ambient lighting and shadow intensity, exact camera framing, background, clothing and accessories, with no eyeglasses or sunglasses, completely removing any glasses to show clear unobstructed natural eyes, authentic skin pores and photographic realism."
         }
       ]
     },

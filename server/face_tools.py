@@ -303,7 +303,7 @@ def _build_semantic_mask(
             # ParseNet CelebAMask-HQ IDs:
             # 0=bg, 1=skin, 2=nose, 3=glasses, 4=l_eye, 5=r_eye, 6=l_brow, 7=r_brow,
             # 8=l_ear, 9=r_ear, 10=mouth, 11=u_lip, 12=l_lip, 13=hair, 14=hat, 17=neck, 18=cloth
-            face_ids = (1, 2, 4, 5, 6, 7, 10, 11, 12) + (() if keep_glasses else (3,))
+            face_ids = (1, 2, 3, 4, 5, 6, 7, 10, 11, 12)
             active_ids = face_ids + ((8, 9, 13, 14) if mode == "head" else ())
 
             # Pure skin pixels present in BOTH original and edited patch (skin=1, nose=2, neck=17)
@@ -323,10 +323,8 @@ def _build_semantic_mask(
             taper = np.clip(1.0 - (y_coords - jaw_y) / max(12.0, fh * 0.42), 0.0, 1.0)
             raw = np.maximum(raw, neck_mask * taper * 0.55)
 
-            # Preserve original eyeglass frames intact unless the user asked for new glasses
-            if keep_glasses:
-                raw[cls_roi == 3] = 0.0
-                raw[cls_patch == 3] = 0.0
+            # Never paste hallucinated glasses from patch if the original face had no glasses there
+            raw[(cls_patch == 3) & (cls_roi != 3)] = 0.0
 
             # Never bleed Qwen's background/clothes pixels onto the original photo
             if mode == "face":
@@ -350,10 +348,6 @@ def _build_semantic_mask(
                 # Hard-shield any background pixels so cheek/jaw boundaries never halo onto the wall
                 bg_wall = ((cls_roi == 0) & (cls_patch == 0)).astype(np.float32)
                 mask = mask * (1.0 - bg_wall)
-            if keep_glasses:
-                rim = cv2.dilate(((cls_roi == 3) | (cls_patch == 3)).astype(np.float32), np.ones((3, 3), np.uint8))
-                rim = cv2.GaussianBlur(rim, (5, 5), 0)
-                mask = mask * (1.0 - rim * 0.90)
         except Exception:
             mask = gate
     else:

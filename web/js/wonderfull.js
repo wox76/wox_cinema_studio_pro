@@ -64,7 +64,7 @@ const OPTION_EMOJI = {
   "Biondo": "💛",
   "Rosso": "🧡",
   "Castano": "🤎",
-  "Occhiali": "👓",
+  "Senza Occhiali": "👁️",
   "Contouring": "💎",
   "Fard": "🌺",
   "Eyeliner": "👁️",
@@ -577,8 +577,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
         if (face.bbox) fd.append("wf_face_box", `${face.bbox.x},${face.bbox.y},${face.bbox.w},${face.bbox.h}`);
         const editsHead = cat.id === "hair_style" || cat.id === "age" || cat.id === "details";
         fd.append("wf_mode", editsHead ? "head" : "face");
-        const wantsGlasses = cat.id === "hair_style" && String(state.draftValues.hair_style || "").toLowerCase().includes("eyeglass");
-        fd.append("wf_keep_glasses", wantsGlasses ? "0" : "1");
+        fd.append("wf_keep_glasses", "0");
       }
       for (const inp of app.inputs) {
         if (inp.id === "image") continue;

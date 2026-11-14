@@ -409,6 +409,7 @@ test("wonderfull builds a FaceApp-inspired beauty, smile, contouring and color p
   assert.match(defaultPrompt, /Bacio FaceApp beauty retouch/);
   assert.match(defaultPrompt, /Level 3/);
   assert.match(defaultPrompt, /existing facial hair/);
+  assert.match(defaultPrompt, /no eyeglasses or sunglasses/);
   assert.doesNotMatch(defaultPrompt, /\. \./);
 
   const wfCustom = recorder();

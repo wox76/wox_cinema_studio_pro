@@ -220,12 +220,17 @@ else
 fi
 
 echo ""
+WF_LINKS="$(node -e "fetch('http://127.0.0.1:3000/api/wonderfull/share').then(r=>r.json()).then(d=>{console.log((d.lan_url||'')+'|'+(d.public_url||'in generazione...'));}).catch(()=>console.log('|'))" 2>/dev/null || true)"
+WF_LAN="${WF_LINKS%%|*}"
+WF_PUB="${WF_LINKS#*|}"
 echo -e "${GREEN}${BOLD}========================================================================${RESET}"
 echo -e "${GREEN}${BOLD}    WOX CINEMA STUDIO PRO È OPERATIVO E PRONTO!                         ${RESET}"
-echo -e "    Studio UI:     ${BOLD}http://127.0.0.1:3000${RESET}"
-echo -e "    Video Studio:  ${BOLD}http://127.0.0.1:3000/editor/${RESET}"
-echo -e "    ComfyUI:       ${BOLD}http://127.0.0.1:8188${RESET}"
-echo -e "    Gateway API:   ${BOLD}http://127.0.0.1:8000${RESET}"
+echo -e "    Studio UI:          ${BOLD}http://127.0.0.1:3000${RESET}"
+echo -e "    Video Studio:       ${BOLD}http://127.0.0.1:3000/editor/${RESET}"
+echo -e "    Wonderfull Wi-Fi:   ${BOLD}${WF_LAN:-http://127.0.0.1:3000/wonderfull}${RESET}"
+echo -e "    Wonderfull 4G/5G:   ${BOLD}${WF_PUB:-apri il tasto 📱 Telefono in Wonderfull}${RESET}"
+echo -e "    ComfyUI:            ${BOLD}http://127.0.0.1:8188${RESET}"
+echo -e "    Gateway API:        ${BOLD}http://127.0.0.1:8000${RESET}"
 echo -e "${GREEN}${BOLD}========================================================================${RESET}"
 echo -e "${DIM}Premi [CTRL+C] in questa finestra per arrestare tutti i servizi.${RESET}\n"
 

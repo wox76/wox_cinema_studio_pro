@@ -13,11 +13,26 @@ import { openViewer } from "./viewer.js";
 import { openCompare } from "./compare.js";
 import { flags } from "./flags.js";
 
+const isWonderfullStandalone =
+  new URLSearchParams(location.search).get("wonderfull") === "1" ||
+  location.pathname === "/wonderfull" ||
+  location.pathname === "/wonderfull/";
+if (isWonderfullStandalone) {
+  document.body.classList.add("wonderfull-standalone");
+}
+
 const main = el("main", { id: "main", class: "view" });
 let bar = null;
 let current = null;
 
 function route() {
+  if (isWonderfullStandalone) {
+    if (location.hash !== "#/app/wonderfull") {
+      history.replaceState(null, "", `${location.pathname}${location.search}#/app/wonderfull`);
+    }
+    const view = workspaceView("wonderfull");
+    return { ...view, active: "wonderfull" };
+  }
   let hash = location.hash || "#";
   if (!location.hash || location.hash === "#" || location.hash === "#/") {
     if (location.hash !== "#/app/cinema-studio") history.replaceState(null, "", "#/app/cinema-studio");
@@ -59,6 +74,7 @@ function render({ keepScroll = false } = {}) {
 }
 
 function buildBar() {
+  if (isWonderfullStandalone) return;
   const next = topbar({ onLang: () => { buildBar(); render({ keepScroll: true }); } });
   if (bar) bar.node.replaceWith(next.node); else document.body.prepend(next.node);
   bar = next;

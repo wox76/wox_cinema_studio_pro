@@ -32,6 +32,7 @@ import { Flags } from "./flags.ts";
 import { DOOR_HTML, Guard } from "./guard.ts";
 import { thermalGuard } from "./thermal.ts";
 import { InstallerManager, type ModelDef } from "./installer.ts";
+import { TunnelManager } from "./tunnel.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -98,6 +99,8 @@ let runner: Runner | null = null;
 const getRunner = () => (runner ??= new Runner());
 const isDraftsAllowed = () => process.env.WOX_DRAFTS === "1" || process.env.FREEFIELD_DRAFTS === "1";
 const outDir = process.env.WOX_OUT || process.env.FREEFIELD_OUT || join(root, "out");
+const port = Number(process.env.PORT ?? 3000);
+const tunnel = new TunnelManager(root, outDir, port);
 const guard = Guard.fromEnv(join(outDir, "limits.json"));
 const maxUploadMb = Number(process.env.WOX_MAX_UPLOAD_MB || process.env.FREEFIELD_MAX_UPLOAD_MB || (guard.hosted ? 100 : 0));
 
@@ -666,6 +669,18 @@ const server = createServer(async (req, res) => {
           return send(res, 200, { ok: true, ...installer.getStatus(), safe: thermalGuard.status() });
         }
       }
+      if (area === "wonderfull" && id === "share") {
+        if (req.method === "GET") {
+          return send(res, 200, tunnel.getStatus());
+        }
+        if (req.method === "POST") {
+          const body = await (await toRequest(req)).json().catch(() => null) as { action?: "start" | "restart" | "stop" } | null;
+          const act = body?.action || "start";
+          if (act === "stop") return send(res, 200, tunnel.stop());
+          if (act === "restart") return send(res, 200, await tunnel.restart());
+          return send(res, 200, await tunnel.start());
+        }
+      }
       if (area === "wonderfull" && req.method === "POST") {
         const form = await (await toRequest(req)).formData();
         const dir = mkdtempSync(join(tmpdir(), "wox-wf-"));
@@ -752,6 +767,10 @@ const server = createServer(async (req, res) => {
       return send(res, 404, { error: "not found" });
     }
     // static web/
+    if (url.pathname === "/wonderfull" || url.pathname === "/wonderfull/") {
+      res.writeHead(302, { Location: "/?wonderfull=1#/app/wonderfull" });
+      return res.end();
+    }
     if (url.pathname.startsWith("/app/") || url.pathname === "/apps") {
       res.writeHead(302, { Location: `/#${url.pathname}` });
       return res.end();
@@ -772,8 +791,14 @@ const server = createServer(async (req, res) => {
 // runs that were still going when the server stopped are followed again
 history.resume(async (jobId) => getRunner().jobs().get(jobId));
 
-const port = Number(process.env.PORT ?? 3000);
-const host = process.env.WOX_HOST || process.env.FREEFIELD_HOST || "127.0.0.1";
-server.listen(port, host, () => console.log(`Wox Cinema Studio Pro on http://${host}:${port} (${apps.length} apps)`
-  + (guard.passcode ? " · passcode required" : "") + (guard.maxRunsPerDay ? ` · ${guard.maxRunsPerDay} runs a day` : "")));
+const host = process.env.WOX_HOST || process.env.FREEFIELD_HOST || "0.0.0.0";
+server.listen(port, host, () => {
+  console.log(`Wox Cinema Studio Pro on http://${host === "0.0.0.0" ? "127.0.0.1" : host}:${port} (${apps.length} apps)`
+    + (guard.passcode ? " · passcode required" : "") + (guard.maxRunsPerDay ? ` · ${guard.maxRunsPerDay} runs a day` : ""));
+  const st = tunnel.getStatus();
+  console.log(`📱 Wonderfull Mobile (Wi-Fi LAN): ${st.lan_url}`);
+  if (process.env.WOX_TUNNEL !== "0") {
+    void tunnel.start();
+  }
+});
 

@@ -226,17 +226,69 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     busyText: "",
     holdingCompare: false,
     showLibraryModal: false,
+    showShareModal: false,
+    shareInfo: null,
+    shareLoading: false,
     steps: Number(inputMap.steps?.default || 6),
   };
 
+  let sharePollTimer = null;
   const objectUrls = new Set();
   const trackUrl = (u) => { if (u && u.startsWith("blob:")) objectUrls.add(u); return u; };
   let lastStageTransform = "translate(0px, 0px) scale(1)";
   const cleanup = () => {
+    clearTimeout(sharePollTimer);
     disconnectGalleryObservers();
     for (const u of objectUrls) try { URL.revokeObjectURL(u); } catch {}
     objectUrls.clear();
   };
+
+  async function refreshShareInfo(action = null) {
+    clearTimeout(sharePollTimer);
+    state.shareLoading = true;
+    draw();
+    try {
+      const info = action
+        ? await api("/api/wonderfull/share", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action }),
+          })
+        : await api("/api/wonderfull/share");
+      state.shareInfo = info;
+      if (info && info.status === "stopped" && !action) {
+        const started = await api("/api/wonderfull/share", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "start" }),
+        });
+        state.shareInfo = started;
+      }
+      if (state.showShareModal && state.shareInfo?.status === "starting") {
+        sharePollTimer = setTimeout(() => refreshShareInfo(null), 1500);
+      }
+    } catch (err) {
+      toast(err.message || "Errore tunnel remoto", { error: true });
+    } finally {
+      state.shareLoading = false;
+      draw();
+    }
+  }
+
+  function openShareModal() {
+    state.showShareModal = true;
+    void refreshShareInfo(null);
+  }
+
+  async function copyShareLink(url, label) {
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(`📋 ${label} copiato negli appunti!`);
+    } catch {
+      toast(url);
+    }
+  }
 
   function formatGalleryCounter() {
     if (!gallery.loadedOnce && gallery.loading) return "Caricamento galleria…";
@@ -415,6 +467,13 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
   fileInput.addEventListener("change", () => {
     const f = fileInput.files?.[0];
     fileInput.value = "";
+    if (f) loadPhoto(f);
+  });
+
+  const cameraInput = el("input", { type: "file", accept: "image/*", capture: "user", style: { display: "none" } });
+  cameraInput.addEventListener("change", () => {
+    const f = cameraInput.files?.[0];
+    cameraInput.value = "";
     if (f) loadPhoto(f);
   });
 
@@ -662,13 +721,18 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
   }
 
   function renderStartScreen() {
+    const isStandalone = document.body.classList.contains("wonderfull-standalone");
     const demos = demoPortraits();
     const gridCards = [
       el("button", { type: "button", class: "wf-face-tile wf-tile-cam", onclick: () => fileInput.click() },
         icon("upload"),
         el("span", {}, "Carica Foto")
       ),
-      ...demos.slice(0, 3).map((d) => el("button", { type: "button", class: "wf-face-tile", onclick: () => loadPhoto(d) },
+      el("button", { type: "button", class: "wf-face-tile wf-tile-cam wf-tile-selfie", onclick: () => cameraInput.click() },
+        el("span", { style: { fontSize: "22px", lineHeight: "1" } }, "📸"),
+        el("span", {}, "Scatta Foto")
+      ),
+      ...demos.slice(0, 2).map((d) => el("button", { type: "button", class: "wf-face-tile", onclick: () => loadPhoto(d) },
         el("img", { src: d.thumb, alt: d.label, loading: "lazy", decoding: "async" }),
         el("span", { class: "wf-demo-tag" }, "DEMO")
       )),
@@ -717,9 +781,14 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
 
     return el("div", { class: "wf-phone wf-start" },
       el("div", { class: "wf-topbar" },
-        switcherBtn ? switcherBtn() : el("span", { class: "wf-top-sp" }),
+        (!isStandalone && switcherBtn) ? switcherBtn() : el("span", { class: "wf-top-sp" }),
         el("span", { class: "wf-top-title" }, "Wonderfull · FaceApp Studio"),
-        el("span", { class: "wf-top-sp" })
+        el("button", {
+          type: "button",
+          class: "wf-phone-link-btn",
+          title: "Usa Wonderfull da Telefono (anche fuori rete Wi-Fi / 4G / 5G)",
+          onclick: openShareModal,
+        }, "📱 Telefono")
       ),
       startBody
     );
@@ -1263,6 +1332,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
         }, icon("chevL")),
         el("span", { class: "wf-top-title" }, activeTitle),
         el("div", { class: "wf-top-right" },
+          el("button", { type: "button", class: "wf-top-icon", title: "Usa da Telefono / Link Remoto", onclick: openShareModal }, "📱"),
           state.stack.length ? el("button", { type: "button", class: "wf-top-icon", title: "Ripristina originale", onclick: resetAll }, icon("redo")) : null,
           el("button", { type: "button", class: "wf-top-icon", title: "Salva nella Library", onclick: saveResultToLibrary }, icon("upload")),
           el("button", { type: "button", class: "wf-top-icon wf-dl", title: "Scarica immagine", onclick: downloadResult }, icon("download"))
@@ -1312,14 +1382,115 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     );
   }
 
+  function renderShareModal() {
+    if (!state.showShareModal) return null;
+    const info = state.shareInfo;
+    const pubUrl = info?.public_url || "";
+    const lanUrl = info?.lan_url || `${location.origin}/wonderfull`;
+    const isRunning = info?.status === "running" && Boolean(pubUrl);
+    const isStarting = state.shareLoading || info?.status === "starting";
+
+    const qrWrap = el("div", { class: "wf-qr-box" });
+    if (info?.qr_svg) {
+      qrWrap.innerHTML = info.qr_svg;
+    } else {
+      qrWrap.append(el("span", { class: "wf-spin" }, icon("loader")));
+    }
+
+    return el("div", {
+      class: "wf-lib-modal wf-share-modal",
+      onclick: (e) => {
+        if (e.target.classList.contains("wf-share-modal")) {
+          clearTimeout(sharePollTimer);
+          state.showShareModal = false;
+          draw();
+        }
+      }
+    },
+      el("div", { class: "wf-lib-card wf-share-card" },
+        el("div", { class: "wf-lib-head" },
+          el("div", { class: "wf-lib-title" },
+            el("b", {}, "📱 Usa Wonderfull da Telefono"),
+            el("small", { class: `wf-share-badge ${isRunning ? "ok" : isStarting ? "wait" : "warn"}` },
+              isRunning ? "● Online (Ovunque 4G/5G & Wi-Fi)" : isStarting ? "Connessione tunnel in corso…" : "Solo Wi-Fi Locale"
+            )
+          ),
+          el("button", {
+            type: "button",
+            class: "icon-btn mini",
+            onclick: () => {
+              clearTimeout(sharePollTimer);
+              state.showShareModal = false;
+              draw();
+            }
+          }, icon("x"))
+        ),
+        el("div", { class: "wf-share-body" },
+          el("div", { class: "wf-share-qr-row" },
+            qrWrap,
+            el("div", { class: "wf-share-qr-info" },
+              el("h4", {}, "Inquadra il QR Code col telefono"),
+              el("p", {}, "Con il tuo computer acceso puoi aprire ed usare Wonderfull direttamente dal browser del telefono (iPhone / Android), anche fuori casa sotto rete 4G / 5G!"),
+              el("div", { class: "wf-share-actions" },
+                el("button", {
+                  type: "button",
+                  class: "wf-act-cancel",
+                  disabled: isStarting,
+                  onclick: () => refreshShareInfo("restart")
+                }, isStarting ? " Generazione…" : "↻ Rigenera Link Remoto")
+              )
+            )
+          ),
+          el("div", { class: "wf-share-links" },
+            el("div", { class: "wf-share-field" },
+              el("label", {}, "🌐 Link Ovunque (4G / 5G / Fuori casa — HTTPS)"),
+              el("div", { class: "wf-share-input-row" },
+                el("input", {
+                  type: "text",
+                  readonly: true,
+                  value: pubUrl || (isStarting ? "Creazione link pubblico Cloudflare in corso…" : "Premi 'Rigenera Link Remoto' per attivare"),
+                  onclick: (e) => e.target.select()
+                }),
+                el("button", {
+                  type: "button",
+                  class: "wf-act-apply ready",
+                  disabled: !pubUrl,
+                  onclick: () => copyShareLink(pubUrl, "Link remoto")
+                }, "Copia")
+              )
+            ),
+            el("div", { class: "wf-share-field" },
+              el("label", {}, "📶 Link Stessa Rete Wi-Fi (Casa / Ufficio — Ultra Veloce)"),
+              el("div", { class: "wf-share-input-row" },
+                el("input", {
+                  type: "text",
+                  readonly: true,
+                  value: lanUrl,
+                  onclick: (e) => e.target.select()
+                }),
+                el("button", {
+                  type: "button",
+                  class: "wf-act-cancel",
+                  onclick: () => copyShareLink(lanUrl, "Link Wi-Fi")
+                }, "Copia")
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
   function draw() {
     const prevStartScroll = root.querySelector(".wf-start-body")?.scrollTop || 0;
     disconnectGalleryObservers();
     root.replaceChildren(
       ...[
         fileInput,
+        cameraInput,
         state.currentUrl ? renderEditor() : renderStartScreen(),
         renderLibraryModal(),
+        renderShareModal(),
       ].filter(Boolean)
     );
     const nextStartBody = root.querySelector(".wf-start-body");

@@ -376,7 +376,7 @@
         {
           "node": "4",
           "field": "prompt",
-          "template": "{impression} {smile} {eyes} {age} {beard} {hair_style} {contouring} {color_effect} {intensity} {details} Keep the same recognizable person, exact camera framing, background, clothing, accessories, eyeglasses frames, and natural lighting, with authentic skin pores and photographic realism."
+          "template": "{impression} {smile} {eyes} {age} {beard} {hair_style} {contouring} {color_effect} {intensity} {details} Keep the same recognizable person, exact original skin tone, color temperature, white balance, ambient lighting and shadow intensity, exact camera framing, background, clothing, accessories, eyeglasses frames, with authentic skin pores and photographic realism."
         }
       ]
     },

@@ -263,7 +263,7 @@ def _build_semantic_mask(
     mode: str,
     models_dir: str,
     keep_glasses: bool = True,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     bh, bw = roi_bgr.shape[:2]
     fx, fy, fw, fh = face_rel
     cx = int(round(fx + fw * 0.5))
@@ -277,6 +277,23 @@ def _build_semantic_mask(
     gate_blur = max(11, int(round(min(fw, fh) * 0.14)) | 1)
     gate = cv2.GaussianBlur(gate, (gate_blur, gate_blur), 0)
 
+    # Fallback anatomical skin reference mask (cheeks, forehead, nose, chin; excluding eye & mouth slots)
+    fallback_skin = np.zeros((bh, bw), dtype=np.float32)
+    cv2.ellipse(
+        fallback_skin,
+        (cx, int(round(fy + fh * 0.48))),
+        (max(8, int(round(fw * 0.44))), max(8, int(round(fh * 0.46)))),
+        0, 0, 360, 1.0, -1,
+    )
+    ey1, ey2 = max(0, int(round(fy + fh * 0.22))), min(bh, int(round(fy + fh * 0.45)))
+    ex1, ex2 = max(0, int(round(fx + fw * 0.12))), min(bw, int(round(fx + fw * 0.88)))
+    fallback_skin[ey1:ey2, ex1:ex2] = 0.0
+    my1, my2 = max(0, int(round(fy + fh * 0.62))), min(bh, int(round(fy + fh * 0.88)))
+    mx1, mx2 = max(0, int(round(fx + fw * 0.22))), min(bw, int(round(fx + fw * 0.78)))
+    fallback_skin[my1:my2, mx1:mx2] = 0.0
+    skin_ref = fallback_skin > 0.5
+    bg_wall = np.zeros((bh, bw), dtype=np.float32)
+
     bundle = _load_parsenet(models_dir)
     if bundle is not None:
         try:
@@ -288,6 +305,12 @@ def _build_semantic_mask(
             # 8=l_ear, 9=r_ear, 10=mouth, 11=u_lip, 12=l_lip, 13=hair, 14=hat, 17=neck, 18=cloth
             face_ids = (1, 2, 4, 5, 6, 7, 10, 11, 12) + (() if keep_glasses else (3,))
             active_ids = face_ids + ((8, 9, 13, 14) if mode == "head" else ())
+
+            # Pure skin pixels present in BOTH original and edited patch (skin=1, nose=2, neck=17)
+            skin_ids = (1, 2, 17)
+            parsed_skin = np.isin(cls_roi, skin_ids) & np.isin(cls_patch, skin_ids) & (gate > 0.20)
+            if np.count_nonzero(parsed_skin) >= 120:
+                skin_ref = parsed_skin
 
             raw = np.zeros((bh, bw), dtype=np.float32)
             for cid in active_ids:
@@ -343,7 +366,110 @@ def _build_semantic_mask(
     mask[-pad_y:, :] = 0.0
     mask[:, :pad_x] = 0.0
     mask[:, -pad_x:] = 0.0
-    return np.clip(mask, 0.0, 1.0)
+    return np.clip(mask, 0.0, 1.0), skin_ref, bg_wall
+
+
+def _trimmed_stats(arr: np.ndarray) -> tuple[float, float]:
+    if arr.size == 0:
+        return 0.0, 1.0
+    lo, hi = np.percentile(arr, [10.0, 90.0])
+    trimmed = arr[(arr >= lo) & (arr <= hi)]
+    if trimmed.size < 16:
+        trimmed = arr
+    return float(np.mean(trimmed)), max(1.0, float(np.std(trimmed)))
+
+
+def _harmonize_and_blend_face(
+    roi_bgr: np.ndarray,
+    patch_bgr: np.ndarray,
+    mask: np.ndarray,
+    skin_ref: np.ndarray,
+    bg_wall: np.ndarray,
+    face_rel: tuple[float, float, float, float],
+) -> np.ndarray:
+    """3-stage perceptual color & lighting matcher + 2-band Laplacian pyramid blend."""
+    bh, bw = roi_bgr.shape[:2]
+    _, _, fw, fh = face_rel
+
+    roi_lab = cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
+    patch_lab = cv2.cvtColor(patch_bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
+
+    # Exclude pixels where structural content changed drastically (e.g. added beard, opened teeth/eyes)
+    l_diff = np.abs(roi_lab[:, :, 0] - patch_lab[:, :, 0])
+    valid_skin = skin_ref & (l_diff < 38.0)
+    if np.count_nonzero(valid_skin) < 80:
+        valid_skin = (mask > 0.06) & (mask < 0.78) & (l_diff < 42.0)
+    if np.count_nonzero(valid_skin) < 40:
+        valid_skin = mask > 0.10
+
+    # Stage 1: CIE LAB Reinhard color transfer on invariant skin pixels
+    matched_lab = patch_lab.copy()
+    if np.any(valid_skin):
+        # L* channel (luminance & contrast)
+        mean_r_l, std_r_l = _trimmed_stats(roi_lab[:, :, 0][valid_skin])
+        mean_p_l, std_p_l = _trimmed_stats(patch_lab[:, :, 0][valid_skin])
+        gain_l = float(np.clip(std_r_l / std_p_l, 0.82, 1.18))
+        alpha_l = 0.86
+        matched_lab[:, :, 0] = (
+            (patch_lab[:, :, 0] - mean_p_l) * (1.0 + alpha_l * (gain_l - 1.0))
+            + mean_p_l
+            + alpha_l * (mean_r_l - mean_p_l)
+        )
+
+        # a* and b* chrominance channels (skin warmth, redness/magenta, yellow/tan undertone)
+        for c in (1, 2):
+            mean_r_c, std_r_c = _trimmed_stats(roi_lab[:, :, c][valid_skin])
+            mean_p_c, std_p_c = _trimmed_stats(patch_lab[:, :, c][valid_skin])
+            gain_c = float(np.clip(std_r_c / std_p_c, 0.78, 1.24))
+            alpha_c = 0.95
+            matched_lab[:, :, c] = (
+                (patch_lab[:, :, c] - mean_p_c) * (1.0 + alpha_c * (gain_c - 1.0))
+                + mean_p_c
+                + alpha_c * (mean_r_c - mean_p_c)
+            )
+
+    matched_lab = np.clip(matched_lab, 0.0, 255.0).astype(np.uint8)
+    patch_f = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2BGR).astype(np.float32)
+    roi_f = roi_bgr.astype(np.float32)
+
+    # Stage 2: Smooth spatial illumination & seam field (normalized convolution)
+    seam_ring = np.clip(1.0 - np.abs(mask - 0.28) / 0.28, 0.0, 1.0)
+    color_jump = np.max(np.abs(roi_f - patch_f), axis=2)
+    no_struct_jump = np.clip(1.0 - (color_jump - 28.0) / 24.0, 0.0, 1.0)
+    w_illum = np.maximum(seam_ring, valid_skin.astype(np.float32) * 0.55) * no_struct_jump
+
+    if float(np.sum(w_illum)) > 25.0:
+        k_illum = max(31, int(round(min(bw, bh) * 0.22)) | 1)
+        den = cv2.GaussianBlur(w_illum, (k_illum, k_illum), 0) + 1e-4
+        for c in range(3):
+            res = (roi_f[:, :, c] - patch_f[:, :, c]) * w_illum
+            num = cv2.GaussianBlur(res, (k_illum, k_illum), 0)
+            field = np.clip(num / den, -24.0, 24.0)
+            patch_f[:, :, c] = np.clip(patch_f[:, :, c] + field * 0.88, 0.0, 255.0)
+
+    # Stage 3: 2-Band Laplacian Pyramid Blend (wide smooth color transition + crisp high-frequency details)
+    k_pyr = max(7, int(round(min(fw, fh) * 0.05)) | 1)
+    roi_lo = cv2.GaussianBlur(roi_f, (k_pyr, k_pyr), 0)
+    patch_lo = cv2.GaussianBlur(patch_f, (k_pyr, k_pyr), 0)
+    roi_hi = roi_f - roi_lo
+    patch_hi = patch_f - patch_lo
+
+    k_lo_mask = max(19, int(round(min(fw, fh) * 0.14)) | 1)
+    mask_lo = cv2.GaussianBlur(mask, (k_lo_mask, k_lo_mask), 0)
+    mask_lo = mask_lo * (1.0 - bg_wall)
+    pad_x = max(2, int(round(bw * 0.02)))
+    pad_y = max(2, int(round(bh * 0.02)))
+    mask_lo[:pad_y, :] = 0.0
+    mask_lo[-pad_y:, :] = 0.0
+    mask_lo[:, :pad_x] = 0.0
+    mask_lo[:, -pad_x:] = 0.0
+    mask_lo = np.clip(mask_lo, 0.0, 1.0)
+
+    alpha_lo = mask_lo[:, :, None]
+    alpha_hi = mask[:, :, None]
+    blend_lo = patch_lo * alpha_lo + roi_lo * (1.0 - alpha_lo)
+    blend_hi = patch_hi * alpha_hi + roi_hi * (1.0 - alpha_hi)
+    return np.clip(blend_lo + blend_hi, 0.0, 255.0)
 
 
 def cmd_composite(args: argparse.Namespace) -> dict[str, Any]:
@@ -372,7 +498,7 @@ def cmd_composite(args: argparse.Namespace) -> dict[str, Any]:
     analyzer = _get_analyzer(insight_root)
     patch_aligned_bgr = _align_patch_to_roi(roi_bgr, patch_bgr, analyzer, face_center)
 
-    mask = _build_semantic_mask(
+    mask, skin_ref, bg_wall = _build_semantic_mask(
         roi_bgr,
         patch_aligned_bgr,
         face_rel,
@@ -381,18 +507,14 @@ def cmd_composite(args: argparse.Namespace) -> dict[str, Any]:
         keep_glasses=not args.no_keep_glasses,
     )
 
-    roi_f = roi_bgr.astype(np.float32)
-    patch_f = patch_aligned_bgr.astype(np.float32)
-
-    # Gentle ambient luminance/white-balance match along the outer skin transition seam
-    ring = (mask > 0.04) & (mask < 0.40)
-    if np.any(ring):
-        for c in range(3):
-            diff = float(np.mean(roi_f[:, :, c][ring] - patch_f[:, :, c][ring]))
-            patch_f[:, :, c] = np.clip(patch_f[:, :, c] + np.clip(diff, -9.0, 9.0), 0.0, 255.0)
-
-    alpha = mask[:, :, None]
-    blended = patch_f * alpha + roi_f * (1.0 - alpha)
+    blended = _harmonize_and_blend_face(
+        roi_bgr,
+        patch_aligned_bgr,
+        mask,
+        skin_ref,
+        bg_wall,
+        face_rel,
+    )
     out_bgr = base_bgr.astype(np.float32)
     out_bgr[y1:y2, x1:x2] = np.clip(blended, 0.0, 255.0)
     out_rgb = cv2.cvtColor(out_bgr.astype(np.uint8), cv2.COLOR_BGR2RGB)

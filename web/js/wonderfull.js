@@ -122,6 +122,51 @@ async function urlToFile(url, name = "photo.png") {
   return new File([blob], fname, { type: blob.type || "image/png" });
 }
 
+async function normalizeImageFile(file, rotateDeg = 0) {
+  const tmpUrl = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.decoding = "async";
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = tmpUrl;
+    });
+    const srcW = img.naturalWidth || img.width;
+    const srcH = img.naturalHeight || img.height;
+    if (!srcW || !srcH) return file;
+
+    const maxSide = 2200;
+    const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
+    const w = Math.max(1, Math.round(srcW * scale));
+    const h = Math.max(1, Math.round(srcH * scale));
+    const swap = rotateDeg === 90 || rotateDeg === 270;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = swap ? h : w;
+    canvas.height = swap ? w : h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+
+    if (rotateDeg) {
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotateDeg * Math.PI) / 180);
+      ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    } else {
+      ctx.drawImage(img, 0, 0, w, h);
+    }
+
+    const outBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.95));
+    if (!outBlob) return file;
+    const baseName = (file.name || "photo").replace(/\.[^.]+$/, "");
+    return new File([outBlob], `${baseName}.jpg`, { type: "image/jpeg" });
+  } catch {
+    return file;
+  } finally {
+    URL.revokeObjectURL(tmpUrl);
+  }
+}
+
 function waitJobDone(entryId, onTick) {
   return new Promise((resolve, reject) => {
     const check = () => {
@@ -525,6 +570,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
       }
     } else return;
 
+    file = await normalizeImageFile(file, 0);
     const url = trackUrl(URL.createObjectURL(file));
     state.originalFile = file;
     state.originalUrl = url;
@@ -540,6 +586,24 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     state.showLibraryModal = false;
     onImageChange?.({ name: file.name, url, file });
     await detectFaces(file);
+  }
+
+  async function rotateCurrentPhoto90() {
+    if (!state.currentFile || state.busy || state.detecting) return;
+    const rotated = await normalizeImageFile(state.currentFile, 90);
+    const url = trackUrl(URL.createObjectURL(rotated));
+    state.originalFile = rotated;
+    state.originalUrl = url;
+    state.currentFile = rotated;
+    state.currentUrl = url;
+    state.stack = [];
+    state.appliedLabels = [];
+    state.activeCat = null;
+    state.faceZoom = false;
+    state.view = { scale: 1, tx: 0, ty: 0, custom: false };
+    lastStageTransform = "translate(0px, 0px) scale(1)";
+    onImageChange?.({ name: rotated.name, url, file: rotated });
+    await detectFaces(rotated);
   }
 
   function resetAll() {
@@ -1333,6 +1397,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
         el("span", { class: "wf-top-title" }, activeTitle),
         el("div", { class: "wf-top-right" },
           el("button", { type: "button", class: "wf-top-icon", title: "Usa da Telefono / Link Remoto", onclick: openShareModal }, "📱"),
+          el("button", { type: "button", class: "wf-top-icon", title: "Ruota foto di 90°", onclick: rotateCurrentPhoto90 }, "↻"),
           state.stack.length ? el("button", { type: "button", class: "wf-top-icon", title: "Ripristina originale", onclick: resetAll }, icon("redo")) : null,
           el("button", { type: "button", class: "wf-top-icon", title: "Salva nella Library", onclick: saveResultToLibrary }, icon("upload")),
           el("button", { type: "button", class: "wf-top-icon wf-dl", title: "Scarica immagine", onclick: downloadResult }, icon("download"))

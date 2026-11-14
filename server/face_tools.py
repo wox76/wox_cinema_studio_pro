@@ -13,7 +13,16 @@ from typing import Any
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
+
+
+def _open_rgb(path: str) -> Image.Image:
+    img = Image.open(path)
+    try:
+        img = ImageOps.exif_transpose(img)
+    except Exception:
+        pass
+    return img.convert("RGB")
 
 
 def _clamp01(v: float) -> float:
@@ -79,7 +88,7 @@ def _make_thumb(pil_img: Image.Image, x1: float, y1: float, bw: float, bh: float
 
 
 def cmd_detect(args: argparse.Namespace) -> dict[str, Any]:
-    pil_img = Image.open(args.image).convert("RGB")
+    pil_img = _open_rgb(args.image)
     W, H = pil_img.size
     img_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
@@ -147,7 +156,7 @@ def _round16(v: float) -> int:
 
 
 def cmd_crop(args: argparse.Namespace) -> dict[str, Any]:
-    pil_img = Image.open(args.image).convert("RGB")
+    pil_img = _open_rgb(args.image)
     W, H = pil_img.size
     x1, y1, x2, y2 = _parse_box(args.box, W, H)
     crop = pil_img.crop((x1, y1, x2, y2))
@@ -467,8 +476,8 @@ def _harmonize_and_blend_face(
 
 
 def cmd_composite(args: argparse.Namespace) -> dict[str, Any]:
-    base_pil = Image.open(args.base).convert("RGB")
-    patch_pil = Image.open(args.patch).convert("RGB")
+    base_pil = _open_rgb(args.base)
+    patch_pil = _open_rgb(args.patch)
     W, H = base_pil.size
     x1, y1, x2, y2 = _parse_box(args.box, W, H)
     bw, bh = x2 - x1, y2 - y1

@@ -117,7 +117,11 @@ echo    WOX CINEMA STUDIO PRO E' OPERATIVO!
 echo    Studio UI:     http://127.0.0.1:3000
 echo    Video Studio:  http://127.0.0.1:3000/editor/
 echo    ComfyUI:       http://127.0.0.1:8188
+echo    Wonderfull PC: http://127.0.0.1:3000/wonderfull
 echo    Gateway API:   http://127.0.0.1:8000
+echo ------------------------------------------------------------------------
+echo    Per il link TELEFONO (Wi-Fi e 4G/5G): clicca [Telefono] in Wonderfull
+echo    oppure leggi il riquadro WONDERFULL MOBILE qui sotto!
 echo ========================================================================
 echo Premi [CTRL+C] in questa finestra per arrestare il server Web.
 echo.

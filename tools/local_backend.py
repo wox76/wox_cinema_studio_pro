@@ -75,7 +75,11 @@ def setup(comfy: Path, models: Path) -> None:
         if (dst / "requirements.txt").exists():
             pip("-r", dst / "requirements.txt")
     pip(COMFY_API_PROXY, "aiohttp", "huggingface_hub[hf-xet]")
-    lines = ["wox_studio:", f"  base_path: {models.as_posix()}"] + [f"  {d}: {d}" for d in MODEL_DIRS]
+    extra_dirs = list(MODEL_DIRS)
+    for d in ("insightface", "facerestore_models"):
+        if d not in extra_dirs:
+            extra_dirs.append(d)
+    lines = ["wox_studio:", f"  base_path: {models.as_posix()}"] + [f"  {d}: {d}" for d in extra_dirs]
     (comfy / "extra_model_paths.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"\nComfyUI {COMFYUI_COMMIT[:7]} with {len(pinned)} custom nodes in {comfy}; models in {models}")
     print(f"next: python tools/local_backend.py download {comfy} <pack> (packs: {', '.join(packs())})")
@@ -194,7 +198,40 @@ def spawn_teed(cmd, cwd=None, env=None, log_file=None):
         threading.Thread(target=reader, daemon=True).start()
         return proc
     else:
-        return subprocess.Popen(cmd, cwd=cwd, env=env)
+        proc = subprocess.Popen(
+            cmd,
+            cwd=cwd,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+
+        def reader():
+            try:
+                assert proc.stdout is not None
+                for chunk in iter(lambda: proc.stdout.read(4096), b""):
+                    try:
+                        sys.stdout.buffer.write(chunk)
+                        sys.stdout.buffer.flush()
+                    except Exception:
+                        pass
+                    if log_file:
+                        try:
+                            log_file.write(chunk)
+                            log_file.flush()
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+            finally:
+                try:
+                    if proc.stdout:
+                        proc.stdout.close()
+                except Exception:
+                    pass
+
+        threading.Thread(target=reader, daemon=True).start()
+        return proc
 
 
 def serve(comfy: Path, comfy_args: list[str], port: int) -> None:
@@ -214,7 +251,7 @@ def serve(comfy: Path, comfy_args: list[str], port: int) -> None:
     try:
         cmd = [sys.executable, "main.py", "--listen", "127.0.0.1", "--port", "8188", "--disable-auto-launch",
                "--extra-model-paths-config", str(comfy / "extra_model_paths.yaml"), *comfy_args]
-        comfy_env = {**os.environ, "PYTHONUNBUFFERED": "1"}
+        comfy_env = {**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"}
         procs.append(spawn_teed(cmd, cwd=comfy, env=comfy_env, log_file=log_f))
         wait_http("http://127.0.0.1:8188/system_stats", procs[-1])
 
@@ -223,7 +260,8 @@ def serve(comfy: Path, comfy_args: list[str], port: int) -> None:
         wait_port(8189, procs[-1])
 
         env = {**os.environ, "WOX_TOKEN": token, "FREEFIELD_TOKEN": token, "COMFYUI_URL": "http://127.0.0.1:8188",
-               "PROXY_URL": "http://127.0.0.1:8189", "GATEWAY_PORT": str(port), "PYTHONUNBUFFERED": "1"}
+               "PROXY_URL": "http://127.0.0.1:8189", "GATEWAY_PORT": str(port),
+               "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"}
         procs.append(spawn_teed([sys.executable, str(ROOT / "infra" / "gateway.py")], env=env, log_file=log_f))
         wait_http(f"http://127.0.0.1:{port}/health", procs[-1], 120)
         print(f"\nbackend ready: COMFY_BASE_URL=http://127.0.0.1:{port} in .env, then npm run serve (Ctrl+C stops all)",

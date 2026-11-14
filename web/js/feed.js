@@ -5,6 +5,7 @@ import { t, ago } from "./i18n.js";
 import { byId, promptInput } from "./catalog.js";
 import { entryItem, thumb, downloadName } from "./media.js";
 import { sendToVideoEditor } from "./video_editor.js";
+import { resolveGlbUrl, sendToActionForge } from "./actionforge.js";
 
 const TERMINAL = new Set(["succeeded", "failed", "canceled", "expired", "lost"]);
 export const isDone = (e) => TERMINAL.has(e.status);
@@ -169,11 +170,13 @@ function doneCard(e, list) {
   const dl = el("a", { class: "mini", href: item.full, download: downloadName(item, item.full), title: t("act.download"), "aria-label": t("act.download"),
     onclick: (ev) => ev.stopPropagation() }, icon("download"));
   const imgName = e.outputs?.[0]?.name || e.outputs?.[0]?.file || item.fileName || (item.full ? item.full.split("/").pop() : null);
-  const nameBadge = imgName ? el("div", { class: "rcard-filename-badge", title: imgName },
-    icon("image"),
-    el("span", { class: "rcard-filename-text" }, imgName)
-  ) : null;
   const label = imgName || (app?.name ?? e.app);
+  const is3d = item.type === "3d" || item.is3d || resolveGlbUrl(item);
+  const typeBadgeIcon = is3d ? "cube" : (item.type === "video" ? "video" : (item.type === "audio" ? "audio" : "image"));
+  const nameBadge = el("div", { class: `rcard-filename-badge ${is3d ? "badge-3d" : ""}`, title: is3d ? "Modello 3D (.GLB)" : label },
+    icon(typeBadgeIcon),
+    el("span", { class: "rcard-filename-text" }, is3d ? "🧊 3D ASSET (.GLB)" : label)
+  );
   const node = el("div", { class: "rcard", tabindex: "0", role: "button", "aria-label": `${label} · ${ago(e.created)}`,
     onclick: open, onkeydown: (ev) => { if (ev.key === "Enter") open(); } },
     media,
@@ -185,6 +188,8 @@ function doneCard(e, list) {
           imgName ? el("span", { class: "tag filename-tag", title: imgName, style: { background: "rgba(0,0,0,0.85)", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, imgName) : null
         ),
         el("div", { class: "acts" }, dl,
+          resolveGlbUrl(item) ? el("button", { class: "mini lime", type: "button", title: "🦴 Rigga Modello 3D in ActionForge", "aria-label": "Rig in ActionForge",
+            onclick: stop(() => sendToActionForge(item)) }, "🦴") : null,
           item.type === "image" && hooks.edit ? el("button", { class: "mini", type: "button", title: "Edit Image", "aria-label": "Edit",
             onclick: (ev) => { ev.stopPropagation(); hooks.edit(item); } }, icon("edit")) : null,
           item.type !== "audio" && hooks.useIn ? el("button", { class: "mini", type: "button", title: t("act.usein"), "aria-label": t("act.usein"),

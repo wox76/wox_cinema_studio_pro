@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { loadRegistry } from "../server/registry.ts";
+import { History } from "../server/history.ts";
 import { applyInputs, explainSubmitError, InputError, renderTemplate, resolveValues, Runner, type Settable } from "../server/runner.ts";
 
 const { apps } = loadRegistry();
@@ -392,4 +396,112 @@ test("drafts run only when allowed", async () => {
   const open = new Runner({ baseUrl: "http://backend.test", fetch: fakeFetch(() => 500, seen), allowDrafts: true });
   await assert.rejects(open.submit(draft, values), (e: unknown) => !(e instanceof InputError));
   assert.ok(seen[0]?.endsWith("/wox/prepare") || seen[0]?.endsWith("/freefield/prepare"), "got past the draft gate and asked the gateway");
+});
+
+test("wonderfull builds a FaceApp-inspired beauty, smile, contouring and color prompt cleanly", () => {
+  const app = byId("wonderfull");
+  const file = { bytes: new Uint8Array([1]), name: "selfie.png" };
+  const wfDefault = recorder();
+  applyInputs(app, resolveValues(app, { image: file, seed: 42 }), wfDefault, () => "uploaded.png");
+  const defaultPrompt = wfDefault.sets["4.prompt"] as string;
+  assert.equal(wfDefault.sets["11.image"], "uploaded.png");
+  assert.equal(wfDefault.sets["16.steps"], 8);
+  assert.match(defaultPrompt, /Bacio FaceApp beauty retouch/);
+  assert.match(defaultPrompt, /Level 3/);
+  assert.match(defaultPrompt, /existing facial hair/);
+  assert.doesNotMatch(defaultPrompt, /\. \./);
+
+  const wfCustom = recorder();
+  const smileOpt = app.inputs.find((i) => i.id === "smile")!.options!.find((o) => o.label === "Bei Denti")!.value;
+  const ageOpt = app.inputs.find((i) => i.id === "age")!.options!.find((o) => o.label === "Giovane")!.value;
+  const beardOpt = app.inputs.find((i) => i.id === "beard")!.options!.find((o) => o.label === "Barba Piena")!.value;
+  const hairOpt = app.inputs.find((i) => i.id === "hair_style")!.options!.find((o) => o.label === "Volume")!.value;
+  const colorOpt = app.inputs.find((i) => i.id === "color_effect")!.options!.find((o) => o.label === "Aero")!.value;
+  const catEyeOpt = app.inputs.find((i) => i.id === "contouring")!.options!.find((o) => o.label === "Occhi da Gatto")!.value;
+  const blushOpt = app.inputs.find((i) => i.id === "contouring")!.options!.find((o) => o.label === "Fard")!.value;
+  applyInputs(
+    app,
+    resolveValues(app, {
+      image: file,
+      smile: smileOpt,
+      age: ageOpt,
+      beard: beardOpt,
+      hair_style: hairOpt,
+      color_effect: colorOpt,
+      contouring: [catEyeOpt, blushOpt],
+      details: "brighter emerald eyes",
+      steps: 8,
+      seed: 7,
+    }),
+    wfCustom,
+    () => "uploaded.png",
+  );
+  const customPrompt = wfCustom.sets["4.prompt"] as string;
+  assert.equal(wfCustom.sets["16.steps"], 8);
+  assert.match(customPrompt, /radiant smile showing clean white/);
+  assert.match(customPrompt, /noticeably younger/);
+  assert.match(customPrompt, /full masculine beard/);
+  assert.match(customPrompt, /more voluminous/);
+  assert.match(customPrompt, /winged cat-eye eyeliner/);
+  assert.match(customPrompt, /rosy blush/);
+  assert.match(customPrompt, /Aero color grading/);
+  assert.match(customPrompt, /brighter emerald eyes Keep the same recognizable person/);
+
+  const wfSingle = recorder();
+  const classicSmile = app.inputs.find((i) => i.id === "smile")!.options!.find((o) => o.label === "Classico")!.value;
+  applyInputs(
+    app,
+    resolveValues(app, {
+      image: file,
+      impression: "",
+      smile: classicSmile,
+      contouring: [],
+      color_effect: "",
+      seed: 1,
+    }),
+    wfSingle,
+    () => "uploaded.png",
+  );
+  const singlePrompt = wfSingle.sets["4.prompt"] as string;
+  assert.match(singlePrompt, /classic natural smile/);
+  assert.doesNotMatch(singlePrompt, /Bacio|Aero|rosy blush/);
+});
+
+test("History transformOutput rewrites saved output bytes before marking succeeded", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "wox-hist-transform-"));
+  try {
+    const app = byId("wonderfull");
+    const rawPatch = new Uint8Array([1, 2, 3, 4]);
+    const composited = new Uint8Array([9, 8, 7, 6, 5]);
+    const history = new History(dir, {
+      transformOutput: async ({ entry, folder, bytes, index }) => {
+        assert.equal(entry.app, "wonderfull");
+        assert.equal(index, 1);
+        assert.deepEqual(bytes, rawPatch);
+        assert.ok(readFileSync(join(folder, entry.inputs[0].file)).length > 0);
+        return composited;
+      },
+    });
+    const entry = history.start(app, { image: { bytes: new Uint8Array([42, 43]), name: "full.png", type: "image/png" } });
+    const job = {
+      id: "job-1",
+      status: "running",
+      outputs: [{ name: "patch.png", type: "image", nodeId: "13", contentType: "image/png", toBytes: async () => rawPatch }],
+      error: undefined,
+      startedAt: null,
+      completedAt: null,
+      async wait() {
+        this.status = "succeeded";
+      },
+      async cancel() {},
+      async *events() {},
+    };
+    const done = await history.follow(entry, job);
+    assert.equal(done.status, "succeeded");
+    assert.equal(done.outputs.length, 1);
+    const saved = new Uint8Array(readFileSync(join(dir, done.id, done.outputs[0].file)));
+    assert.deepEqual(saved, composited);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

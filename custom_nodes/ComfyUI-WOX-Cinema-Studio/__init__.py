@@ -1,9 +1,10 @@
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 from .wox_cinema_node import WOXCinemaStudioNode
 from .wox_storyboard import WOXStoryboardSceneNode, WOXStoryboardRenderNode, WOXStoryboardOutputNode
 from .wox_video_upscale import WOXVideoAutoLengthNode
 from .wox_music_reference import WOXMusicReferenceGuideNode
+from .wox_trellis_3d import WOXTrellis3DNode
 
 NODE_CLASS_MAPPINGS = {
     "WOXCinemaStudioNode": WOXCinemaStudioNode,
@@ -12,6 +13,7 @@ NODE_CLASS_MAPPINGS = {
     "WOXStoryboardRenderNode": WOXStoryboardRenderNode,
     "WOXVideoAutoLengthNode": WOXVideoAutoLengthNode,
     "WOXMusicReferenceGuideNode": WOXMusicReferenceGuideNode,
+    "WOXTrellis3DNode": WOXTrellis3DNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -21,6 +23,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "WOXStoryboardRenderNode": "🎥 WOX Storyboard Render",
     "WOXVideoAutoLengthNode": "⚡ WOX Video Auto-Length & Upscaler",
     "WOXMusicReferenceGuideNode": "🎵 WOX Music Reference Guide",
+    "WOXTrellis3DNode": "🧊 WOX TRELLIS.2 3D Object Generator (16GB VRAM)",
 }
 
 WEB_DIRECTORY = "./web"

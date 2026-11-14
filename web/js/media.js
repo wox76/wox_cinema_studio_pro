@@ -9,8 +9,10 @@ export function exampleItem(app) {
   const ex = app?.example;
   if (!ex?.full) return null;   // an entry with only per-option examples (the app's own case never ran) is not a tile
   const labels = Object.fromEntries(app.inputs.map((i) => [i.id, i]));
+  const glbUrl = ex.glb || (app.id === "trellis-3d" ? "/examples/trellis-3d/out.glb" : null);
   return {
     kind: "example", key: `ex:${app.id}`, app: app.id, type: ex.type, card: ex.card || ex.full, poster: ex.poster, full: ex.full,
+    glbUrl,
     outputs: [{ type: ex.type, url: ex.full, poster: ex.poster }],
     inputs: (ex.inputs || []).filter((i) => i.src || i.full).map((i) => ({
       id: i.id, label: labels[i.id]?.label || i.label || i.id, type: i.type || labels[i.id]?.type,
@@ -27,12 +29,16 @@ export function entryItem(e) {
   const labels = Object.fromEntries((app?.inputs || []).map((i) => [i.id, i]));
   const first = e.outputs[0];
   const imageName = first?.name || first?.file || (first?.url ? first.url.split("/").pop() : null);
+  const is3d = e.app === "trellis-3d" || Boolean(e.glbUrl);
+  const glbUrl = e.glbUrl || (e.app === "trellis-3d" && e.status === "succeeded" ? `/api/history/${e.id}/files/out-model.glb` : null);
   return {
     kind: "history", key: e.id, id: e.id, app: e.app, status: e.status,
     fileName: imageName,
     name: imageName || app?.name || e.app,
-    type: first?.type || app?.outputs?.[0]?.type || "image",
+    type: is3d ? "3d" : (first?.type || app?.outputs?.[0]?.type || "image"),
+    is3d,
     card: first?.url || null, poster: null, full: first?.url || null,
+    glbUrl,
     outputs: e.outputs.map((o) => ({ type: o.type, url: o.url, name: o.name, file: o.file })),
     inputs: e.inputs.map((i) => ({ id: i.id, label: labels[i.id]?.label || i.id, type: i.type, thumb: i.type === "image" ? i.url : null, file: i.url,
       play: i.type === "image" ? null : i.url, name: i.name })),
@@ -79,6 +85,19 @@ export function thumb(item, { play = "visible", useFull = false, cls = "" } = {}
     box.append(v);
     box._video = v;
     if (play === "visible") playWhenVisible(v);
+  } else if (item.type === "3d" && src) {
+    const isHistory = item.kind === "history";
+    const ext = extOf(src);
+    const isVid = ext === "mp4" || ext === "webm";
+    if (isVid) {
+      const v = loopVideo(isHistory ? `${src}#t=0.1` : src, item.poster, isHistory ? "metadata" : "none");
+      box.append(v);
+      box._video = v;
+      if (play === "visible") playWhenVisible(v);
+    } else {
+      box.append(el("img", { src, alt: "", loading: "lazy", decoding: "async" }));
+    }
+    box.append(el("span", { class: "typeicon badge-3d", title: "Asset 3D GLB" }, icon("cube")));
   } else if (item.type === "audio") {
     box.classList.add("audio", "wave");
     if (item.card && extOf(item.card) === "png") box.append(el("img", { src: item.card, alt: "", loading: "lazy" }));

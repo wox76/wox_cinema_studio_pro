@@ -257,3 +257,30 @@ test("a poll that cannot reach the backend is retried; a backend answer that the
   assert.equal(isTransient(new Error("job x not terminal after 10ms (status=running)")), false);
   assert.equal(isTransient(Object.assign(new Error("bad request"), { httpStatus: 400 })), false);
 });
+
+test("history.page paginates entries and filters by media type", () => {
+  const { history, done } = tempHistory();
+  try {
+    const imgIds: string[] = [];
+    for (let i = 0; i < 5; i++) {
+      imgIds.push(history.addUpload(`p${i}.png`, "image/png", PNG).id);
+    }
+    history.addUpload("clip.mp4", "video/mp4", PNG);
+
+    const p1 = history.page(undefined, 2, 0, "image");
+    assert.equal(p1.total, 5);
+    assert.equal(p1.entries.length, 2);
+    assert.equal(p1.hasMore, true);
+
+    const p2 = history.page(undefined, 2, 2, "image");
+    assert.equal(p2.entries.length, 2);
+    assert.equal(p2.hasMore, true);
+
+    const p3 = history.page(undefined, 2, 4, "image");
+    assert.equal(p3.entries.length, 1);
+    assert.equal(p3.hasMore, false);
+
+    const seen = [...p1.entries, ...p2.entries, ...p3.entries].map((e) => e.id).sort();
+    assert.deepEqual(seen, imgIds.slice().sort());
+  } finally { done(); }
+});

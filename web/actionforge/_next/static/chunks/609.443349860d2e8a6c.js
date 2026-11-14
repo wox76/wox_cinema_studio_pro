@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[609],{609:(e,s,a)=>{a.r(s),a.d(s,{GLTFLoader:()=>k.B});var k=a(9654)}}]);

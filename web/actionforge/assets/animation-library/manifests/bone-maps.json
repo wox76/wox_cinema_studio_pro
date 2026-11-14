@@ -1,0 +1,311 @@
+{
+  "note": "CANONICAL BONE MAPS. Source bone name -> our skeleton's bone name. Read by the retargeter on the web and, when it exists, by the addon. See MULTI_RIG_SPEC.md and IK_SPEC.md.",
+
+  "ours": "quaternius-human",
+
+  "maps": {
+    "mixamo": {
+      "label": "Mixamo",
+      "reference": "skeletons/mixamo.json",
+      "units": "cm",
+      "bindPose": "T",
+      "verified": false,
+
+      "notes": [
+        "NAMES ARE THE LOADED ONES, NOT THE AUTHORED ONES. Mixamo names its bones 'mixamorig:Hips'; three's FBXLoader strips the colon and you get 'mixamorigHips'. Writing the map against what you see in Blender produces a map that matches nothing.",
+        "NEVER LOOK BONES UP BY NAME IN A MIXAMO FBX. The loader emits a same-named leaf child for every bone — 117 nodes for a 52-bone skeleton — so getObjectByName is ambiguous. Work from skeleton.bones, which holds 52 unique names.",
+        "The mesh is split by material (Alpha_Surface, Alpha_Joints) and three builds a SEPARATE Skeleton for each. They share a rest pose; take either.",
+        "MIXAMO HAS NO ROOT BONE. Its Hips carries the translation that our 'root' carries, which is why 'root' has no entry here and why root motion needs handling as its own step rather than falling out of the map.",
+        "T-pose, same as ours, and the limb axes match — upper arm [1,0,0], thigh [0,-1,0] on both. The rest-pose delta is therefore near identity for the body, which is the expensive half of a retarget arriving nearly free.",
+        "Handedness matches: Mixamo Left is our _l, no mirroring. Checked by X sign, because getting this wrong is silent and survives a long way."
+      ],
+
+      "proportions": {
+        "hips": { "source": 99.8, "ours": 0.917, "note": "cm vs m — the ratio after unit conversion is ~0.92, so hip translation needs scaling, not just rotating." },
+        "ankle": { "source": 10.5, "ours": 0.104, "note": "Ankles match almost exactly. Leg length is close enough that foot contact should not drift badly." }
+      },
+
+      "bones": {
+        "mixamorigHips": "pelvis",
+
+        "mixamorigSpine": "spine_01",
+        "mixamorigSpine1": "spine_02",
+        "mixamorigSpine2": "spine_03",
+        "mixamorigNeck": "neck_01",
+        "mixamorigHead": "Head",
+
+        "mixamorigLeftShoulder": "clavicle_l",
+        "mixamorigLeftArm": "upperarm_l",
+        "mixamorigLeftForeArm": "lowerarm_l",
+        "mixamorigLeftHand": "hand_l",
+
+        "mixamorigLeftHandThumb1": "thumb_01_l",
+        "mixamorigLeftHandThumb2": "thumb_02_l",
+        "mixamorigLeftHandThumb3": "thumb_03_l",
+        "mixamorigLeftHandIndex1": "index_01_l",
+        "mixamorigLeftHandIndex2": "index_02_l",
+        "mixamorigLeftHandIndex3": "index_03_l",
+        "mixamorigLeftHandMiddle1": "middle_01_l",
+        "mixamorigLeftHandMiddle2": "middle_02_l",
+        "mixamorigLeftHandMiddle3": "middle_03_l",
+        "mixamorigLeftHandRing1": "ring_01_l",
+        "mixamorigLeftHandRing2": "ring_02_l",
+        "mixamorigLeftHandRing3": "ring_03_l",
+        "mixamorigLeftHandPinky1": "pinky_01_l",
+        "mixamorigLeftHandPinky2": "pinky_02_l",
+        "mixamorigLeftHandPinky3": "pinky_03_l",
+
+        "mixamorigRightShoulder": "clavicle_r",
+        "mixamorigRightArm": "upperarm_r",
+        "mixamorigRightForeArm": "lowerarm_r",
+        "mixamorigRightHand": "hand_r",
+
+        "mixamorigRightHandThumb1": "thumb_01_r",
+        "mixamorigRightHandThumb2": "thumb_02_r",
+        "mixamorigRightHandThumb3": "thumb_03_r",
+        "mixamorigRightHandIndex1": "index_01_r",
+        "mixamorigRightHandIndex2": "index_02_r",
+        "mixamorigRightHandIndex3": "index_03_r",
+        "mixamorigRightHandMiddle1": "middle_01_r",
+        "mixamorigRightHandMiddle2": "middle_02_r",
+        "mixamorigRightHandMiddle3": "middle_03_r",
+        "mixamorigRightHandRing1": "ring_01_r",
+        "mixamorigRightHandRing2": "ring_02_r",
+        "mixamorigRightHandRing3": "ring_03_r",
+        "mixamorigRightHandPinky1": "pinky_01_r",
+        "mixamorigRightHandPinky2": "pinky_02_r",
+        "mixamorigRightHandPinky3": "pinky_03_r",
+
+        "mixamorigLeftUpLeg": "thigh_l",
+        "mixamorigLeftLeg": "calf_l",
+        "mixamorigLeftFoot": "foot_l",
+        "mixamorigLeftToeBase": "ball_l",
+
+        "mixamorigRightUpLeg": "thigh_r",
+        "mixamorigRightLeg": "calf_r",
+        "mixamorigRightFoot": "foot_r",
+        "mixamorigRightToeBase": "ball_r"
+      },
+
+      "unmappedOurs": {
+        "note": "Ours with no Mixamo counterpart. None of them SHOULD have one — a retargeted clip must not drive our sockets or our root, and leaf bones exist only to give the last joint a direction.",
+        "bones": [
+          "root",
+          "ik_hand_root", "ik_hand_gun", "ik_hand_l", "ik_hand_r",
+          "socket_offhand", "socket_offhand_grip",
+          "index_04_leaf_l", "middle_04_leaf_l", "pinky_04_leaf_l", "ring_04_leaf_l", "thumb_04_leaf_l",
+          "index_04_leaf_r", "middle_04_leaf_r", "pinky_04_leaf_r", "ring_04_leaf_r", "thumb_04_leaf_r",
+          "ball_leaf_l", "ball_leaf_r"
+        ]
+      },
+
+      "unmappedTheirs": {
+        "note": "Theirs with no counterpart of ours: the end bones, which carry no weights and exist only to give the last joint a direction. Left at rest, each riding its parent.",
+        "bones": [
+          "mixamorigHeadTop_End",
+          "mixamorigLeftHandThumb4", "mixamorigLeftHandIndex4", "mixamorigLeftHandMiddle4", "mixamorigLeftHandRing4", "mixamorigLeftHandPinky4",
+          "mixamorigRightHandThumb4", "mixamorigRightHandIndex4", "mixamorigRightHandMiddle4", "mixamorigRightHandRing4", "mixamorigRightHandPinky4",
+          "mixamorigLeftToe_End", "mixamorigRightToe_End"
+        ]
+      }
+    },
+
+    "ue5": {
+      "label": "Unreal Engine 5",
+      "reference": "skeletons/ue5-mannequin.json",
+      "units": "cm",
+      "bindPose": "A",
+      "verified": false,
+
+      "notes": [
+        "THE NAMES ARE OURS ALREADY, THE BONES ARE NOT. Our skeleton borrowed Unreal's names, but our bind is a T-pose and the mannequin's an A-pose, and Unreal has five spine bones and two neck bones to our three and one. So this is a real retarget through the rest pose, not a rename.",
+        "OURS 3 SPINE ONTO THEIR 5: spine_01, spine_03, spine_05. spine_02 and spine_04 are left at rest and ride the bone below them; neck_02 the same under neck_01. Their head is lower-case.",
+        "THE ROOT TRAVELS. Theirs splits travel from bob as ours does, root on the floor and pelvis under it, so root goes to root (root motion works) and the pelvis lands under it where ours is.",
+        "LEFT AT REST: the metacarpals (the fingers are mapped from their first joint), the twist bones (Unreal's post-process graph drives them), the ik_ bones, interaction and center_of_mass.",
+        "THE REFERENCE IS DATA, NOT EPIC'S FILE. Names, parents and rest read off SKM_Manny_Simple.FBX by scripts/extract-skeleton.mjs; Manny and Quinn share the skeleton."
+      ],
+
+      "bones": {
+        "root": "root",
+        "pelvis": "pelvis",
+        "spine_01": "spine_01", "spine_03": "spine_02", "spine_05": "spine_03",
+        "neck_01": "neck_01", "head": "Head",
+
+        "clavicle_l": "clavicle_l", "upperarm_l": "upperarm_l", "lowerarm_l": "lowerarm_l", "hand_l": "hand_l",
+        "thumb_01_l": "thumb_01_l", "thumb_02_l": "thumb_02_l", "thumb_03_l": "thumb_03_l",
+        "index_01_l": "index_01_l", "index_02_l": "index_02_l", "index_03_l": "index_03_l",
+        "middle_01_l": "middle_01_l", "middle_02_l": "middle_02_l", "middle_03_l": "middle_03_l",
+        "ring_01_l": "ring_01_l", "ring_02_l": "ring_02_l", "ring_03_l": "ring_03_l",
+        "pinky_01_l": "pinky_01_l", "pinky_02_l": "pinky_02_l", "pinky_03_l": "pinky_03_l",
+        "thigh_l": "thigh_l", "calf_l": "calf_l", "foot_l": "foot_l", "ball_l": "ball_l",
+
+        "clavicle_r": "clavicle_r", "upperarm_r": "upperarm_r", "lowerarm_r": "lowerarm_r", "hand_r": "hand_r",
+        "thumb_01_r": "thumb_01_r", "thumb_02_r": "thumb_02_r", "thumb_03_r": "thumb_03_r",
+        "index_01_r": "index_01_r", "index_02_r": "index_02_r", "index_03_r": "index_03_r",
+        "middle_01_r": "middle_01_r", "middle_02_r": "middle_02_r", "middle_03_r": "middle_03_r",
+        "ring_01_r": "ring_01_r", "ring_02_r": "ring_02_r", "ring_03_r": "ring_03_r",
+        "pinky_01_r": "pinky_01_r", "pinky_02_r": "pinky_02_r", "pinky_03_r": "pinky_03_r",
+        "thigh_r": "thigh_r", "calf_r": "calf_r", "foot_r": "foot_r", "ball_r": "ball_r"
+      },
+
+      "unmappedOurs": {
+        "note": "Ours with no counterpart here. The ik_ bones share Unreal's names but not what drives them: a retargeted clip carries rotations, and theirs follow the hands and feet by position — left at rest until something bakes them.",
+        "bones": [
+          "ik_hand_root", "ik_hand_gun", "ik_hand_l", "ik_hand_r",
+          "socket_offhand", "socket_offhand_grip",
+          "index_04_leaf_l", "middle_04_leaf_l", "pinky_04_leaf_l", "ring_04_leaf_l", "thumb_04_leaf_l",
+          "index_04_leaf_r", "middle_04_leaf_r", "pinky_04_leaf_r", "ring_04_leaf_r", "thumb_04_leaf_r",
+          "ball_leaf_l", "ball_leaf_r"
+        ]
+      },
+
+      "unmappedTheirs": {
+        "note": "Theirs with no counterpart of ours: left at rest, each riding its parent. The in-between spine and neck bones (the mapped bone below them turns them), the metacarpals, the twist bones (Unreal's post-process graph drives those), and the ik_ and utility bones, which follow the hands and feet by position — nothing bakes them yet.",
+        "bones": [
+          "spine_02", "spine_04", "neck_02",
+          "index_metacarpal_l", "middle_metacarpal_l", "ring_metacarpal_l", "pinky_metacarpal_l",
+          "index_metacarpal_r", "middle_metacarpal_r", "ring_metacarpal_r", "pinky_metacarpal_r",
+          "upperarm_twist_01_l", "upperarm_twist_02_l",
+          "upperarm_twist_01_r", "upperarm_twist_02_r",
+          "lowerarm_twist_01_l", "lowerarm_twist_02_l",
+          "lowerarm_twist_01_r", "lowerarm_twist_02_r",
+          "thigh_twist_01_l", "thigh_twist_02_l",
+          "thigh_twist_01_r", "thigh_twist_02_r",
+          "calf_twist_01_l", "calf_twist_02_l",
+          "calf_twist_01_r", "calf_twist_02_r",
+          "ik_foot_root", "ik_foot_l", "ik_foot_r", "ik_hand_root", "ik_hand_gun", "ik_hand_l", "ik_hand_r",
+          "interaction", "center_of_mass"
+        ]
+      }
+    },
+
+    "ue4": {
+      "label": "Unreal Engine 4",
+      "reference": "skeletons/ue4-mannequin.json",
+      "units": "cm",
+      "bindPose": "A",
+      "verified": false,
+
+      "notes": [
+        "THE SAME NAMES, BONE FOR BONE. UE4's mannequin has three spine bones and one neck, like ours, so every body bone maps to its namesake; only the head is lower-case. It rests in an A-pose, taken like UE5's: through a retarget pose (bundle-export.js SKELETONS).",
+        "THE ROOT TRAVELS, root to root, the pelvis under it, as on UE5.",
+        "LEFT AT REST: the twist bones (one per limb here) and the ik_ bones. The file carries all of them, so a clip imports onto Epic's UE4_Mannequin_Skeleton as it is.",
+        "THE REFERENCE IS DATA, NOT EPIC'S FILE. Names, parents and rest read off SK_Mannequin.FBX (exported from Unreal) by scripts/extract-skeleton.mjs."
+      ],
+
+      "bones": {
+        "root": "root",
+        "pelvis": "pelvis",
+        "spine_01": "spine_01", "spine_02": "spine_02", "spine_03": "spine_03",
+        "neck_01": "neck_01", "head": "Head",
+
+        "clavicle_l": "clavicle_l", "upperarm_l": "upperarm_l", "lowerarm_l": "lowerarm_l", "hand_l": "hand_l",
+        "thumb_01_l": "thumb_01_l", "thumb_02_l": "thumb_02_l", "thumb_03_l": "thumb_03_l",
+        "index_01_l": "index_01_l", "index_02_l": "index_02_l", "index_03_l": "index_03_l",
+        "middle_01_l": "middle_01_l", "middle_02_l": "middle_02_l", "middle_03_l": "middle_03_l",
+        "ring_01_l": "ring_01_l", "ring_02_l": "ring_02_l", "ring_03_l": "ring_03_l",
+        "pinky_01_l": "pinky_01_l", "pinky_02_l": "pinky_02_l", "pinky_03_l": "pinky_03_l",
+        "thigh_l": "thigh_l", "calf_l": "calf_l", "foot_l": "foot_l", "ball_l": "ball_l",
+
+        "clavicle_r": "clavicle_r", "upperarm_r": "upperarm_r", "lowerarm_r": "lowerarm_r", "hand_r": "hand_r",
+        "thumb_01_r": "thumb_01_r", "thumb_02_r": "thumb_02_r", "thumb_03_r": "thumb_03_r",
+        "index_01_r": "index_01_r", "index_02_r": "index_02_r", "index_03_r": "index_03_r",
+        "middle_01_r": "middle_01_r", "middle_02_r": "middle_02_r", "middle_03_r": "middle_03_r",
+        "ring_01_r": "ring_01_r", "ring_02_r": "ring_02_r", "ring_03_r": "ring_03_r",
+        "pinky_01_r": "pinky_01_r", "pinky_02_r": "pinky_02_r", "pinky_03_r": "pinky_03_r",
+        "thigh_r": "thigh_r", "calf_r": "calf_r", "foot_r": "foot_r", "ball_r": "ball_r"
+      },
+
+      "unmappedOurs": {
+        "note": "Ours with no counterpart here. The ik_ bones share Unreal's names but not what drives them: a retargeted clip carries rotations, and theirs follow the hands and feet by position — left at rest until something bakes them.",
+        "bones": [
+          "ik_hand_root", "ik_hand_gun", "ik_hand_l", "ik_hand_r",
+          "socket_offhand", "socket_offhand_grip",
+          "index_04_leaf_l", "middle_04_leaf_l", "pinky_04_leaf_l", "ring_04_leaf_l", "thumb_04_leaf_l",
+          "index_04_leaf_r", "middle_04_leaf_r", "pinky_04_leaf_r", "ring_04_leaf_r", "thumb_04_leaf_r",
+          "ball_leaf_l", "ball_leaf_r"
+        ]
+      },
+
+      "unmappedTheirs": {
+        "note": "Theirs with no counterpart of ours: left at rest, each riding its parent. The twist bones and the ik_ bones, which follow the hands and feet by position — nothing bakes them yet.",
+        "bones": [
+          "upperarm_twist_01_l", "upperarm_twist_01_r",
+          "lowerarm_twist_01_l", "lowerarm_twist_01_r",
+          "thigh_twist_01_l", "thigh_twist_01_r",
+          "calf_twist_01_l", "calf_twist_01_r",
+          "ik_foot_root", "ik_foot_l", "ik_foot_r", "ik_hand_root", "ik_hand_gun", "ik_hand_l", "ik_hand_r"
+        ]
+      }
+    },
+
+    "reallusion": {
+      "label": "Reallusion (CC / ActorCore)",
+      "reference": "skeletons/reallusion-cc.json",
+      "units": "cm",
+      "bindPose": "A",
+      "verified": false,
+
+      "notes": [
+        "CHARACTER CREATOR AND ACTORCORE SHARE THIS SKELETON (CC_Base_…). Read off an ActorCore dummy (motion-dummy-male).",
+        "THE ROOT TRAVELS: CC_Base_BoneRoot on the floor takes our root, CC_Base_Hip over it our pelvis. Their CC_Base_Pelvis only carries the legs, under the hip, and rides it.",
+        "THREE SPINE BONES LIKE OURS: Waist, Spine01, Spine02 take spine_01..03; the clavicles hang from Spine02 as ours from spine_03. Two neck bones: NeckTwist01 takes neck_01, NeckTwist02 rides it.",
+        "LEFT AT REST: the twist, share, toe, rib and breast bones, and the face (jaw, teeth, tongue, eyes).",
+        "AN A-POSE, arms 31° down: taken through a retarget pose (bundle-export.js SKELETONS)."
+      ],
+
+      "bones": {
+        "CC_Base_BoneRoot": "root",
+        "CC_Base_Hip": "pelvis",
+        "CC_Base_Waist": "spine_01", "CC_Base_Spine01": "spine_02", "CC_Base_Spine02": "spine_03",
+        "CC_Base_NeckTwist01": "neck_01", "CC_Base_Head": "Head",
+
+        "CC_Base_L_Clavicle": "clavicle_l", "CC_Base_L_Upperarm": "upperarm_l", "CC_Base_L_Forearm": "lowerarm_l", "CC_Base_L_Hand": "hand_l",
+        "CC_Base_L_Thumb1": "thumb_01_l", "CC_Base_L_Thumb2": "thumb_02_l", "CC_Base_L_Thumb3": "thumb_03_l",
+        "CC_Base_L_Index1": "index_01_l", "CC_Base_L_Index2": "index_02_l", "CC_Base_L_Index3": "index_03_l",
+        "CC_Base_L_Mid1": "middle_01_l", "CC_Base_L_Mid2": "middle_02_l", "CC_Base_L_Mid3": "middle_03_l",
+        "CC_Base_L_Ring1": "ring_01_l", "CC_Base_L_Ring2": "ring_02_l", "CC_Base_L_Ring3": "ring_03_l",
+        "CC_Base_L_Pinky1": "pinky_01_l", "CC_Base_L_Pinky2": "pinky_02_l", "CC_Base_L_Pinky3": "pinky_03_l",
+        "CC_Base_L_Thigh": "thigh_l", "CC_Base_L_Calf": "calf_l", "CC_Base_L_Foot": "foot_l", "CC_Base_L_ToeBase": "ball_l",
+
+        "CC_Base_R_Clavicle": "clavicle_r", "CC_Base_R_Upperarm": "upperarm_r", "CC_Base_R_Forearm": "lowerarm_r", "CC_Base_R_Hand": "hand_r",
+        "CC_Base_R_Thumb1": "thumb_01_r", "CC_Base_R_Thumb2": "thumb_02_r", "CC_Base_R_Thumb3": "thumb_03_r",
+        "CC_Base_R_Index1": "index_01_r", "CC_Base_R_Index2": "index_02_r", "CC_Base_R_Index3": "index_03_r",
+        "CC_Base_R_Mid1": "middle_01_r", "CC_Base_R_Mid2": "middle_02_r", "CC_Base_R_Mid3": "middle_03_r",
+        "CC_Base_R_Ring1": "ring_01_r", "CC_Base_R_Ring2": "ring_02_r", "CC_Base_R_Ring3": "ring_03_r",
+        "CC_Base_R_Pinky1": "pinky_01_r", "CC_Base_R_Pinky2": "pinky_02_r", "CC_Base_R_Pinky3": "pinky_03_r",
+        "CC_Base_R_Thigh": "thigh_r", "CC_Base_R_Calf": "calf_r", "CC_Base_R_Foot": "foot_r", "CC_Base_R_ToeBase": "ball_r"
+      },
+
+      "unmappedOurs": {
+        "note": "Ours with no counterpart here: the ik_ bones, the sockets and the leaf bones.",
+        "bones": [
+          "ik_hand_root", "ik_hand_gun", "ik_hand_l", "ik_hand_r",
+          "socket_offhand", "socket_offhand_grip",
+          "index_04_leaf_l", "middle_04_leaf_l", "pinky_04_leaf_l", "ring_04_leaf_l", "thumb_04_leaf_l",
+          "index_04_leaf_r", "middle_04_leaf_r", "pinky_04_leaf_r", "ring_04_leaf_r", "thumb_04_leaf_r",
+          "ball_leaf_l", "ball_leaf_r"
+        ]
+      },
+
+      "unmappedTheirs": {
+        "note": "Theirs with no counterpart of ours: left at rest, each riding its parent.",
+        "bones": [
+          "CC_Base_Pelvis", "CC_Base_NeckTwist02",
+          "CC_Base_FacialBone", "CC_Base_JawRoot", "CC_Base_UpperJaw", "CC_Base_Teeth01", "CC_Base_Teeth02",
+          "CC_Base_Tongue01", "CC_Base_Tongue02", "CC_Base_Tongue03",
+          "CC_Base_L_UpperarmTwist01", "CC_Base_L_UpperarmTwist02", "CC_Base_L_ForearmTwist01", "CC_Base_L_ForearmTwist02",
+          "CC_Base_L_ThighTwist01", "CC_Base_L_ThighTwist02", "CC_Base_L_CalfTwist01", "CC_Base_L_CalfTwist02",
+          "CC_Base_L_ElbowShareBone", "CC_Base_L_KneeShareBone", "CC_Base_L_ToeBaseShareBone",
+          "CC_Base_L_BigToe1", "CC_Base_L_IndexToe1", "CC_Base_L_MidToe1", "CC_Base_L_RingToe1", "CC_Base_L_PinkyToe1",
+          "CC_Base_L_RibsTwist", "CC_Base_L_Breast", "CC_Base_L_Eye",
+          "CC_Base_R_UpperarmTwist01", "CC_Base_R_UpperarmTwist02", "CC_Base_R_ForearmTwist01", "CC_Base_R_ForearmTwist02",
+          "CC_Base_R_ThighTwist01", "CC_Base_R_ThighTwist02", "CC_Base_R_CalfTwist01", "CC_Base_R_CalfTwist02",
+          "CC_Base_R_ElbowShareBone", "CC_Base_R_KneeShareBone", "CC_Base_R_ToeBaseShareBone",
+          "CC_Base_R_BigToe1", "CC_Base_R_IndexToe1", "CC_Base_R_MidToe1", "CC_Base_R_RingToe1", "CC_Base_R_PinkyToe1",
+          "CC_Base_R_RibsTwist", "CC_Base_R_Breast", "CC_Base_R_Eye"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+Rajdhani and Orbitron are both licensed under the SIL Open Font License,
+Version 1.1.
+
+Rajdhani  Copyright (c) 2014, Indian Type Foundry (info@indiantypefoundry.com)
+Orbitron  Copyright (c) 2009, Matt McInerney (matt@pixelspread.com)
+
+The full licence text is at https://openfontlicense.org and is reproduced in
+every distribution of the font from Google Fonts.
+
+Under the OFL, self-hosting is permitted. The two obligations are that the
+licence travels with the font — which is what this file is — and that the font
+is not sold on its own. Neither is affected by serving it from this domain.
+
+Files here:
+  rajdhani-400-latin.woff2   regular, latin subset  — body text
+  rajdhani-700-latin.woff2   bold, latin subset     — body text
+  orbitron-700-latin.woff2   bold, latin subset     — the wordmark only
+
+Latin only, and only the two weights the stylesheets use. The page used to
+request five weights of Rajdhani plus three of Orbitron, across devanagari,
+latin-ext and latin — around eight files, of which two were ever drawn.

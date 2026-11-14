@@ -1,0 +1,183 @@
+{
+  "note": "What's new, newest first. One entry per update: add it at the top and deploy. The id must be unique — a visitor sees the dot on the button until they've opened the entry with the newest id.",
+  "entries": [
+    {
+      "id": "2026-10-11-import-export",
+      "date": "2026-10-11",
+      "title": "Cleaner FBX export, GLB animations, and animations for your own rig",
+      "sections": [
+        {
+          "title": "Exporting your character as FBX",
+          "items": [
+            "A character comes out as one object, however many materials it has — not one object per material.",
+            "Flat-shaded and hard-edged models stay in one piece: the faces are joined, and the hard edges stay hard.",
+            "The file now says which edges are hard and which are soft, which Maya and Unreal ask for."
+          ]
+        },
+        {
+          "title": "Bringing animations in",
+          "items": [
+            "Animations can come in as GLB as well as FBX.",
+            "An animation on our own skeleton comes in as it is — a clip you downloaded here and changed in Blender, for one.",
+            "An animation made for your own rig comes in too, once a character on that rig is mapped in Retarget."
+          ]
+        },
+        {
+          "title": "Retarget",
+          "items": [
+            "The joint dots keep their size on screen at any zoom, so they are easy to see and click.",
+            "If some of your bones are not listed, the panel says why: no part of the mesh is weighted to them."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2026-10-05-motion-lab",
+      "date": "2026-10-05",
+      "title": "Motion Lab: reshape a looping animation",
+      "sections": [
+        {
+          "title": "A new page",
+          "items": [
+            "Open it with the Motion Lab button at the top, next to the logo. The logo there brings you back here.",
+            "It works on animations that loop: walks, runs, idles and other loops. Pick one in the panel on its right, or add a looping Mixamo FBX of your own."
+          ]
+        },
+        {
+          "title": "What you can do there",
+          "items": [
+            "Give a walk or a run a style: stride, cadence, width, bounce, sway, how low the hips sit. Presets to start from: Stroll, Brisk, Heavy, Sneak. Save a style and put it on another walk.",
+            "Shape the motion on a graph: the hips and each foot have curves with keys you drag. A planted foot stays planted.",
+            "Pose a bone for the whole animation, or key it at one moment.",
+            "Add controls to parts of the body: make the chest arrive late, exaggerate an arm swing, aim the head, pin a hand.",
+            "Bend the spine with Posture, and let the body follow the hips a moment late with Follow-through.",
+            "Generate a walk's eight directions: a strafe set that keeps aiming forward, or each direction facing the way it goes.",
+            "See it on your own character: the Characters tab lists the ones you added here."
+          ]
+        },
+        {
+          "title": "Keeping your work",
+          "items": [
+            "Save puts the result with your own animations in this browser. It is then here under Yours (reload this page if it is open), ready for the strips and for export.",
+            "Export downloads the animation in view, or all eight, as FBX or GLB.",
+            "What you set on an animation is remembered in your browser, and is there again the next time you pick it.",
+            "Nothing is uploaded. The Motion Lab is made for a desktop screen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2026-09-30-retarget",
+      "date": "2026-09-30",
+      "title": "Mapping your own skeleton, side by side",
+      "sections": [
+        {
+          "title": "Adding a character",
+          "items": [
+            "Two ways in: \"+ Rigged character\" keeps its skeleton and matches its bones to ours; \"+ Unrigged model\" rigs it here from a few dots. If a file doesn't fit the button you used, it says so and offers the other way."
+          ]
+        },
+        {
+          "title": "Retarget",
+          "items": [
+            "Side by side: our mannequin stands next to your character. Click a joint on ours, then its match on yours (or the other way round). Green is linked, red is still needed, yellow is picked.",
+            "Mirror as you link: linking a left joint links its right twin too.",
+            "The side panel can be dragged wider to read long bone names. Double-click its edge for the usual width."
+          ]
+        },
+        {
+          "title": "Fixes",
+          "items": [
+            "\"Hold in T-pose\" stays ticked while you map bones.",
+            "The camera stays put after each mapping change."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2026-09-30",
+      "date": "2026-09-30",
+      "title": "Characters, auto-rigging, keyframes, Unreal and iClone",
+      "sections": [
+        {
+          "title": "Your own characters",
+          "items": [
+            "Load your own character (GLB or FBX) and play every clip on it: on our skeleton (proportions of its own are fine), on its own skeleton through retargeting, or not rigged at all.",
+            "Characters stay in your browser and are never uploaded. Save a backup with all its rig work, and add it back any time.",
+            "Download clips with your character included.",
+            "A new Characters tab next to Animations."
+          ]
+        },
+        {
+          "title": "Auto-rigging and skinning",
+          "items": [
+            "Rig an unrigged character in the browser: place the joint dots, move joints, adjust the fingers — with undo and redo (Ctrl+Z).",
+            "Automatic skinning for characters made of many pieces — body, clothes, armour — with seams that stay closed.",
+            "Tag pieces as cloth or as props.",
+            "Envelopes you can show and resize per bone; the chest stays put when the arms go up.",
+            "Skinning runs in the background with a progress bar, and can be cancelled.",
+            "A rigged file that doesn't fit? Rig it here instead, from its mesh."
+          ]
+        },
+        {
+          "title": "Advanced mode: keyframes",
+          "items": [
+            "Key the Adjust and IK controls over time: set a value, press ◆, change it later in the clip."
+          ]
+        },
+        {
+          "title": "Pose mode",
+          "items": [
+            "A new Pose tool: click any joint, turn it, and letting go keys it on the current frame — on top of the animation.",
+            "Pose layers with mute, solo and weight; box select (B), X-mirror, copy / paste / paste flipped.",
+            "Typed rotations, snapping, auto-key on or off, and Blender's R and G."
+          ]
+        },
+        {
+          "title": "Projects and autosave",
+          "items": [
+            "Projects replace Presets: save, open and download whole scenes (Ctrl+S). Your presets are already there as projects.",
+            "Autosave: a closed tab or a crash brings your scene back."
+          ]
+        },
+        {
+          "title": "Export",
+          "items": [
+            "Export to Unreal Engine 5 (Manny or Quinn), Unreal Engine 4 and Reallusion (Character Creator / ActorCore). Picking one switches the format to FBX.",
+            "Feet stay planted: on every one of those skeletons the feet keep to the ground in crouches and bends, however differently the legs are built.",
+            "FBX files now open in iClone and Character Creator, and download names use only letters, numbers and underscores.",
+            "Mixamo exports retarget in Unreal like a real Mixamo download.",
+            "File names say which skeleton they're for, and the download button shows each step as it works."
+          ]
+        },
+        {
+          "title": "Import",
+          "items": [
+            "Import animations from Unreal 4/5 and Reallusion, as well as Mixamo — the skeleton is recognised by itself, and the feet stay planted.",
+            "Drop FBX files onto the Import tab, or onto the 3D view. It says what it found, and plays the new clip."
+          ]
+        },
+        {
+          "title": "Browsing and playback",
+          "items": [
+            "Faster first load.",
+            "Search ignores spaces (\"tree chop\" finds Treechopping); press / to search, Enter to play the top result.",
+            "Links remember the clip you were watching.",
+            "Step frame by frame with ← and → (Shift for ten), Home and End for the ends.",
+            "Optional Follow camera for clips that travel.",
+            "More room for the 3D view on laptop screens."
+          ]
+        },
+        {
+          "title": "Fixes",
+          "items": [
+            "A \"Save file\" link when a download doesn't start, and a warning in apps' built-in browsers.",
+            "\"One file per clip (.zip)\" shows greyed out until two clips are selected.",
+            "In place in the preview now carries into the download.",
+            "Errors now stay on screen until you close them, in plain words."
+          ]
+        }
+      ]
+    }
+  ]
+}

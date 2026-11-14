@@ -180,6 +180,27 @@ export function applyInputs(
     }
   }
 
+  // Handle trellis-3d hybrid Image-to-3D / Text-to-3D routing
+  if (app.id === "trellis-3d" && (wf as any).json) {
+    const g = (wf as any).json as Record<string, any>;
+    const hasUploadedImage = isFileValue(values.image);
+    if (hasUploadedImage) {
+      // User uploaded an image: wire load_image directly into WOXTrellis3DNode and skip Z-Image generation
+      if (g["trellis"]?.inputs) {
+        g["trellis"].inputs.image = ["load_image", 0];
+      }
+      for (const nid of ["57:27", "57:28", "57:29", "57:30", "57:33", "57:11", "57:13", "57:3", "57:8"]) {
+        delete g[nid];
+      }
+    } else {
+      // No image uploaded: generate the 3D concept image first with Z-Image Turbo, then feed into WOXTrellis3DNode
+      delete g["load_image"];
+      if (g["trellis"]?.inputs) {
+        g["trellis"].inputs.image = ["57:8", 0];
+      }
+    }
+  }
+
   // Handle optional first_frame in video modes (cinema-video, director)
   if ((app.id === "cinema-video" || app.id === "director") && (wf as any).json) {
     const g = (wf as any).json as Record<string, any>;

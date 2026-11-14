@@ -20,9 +20,11 @@
 // WOX_MAX_UPLOAD_MB. WOX_OUT moves out/ (history, the run count), WOX_HOST the listening address.
 // web/examples/ holds one example per app, written by lab/publish.py; /api/apps carries it along.
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { createReadStream, existsSync, readFileSync, statSync, openSync, readSync, closeSync, readdirSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync, openSync, readSync, closeSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { extname, join, normalize } from "node:path";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { loadRegistry, repoRoot, isFileInput, type App } from "./registry.ts";
 import { explainSubmitError, InputError, resolveValues, Runner, type Values } from "./runner.ts";
 import { History } from "./history.ts";
@@ -30,6 +32,23 @@ import { Flags } from "./flags.ts";
 import { DOOR_HTML, Guard } from "./guard.ts";
 import { thermalGuard } from "./thermal.ts";
 import { InstallerManager, type ModelDef } from "./installer.ts";
+
+const execFileAsync = promisify(execFile);
+
+async function runFaceTool(args: string[]): Promise<string> {
+  const pyBin = installer.detectPython();
+  const script = join(root, "server", "face_tools.py");
+  const { stdout } = await execFileAsync(pyBin, [script, ...args], { maxBuffer: 25 * 1024 * 1024, timeout: 60000 });
+  return stdout;
+}
+
+function parseBoxParam(raw: unknown): string {
+  const s = typeof raw === "string" ? raw.trim() : "";
+  if (!/^-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?$/.test(s)) {
+    throw new InputError("invalid box parameter");
+  }
+  return s;
+}
 
 const root = repoRoot();
 const installer = new InstallerManager(root);
@@ -52,7 +71,9 @@ function findComfyLog(): string | null {
   const termLog = join(root, "out", "terminal.log");
   if (existsSync(termLog) && statSync(termLog).size > 0) return termLog;
   const candidates = [
+    join(installer.detectComfyDir(), "user"),
     join(homedir(), "opt", "ComfyUI", "user"),
+    join(homedir(), "ComfyUI", "user"),
     join(root, "..", "ComfyUI", "user"),
     "/home/wox76/opt/ComfyUI/user",
     join(root, "out"),
@@ -95,23 +116,104 @@ const history = new History(join(outDir, "history"), {
     return { outputs: app.outputs.map((o) => o.node), nodes: Object.keys(graph).length, classOf: (n) => graph[n]?.class_type ?? null };
   },
   frames: (jobId, signal) => getRunner().frames(jobId, signal),
+  transformOutput: async ({ entry, folder, bytes, index }) => {
+    if (entry.app !== "wonderfull" || index !== 1) return;
+    const wfMetaPath = join(folder, "wonderfull.json");
+    if (!existsSync(wfMetaPath)) return;
+    const baseInput = entry.inputs.find((i) => i.id === "image") ?? entry.inputs[0];
+    if (!baseInput) return;
+    const basePath = join(folder, baseInput.file);
+    if (!existsSync(basePath)) return;
+    const wfMeta = JSON.parse(readFileSync(wfMetaPath, "utf-8")) as {
+      box: string;
+      faceBox?: string;
+      mode?: "face" | "head";
+      keepGlasses?: boolean;
+    };
+    const tmpDir = mkdtempSync(join(tmpdir(), "wox-wf-out-"));
+    try {
+      const patchPath = join(tmpDir, "patch.png");
+      const outPath = join(tmpDir, "composite.png");
+      writeFileSync(patchPath, bytes);
+      const modelsDir = installer.detectModelsDir();
+      const insightRoot = join(modelsDir, "insightface");
+      const args = [
+        "composite", "--base", basePath, "--patch", patchPath, "--box", wfMeta.box,
+        "--mode", wfMeta.mode === "head" ? "head" : "face",
+        "--models-dir", modelsDir, "--insightface-root", insightRoot, "--out", outPath,
+      ];
+      if (wfMeta.faceBox) args.push("--face-box", wfMeta.faceBox);
+      if (wfMeta.keepGlasses === false) args.push("--no-keep-glasses");
+      await runFaceTool(args);
+      return new Uint8Array(readFileSync(outPath));
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  },
 });
 const flags = new Flags(join(root, "lab", "flags.json"), apps);
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
-  ".json": "application/json", ".txt": "text/plain; charset=utf-8", ".woff2": "font/woff2", ".woff": "font/woff",
+  ".json": "application/json", ".webmanifest": "application/manifest+json", ".txt": "text/plain; charset=utf-8", ".woff2": "font/woff2", ".woff": "font/woff",
   ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
   ".gif": "image/gif", ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime",
   ".mp3": "audio/mpeg", ".wav": "audio/wav", ".flac": "audio/flac", ".ogg": "audio/ogg", ".m4a": "audio/mp4",
+  ".glb": "model/gltf-binary", ".gltf": "model/gltf+json", ".fbx": "application/octet-stream", ".bin": "application/octet-stream",
   ".wasm": "application/wasm", ".tflite": "application/octet-stream", ".task": "application/octet-stream",
 };
+
+function withAssetVersion(relPath: unknown): unknown {
+  if (typeof relPath !== "string" || !relPath) return relPath;
+  const clean = relPath.split(/[?#]/)[0];
+  const diskPath = join(root, "web", ...clean.replace(/^\/+/, "").split("/"));
+  try {
+    const st = statSync(diskPath);
+    if (st.isFile()) return `${clean}?v=${Math.floor(st.mtimeMs)}`;
+  } catch { /* missing asset */ }
+  return relPath;
+}
 
 // one example per app (lab/publish.py); read on every catalog request so a new publish shows up without a restart
 const examplesFile = join(root, "web", "examples", "index.json");
 function loadExamples(): Record<string, unknown> {
   try {
-    return existsSync(examplesFile) ? (JSON.parse(readFileSync(examplesFile, "utf-8")).apps ?? {}) : {};
+    if (!existsSync(examplesFile)) return {};
+    const appsMap = (JSON.parse(readFileSync(examplesFile, "utf-8")).apps ?? {}) as Record<string, Record<string, unknown>>;
+    const out: Record<string, unknown> = {};
+    for (const [id, raw] of Object.entries(appsMap)) {
+      if (!raw || typeof raw !== "object") { out[id] = raw; continue; }
+      const item: Record<string, unknown> = {
+        ...raw,
+        card: withAssetVersion(raw.card),
+        poster: withAssetVersion(raw.poster),
+        full: withAssetVersion(raw.full),
+        glb: withAssetVersion(raw.glb),
+      };
+      if (Array.isArray(raw.inputs)) {
+        item.inputs = raw.inputs.map((inp) => (
+          inp && typeof inp === "object"
+            ? { ...(inp as Record<string, unknown>), src: withAssetVersion((inp as Record<string, unknown>).src), full: withAssetVersion((inp as Record<string, unknown>).full) }
+            : inp
+        ));
+      }
+      if (raw.options && typeof raw.options === "object") {
+        const opts: Record<string, Record<string, unknown>> = {};
+        for (const [k, group] of Object.entries(raw.options as Record<string, Record<string, unknown>>)) {
+          if (!group || typeof group !== "object") continue;
+          const mappedGroup: Record<string, unknown> = {};
+          for (const [optVal, shot] of Object.entries(group)) {
+            mappedGroup[optVal] = shot && typeof shot === "object"
+              ? { ...(shot as Record<string, unknown>), card: withAssetVersion((shot as Record<string, unknown>).card), poster: withAssetVersion((shot as Record<string, unknown>).poster) }
+              : shot;
+          }
+          opts[k] = mappedGroup;
+        }
+        item.options = opts;
+      }
+      out[id] = item;
+    }
+    return out;
   } catch {
     return {};
   }
@@ -141,6 +243,8 @@ function publicApp(a: App) {
     } : null,
     credits: a.credits ?? [],
     notes: a.notes ?? null,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
   };
 }
 
@@ -150,7 +254,7 @@ function send(res: ServerResponse, status: number, body: unknown) {
 }
 
 /** A file from disk, honouring Range so <video> can seek. */
-function sendFile(req: IncomingMessage, res: ServerResponse, file: string, cache = "no-cache") {
+function sendFile(req: IncomingMessage, res: ServerResponse, file: string, cache = "no-store, no-cache, must-revalidate") {
   const size = statSync(file).size;
   const type = MIME[extname(file).toLowerCase()] ?? "application/octet-stream";
   const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? "");
@@ -185,7 +289,14 @@ async function toRequest(req: IncomingMessage): Promise<Request> {
   });
 }
 
-async function readValues(app: App, request: Request): Promise<{ values: Values; preset?: string }> {
+interface WonderfullCrop {
+  box: string;
+  faceBox?: string;
+  mode: "face" | "head";
+  keepGlasses: boolean;
+}
+
+async function readValues(app: App, request: Request): Promise<{ values: Values; preset?: string; wfCrop?: WonderfullCrop }> {
   const form = await request.formData();
   const values: Values = {};
   for (const input of app.inputs) {
@@ -213,8 +324,20 @@ async function readValues(app: App, request: Request): Promise<{ values: Values;
       }
     }
   }
+  let wfCrop: WonderfullCrop | undefined;
+  if (app.id === "wonderfull") {
+    const rawBox = form.get("wf_crop_box");
+    if (typeof rawBox === "string" && rawBox.trim()) {
+      const box = parseBoxParam(rawBox);
+      const rawFaceBox = form.get("wf_face_box");
+      const faceBox = typeof rawFaceBox === "string" && rawFaceBox.trim() ? parseBoxParam(rawFaceBox) : undefined;
+      const mode = form.get("wf_mode") === "head" ? "head" : "face";
+      const keepGlasses = form.get("wf_keep_glasses") !== "0";
+      wfCrop = { box, faceBox, mode, keepGlasses };
+    }
+  }
   const preset = form.get("preset");
-  return { values, preset: typeof preset === "string" && preset ? preset : undefined };
+  return { values, preset: typeof preset === "string" && preset ? preset : undefined, wfCrop };
 }
 
 async function jobView(id: string) {
@@ -228,11 +351,31 @@ async function jobView(id: string) {
 }
 
 /** Submit in the background; the entry tells the UI how it goes. */
-function startRun(app: App, values: Values, preset?: string) {
+function startRun(app: App, values: Values, preset?: string, wfCrop?: WonderfullCrop) {
   const entry = history.start(app, values, preset);
+  if (wfCrop) {
+    writeFileSync(join(outDir, "history", entry.id, "wonderfull.json"), JSON.stringify(wfCrop));
+  }
   void (async () => {
     try {
-      const job = await getRunner().submit(app, values, preset);
+      let submitValues = values;
+      const img = values.image;
+      if (wfCrop && typeof img === "object" && img !== null && "bytes" in img && img.bytes instanceof Uint8Array) {
+        const tmpDir = mkdtempSync(join(tmpdir(), "wox-wf-crop-"));
+        try {
+          const inPath = join(tmpDir, "base.png");
+          const outPath = join(tmpDir, "crop.png");
+          writeFileSync(inPath, img.bytes);
+          await runFaceTool(["crop", "--image", inPath, "--box", wfCrop.box, "--out", outPath]);
+          submitValues = {
+            ...values,
+            image: { bytes: new Uint8Array(readFileSync(outPath)), name: "face_crop.png", type: "image/png" },
+          };
+        } finally {
+          rmSync(tmpDir, { recursive: true, force: true });
+        }
+      }
+      const job = await getRunner().submit(app, submitValues, preset);
       contact();
       await history.follow(entry, job);
     } catch (e) {
@@ -344,8 +487,8 @@ const server = createServer(async (req, res) => {
         if (!runnable(app)) throw new InputError(`${app.id} is a draft; start the server with WOX_DRAFTS=1 to run it anyway`);
         const refused = guard.refuse(activeRuns());
         if (refused) return send(res, 429, { error: refused });
-        const { values, preset } = await readValues(app, await toRequest(req));
-        const view = startRun(app, resolveValues(app, values), preset);
+        const { values, preset, wfCrop } = await readValues(app, await toRequest(req));
+        const view = startRun(app, resolveValues(app, values), preset, wfCrop);
         guard.record();
         return send(res, 202, view);
       }
@@ -359,7 +502,21 @@ const server = createServer(async (req, res) => {
           const entry = history.addUpload(file.name, file.type, bytes);
           return send(res, 201, history.view(entry));
         }
-        if (req.method === "GET" && !id) return send(res, 200, { entries: history.list(url.searchParams.get("app") || undefined) });
+        if (req.method === "GET" && !id) {
+          const appFilter = url.searchParams.get("app") || undefined;
+          const rawLimit = url.searchParams.get("limit");
+          const rawOffset = url.searchParams.get("offset");
+          const rawMedia = url.searchParams.get("media");
+          if (rawLimit !== null || rawOffset !== null || rawMedia !== null) {
+            const parsedLimit = rawLimit !== null ? Number.parseInt(rawLimit, 10) : 60;
+            const limit = Number.isFinite(parsedLimit) ? Math.min(500, Math.max(1, parsedLimit)) : 60;
+            const parsedOffset = rawOffset !== null ? Number.parseInt(rawOffset, 10) : 0;
+            const offset = Number.isFinite(parsedOffset) ? Math.max(0, parsedOffset) : 0;
+            const media = rawMedia === "image" || rawMedia === "video" || rawMedia === "audio" ? rawMedia : undefined;
+            return send(res, 200, history.page(appFilter, limit, offset, media));
+          }
+          return send(res, 200, { entries: history.list(appFilter) });
+        }
         if (req.method === "GET" && id && !sub) {
           const e = history.get(id);
           return e ? send(res, 200, e) : send(res, 404, { error: "unknown run" });
@@ -507,6 +664,65 @@ const server = createServer(async (req, res) => {
             thermalGuard.configure({ enabled: body.safe_enabled, threshold: body.safe_threshold });
           }
           return send(res, 200, { ok: true, ...installer.getStatus(), safe: thermalGuard.status() });
+        }
+      }
+      if (area === "wonderfull" && req.method === "POST") {
+        const form = await (await toRequest(req)).formData();
+        const dir = mkdtempSync(join(tmpdir(), "wox-wf-"));
+        try {
+          if (id === "detect-faces") {
+            const img = form.get("image");
+            if (!(img instanceof File) || !img.size) throw new InputError("image file is required");
+            const inPath = join(dir, "input.png");
+            writeFileSync(inPath, Buffer.from(await img.arrayBuffer()));
+            const modelsDir = installer.detectModelsDir();
+            const insightRoot = join(modelsDir, "insightface");
+            const raw = await runFaceTool(["detect", "--image", inPath, "--insightface-root", insightRoot]);
+            return send(res, 200, JSON.parse(raw));
+          }
+          if (id === "crop-face") {
+            const img = form.get("image");
+            if (!(img instanceof File) || !img.size) throw new InputError("image file is required");
+            const box = parseBoxParam(form.get("box"));
+            const inPath = join(dir, "input.png");
+            const outPath = join(dir, "crop.png");
+            writeFileSync(inPath, Buffer.from(await img.arrayBuffer()));
+            await runFaceTool(["crop", "--image", inPath, "--box", box, "--out", outPath]);
+            const bytes = readFileSync(outPath);
+            res.writeHead(200, { "content-type": "image/png", "content-length": bytes.byteLength });
+            return res.end(bytes);
+          }
+          if (id === "composite-face") {
+            const base = form.get("base");
+            const patch = form.get("patch");
+            if (!(base instanceof File) || !base.size || !(patch instanceof File) || !patch.size) {
+              throw new InputError("base and patch files are required");
+            }
+            const box = parseBoxParam(form.get("box"));
+            const faceBoxRaw = form.get("faceBox");
+            const faceBox = typeof faceBoxRaw === "string" && faceBoxRaw.trim() ? parseBoxParam(faceBoxRaw) : "";
+            const mode = form.get("mode") === "head" ? "head" : "face";
+            const keepGlasses = form.get("keepGlasses") !== "0";
+            const modelsDir = installer.detectModelsDir();
+            const insightRoot = join(modelsDir, "insightface");
+            const basePath = join(dir, "base.png");
+            const patchPath = join(dir, "patch.png");
+            const outPath = join(dir, "out.png");
+            writeFileSync(basePath, Buffer.from(await base.arrayBuffer()));
+            writeFileSync(patchPath, Buffer.from(await patch.arrayBuffer()));
+            const args = [
+              "composite", "--base", basePath, "--patch", patchPath, "--box", box,
+              "--mode", mode, "--models-dir", modelsDir, "--insightface-root", insightRoot, "--out", outPath,
+            ];
+            if (faceBox) args.push("--face-box", faceBox);
+            if (!keepGlasses) args.push("--no-keep-glasses");
+            await runFaceTool(args);
+            const bytes = readFileSync(outPath);
+            res.writeHead(200, { "content-type": "image/png", "content-length": bytes.byteLength });
+            return res.end(bytes);
+          }
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
         }
       }
       if (area === "flags" && parts.length === 2) {

@@ -185,6 +185,7 @@ export function topbar({ onLang }) {
   gpuState.listeners.clear();   // a rebuilt bar (language change) replaces the old pill
   const items = [
     ["home", "#/app/cinema-video", "home"], ["image", "#/image", "image"], ["video", "#/video", "video"], ["audio", "#/audio", "audio"],
+    ["3d", "#/3d", "cube"],
     ["apps", "#/apps", "layers"], ["library", "#/library", "film"],
   ];
   const links = new Map();
@@ -194,7 +195,7 @@ export function topbar({ onLang }) {
     links.set(key, a);
     nav.append(a);
   }
-  nav.append(el("span", { class: "sep opt-hide" }));
+  if (FEATURED.length) nav.append(el("span", { class: "sep opt-hide" }));
   for (const f of FEATURED) {
     const app = byId.get(f.id);
     if (!app) continue;

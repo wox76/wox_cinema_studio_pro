@@ -109,11 +109,13 @@ class ThermalGuard {
       clearTimeout(this.dutySwitchTimeout);
       this.dutySwitchTimeout = null;
     }
-    for (const pid of this.pausedPids) {
-      try {
-        process.kill(pid, "SIGCONT");
-      } catch {
-        /* ignore */
+    if (process.platform !== "win32") {
+      for (const pid of this.pausedPids) {
+        try {
+          process.kill(pid, "SIGCONT");
+        } catch {
+          /* ignore */
+        }
       }
     }
     this.pausedPids.clear();
@@ -187,6 +189,7 @@ class ThermalGuard {
   }
 
   private applyCriticalPause() {
+    if (process.platform === "win32") return;
     execFile("nvidia-smi", ["--query-compute-apps=pid", "--format=csv,noheader,nounits"], (err, stdout) => {
       if (err || !stdout.trim()) return;
       const pids = stdout.trim().split("\n").map((s) => parseInt(s.trim(), 10)).filter((n) => Number.isFinite(n) && n > 0);
@@ -206,6 +209,7 @@ class ThermalGuard {
   }
 
   private applyDutyThrottling() {
+    if (process.platform === "win32") return;
     execFile("nvidia-smi", ["--query-compute-apps=pid", "--format=csv,noheader,nounits"], (err, stdout) => {
       if (err || !stdout.trim()) return;
       const pids = stdout.trim().split("\n").map((s) => parseInt(s.trim(), 10)).filter((n) => Number.isFinite(n) && n > 0);

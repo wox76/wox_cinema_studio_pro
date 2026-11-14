@@ -5,7 +5,7 @@
 //   out/history/<id>/out-<n>.<ext>    what it made
 // A run is recorded before it is submitted, because submitting to a cold GPU can take minutes:
 // the UI shows it as "starting" right away instead of a spinner on a button.
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { extname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 import type { ComfyEvent } from "@comfyorg/sdk";
@@ -60,6 +60,14 @@ export type HistoryOptions = {
   appInfo?: (appId: string) => AppInfo | undefined;
   /** The raw event stream of a job, read without the SDK (see Meter). Absent: job.events() is used. */
   frames?: (jobId: string, signal: AbortSignal) => AsyncIterable<Frame>;
+  /** Optional post-processor applied to each output file before storing it in the history entry. */
+  transformOutput?: (ctx: {
+    entry: Entry;
+    folder: string;
+    bytes: Uint8Array;
+    index: number;
+    contentType: string;
+  }) => Promise<Uint8Array | void> | Uint8Array | void;
 };
 
 type Live = {
@@ -115,6 +123,7 @@ const EXT: Record<string, string> = {
   "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif",
   "video/mp4": ".mp4", "video/webm": ".webm", "video/quicktime": ".mov",
   "audio/mpeg": ".mp3", "audio/wav": ".wav", "audio/x-wav": ".wav", "audio/flac": ".flac", "audio/ogg": ".ogg", "audio/mp4": ".m4a",
+  "model/gltf-binary": ".glb", "model/gltf+json": ".gltf",
 };
 
 function newId(now = new Date()): string {
@@ -205,12 +214,14 @@ export class History {
   private onContact: () => void;
   private appInfo: (appId: string) => AppInfo | undefined;
   private frames?: (jobId: string, signal: AbortSignal) => AsyncIterable<Frame>;
+  private transformOutput?: HistoryOptions["transformOutput"];
 
   constructor(dir: string, opts: HistoryOptions = {}) {
     this.dir = dir;
     this.onContact = opts.onContact ?? (() => {});
     this.appInfo = opts.appInfo ?? (() => undefined);
     this.frames = opts.frames;
+    this.transformOutput = opts.transformOutput;
     mkdirSync(dir, { recursive: true });
   }
 
@@ -394,13 +405,35 @@ export class History {
         let n = 0;
         for (const out of pickOutputs(job.outputs, info?.outputs ?? [])) {
           try {
-            const bytes = await out.toBytes();
+            let bytes = await out.toBytes();
+            const outIndex = ++n;
+            if (this.transformOutput) {
+              const next = await this.transformOutput({
+                entry,
+                folder,
+                bytes,
+                index: outIndex,
+                contentType: out.contentType,
+              });
+              if (next) bytes = next;
+            }
             const ext = safeExt(out.name, out.contentType);
-            const file = `out-${String(++n).padStart(2, "0")}${ext}`;
+            const file = `out-${String(outIndex).padStart(2, "0")}${ext}`;
             writeFileSync(join(folder, file), bytes);
             entry.outputs.push({ file, type: mediaKind(ext, out.type), name: out.name, node: out.nodeId });
           } catch (e) {
             entry.error = { message: `could not download ${out.name}: ${(e as Error).message}` };
+          }
+        }
+        // If this was a 3D generation (e.g. trellis-3d), copy the generated .glb into the history entry folder
+        if (entry.app === "trellis-3d") {
+          const latestGlb = join(this.dir, "..", "3d", "latest.glb");
+          if (existsSync(latestGlb)) {
+            try {
+              copyFileSync(latestGlb, join(folder, "out-model.glb"));
+            } catch (e) {
+              console.warn(`[history] failed to copy out-model.glb: ${(e as Error).message}`);
+            }
           }
         }
         if (!entry.outputs.length && !entry.error) entry.error = { message: "the job finished without an image, video or audio output" };
@@ -470,8 +503,28 @@ export class History {
     return this.live.get(id)?.preview ?? null;
   }
 
-  list(app?: string, limit = 300) {
-    return this.entries().filter((e) => !app || e.app === app).slice(0, limit).map((e) => this.view(e));
+  list(app?: string, limit = 300, offset = 0) {
+    const filtered = this.entries().filter((e) => !app || e.app === app);
+    const start = Math.max(0, offset);
+    const sliced = limit > 0 ? filtered.slice(start, start + limit) : filtered.slice(start);
+    return sliced.map((e) => this.view(e));
+  }
+
+  page(app?: string, limit = 60, offset = 0, media?: "image" | "video" | "audio") {
+    const filtered = this.entries().filter((e) => {
+      if (app && e.app !== app) return false;
+      if (media && (e.status !== "succeeded" || !e.outputs.some((o) => o.type === media))) return false;
+      return true;
+    });
+    const start = Math.max(0, offset);
+    const items = limit > 0 ? filtered.slice(start, start + limit) : filtered.slice(start);
+    return {
+      entries: items.map((e) => this.view(e)),
+      total: filtered.length,
+      offset: start,
+      limit,
+      hasMore: start + items.length < filtered.length,
+    };
   }
 
   get(id: string) {
@@ -483,8 +536,10 @@ export class History {
   view(e: Entry) {
     const base = `/api/history/${e.id}`;
     const live = this.live.get(e.id);
+    const hasGlb = existsSync(join(this.dir, e.id, "out-model.glb"));
     return {
       ...e,
+      glbUrl: hasGlb ? `${base}/files/out-model.glb` : null,
       inputs: e.inputs.map((i) => ({ ...i, url: `${base}/files/${i.file}` })),
       outputs: e.outputs.map((o) => ({ ...o, url: `${base}/files/${o.file}` })),
       progress: live?.progress ?? null,

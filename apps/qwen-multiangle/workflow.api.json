@@ -133,7 +133,7 @@
     }
   },
   "10:110": {
-    "class_type": "TextEncodeQwenImageEditPlus",
+    "class_type": "TextEncodeQwenImageEdit",
     "inputs": {
       "clip": [
         "10:38",
@@ -143,18 +143,18 @@
         "10:39",
         0
       ],
-      "image1": [
+      "image": [
         "10:117",
         0
       ],
       "prompt": ""
     },
     "_meta": {
-      "title": "Text Encode Qwen Image Edit Plus"
+      "title": "Text Encode Qwen Image Edit"
     }
   },
   "10:111": {
-    "class_type": "TextEncodeQwenImageEditPlus",
+    "class_type": "TextEncodeQwenImageEdit",
     "inputs": {
       "clip": [
         "10:38",
@@ -164,7 +164,7 @@
         "10:39",
         0
       ],
-      "image1": [
+      "image": [
         "10:117",
         0
       ],
@@ -174,7 +174,7 @@
       ]
     },
     "_meta": {
-      "title": "Text Encode Qwen Image Edit Plus"
+      "title": "Text Encode Qwen Image Edit"
     }
   },
   "10:117": {
@@ -196,7 +196,7 @@
         "10:89",
         0
       ],
-      "lora_name": "qwen-image-edit-2511-multiple-angles-lora.safetensors",
+      "lora_name": "镜头转换.safetensors",
       "strength_model": 1
     },
     "_meta": {

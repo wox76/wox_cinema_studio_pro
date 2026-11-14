@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[793,936],{7174:(e,s,a)=>{a.d(s,{FBXLoader:()=>k.w});var k=a(4846)}}]);

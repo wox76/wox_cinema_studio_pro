@@ -37,13 +37,26 @@ export const CATEGORIES = [
   { id: "vfx", apps: ["effects", "morph", "edit", "inpaint", "vfx-clean-plate", "vfx-day-to-night", "vfx-water"] },
   { id: "ads", apps: ["product-shot", "poster", "packshot", "macro-scene", "macro-product", "giant-product", "billboard", "graffiti-ad", "fridge-ad", "ugc-shot",
     "asmr-product", "chameleon", "magic-button", "truck-ad", "kick-ad", "volcano-ad"] },
-  { id: "portraits", apps: ["ai-influencer", "ai-influencer-photo", "photodump", "headshot", "commercial-faces", "style-snap", "skin-enhancer", "outfit-vending", "glitter-sticker", "fashion-factory", "try-on", "outfit-swap", "outfit-shot"] },
+  { id: "portraits", apps: ["wonderfull", "ai-influencer", "ai-influencer-photo", "photodump", "headshot", "commercial-faces", "style-snap", "skin-enhancer", "outfit-vending", "glitter-sticker", "fashion-factory", "try-on", "outfit-swap", "outfit-shot"] },
   { id: "clips", apps: ["music-video", "behind-the-scenes", "asmr-whisper", "asmr-host", "roller-coaster", "storm-creature", "cloud-surf", "mukbang", "melting-doodle", "rap-video", "idol"] },
   { id: "play", apps: ["game-styles", "plushie", "render-3d", "figure-3d", "pixel-game", "brick-toy", "sketch-to-real", "paint-app", "mural", "micro-beasts", "meme"] },
   { id: "templates", apps: ["j-magazine", "cafe-60s", "victory-card", "j-poster", "mascot", "burning-sunset", "comic-book", "giallo", "renaissance", "japanese-show", "breakdown", "edit-text", "image-effects", "color-grade"] },
 ];
 export function categoryOf(id) {
   return CATEGORIES.find((c) => c.apps.includes(id))?.id ?? "more";
+}
+
+/** Most recently created apps, ordered newest -> oldest. */
+export function recentApps(limit = 10, pool = apps) {
+  const seen = new Set();
+  return pool
+    .filter((a) => a && !seen.has(a.id) && seen.add(a.id))
+    .sort((a, b) =>
+      ((b.createdAt || 0) - (a.createdAt || 0))
+      || ((b.updatedAt || 0) - (a.updatedAt || 0))
+      || a.name.localeCompare(b.name)
+    )
+    .slice(0, limit);
 }
 
 /** The video studio's three tabs, like a camera crew: shoot, fix, move. */
@@ -59,8 +72,8 @@ export const videoTabOf = (id) => VIDEO_TABS.find((tab) => tab.apps.includes(id)
 /** The image studio's six genres: create, edit, identity, camera, ads, creative styles. */
 export const IMAGE_TABS = [
   { id: "create", apps: ["cinema-studio", "create-image", "z-image", "moss-image"] },
-  { id: "edit", apps: ["edit", "inpaint", "relight", "remove-bg", "upscale", "expand-image", "depth-map", "color-grade", "edit-text"] },
-  { id: "identity", apps: ["face-swap", "character-studio", "character", "character-3", "character-swap", "headshot", "ai-influencer", "ai-influencer-photo", "commercial-faces", "style-snap", "skin-enhancer"] },
+  { id: "edit", apps: ["wonderfull", "edit", "inpaint", "relight", "remove-bg", "upscale", "expand-image", "depth-map", "color-grade", "edit-text"] },
+  { id: "identity", apps: ["wonderfull", "face-swap", "character-studio", "character", "character-3", "character-swap", "headshot", "ai-influencer", "ai-influencer-photo", "commercial-faces", "style-snap", "skin-enhancer"] },
   { id: "camera", apps: ["qwen-multiangle", "angles", "shots", "zooms", "whats-next"] },
   { id: "ads", apps: ["product-shot", "packshot", "billboard", "poster", "giant-product", "macro-scene", "macro-product", "fridge-ad", "graffiti-ad", "ugc-shot"] },
   { id: "styles", apps: ["styles", "style-reference", "render-3d", "figure-3d", "comic-book", "pixel-game", "brick-toy", "plushie", "sketch-to-real", "paint-app", "mural", "micro-beasts", "meme", "fashion-factory", "try-on", "outfit-swap", "outfit-shot", "outfit-vending", "photodump", "glitter-sticker", "moodboard", "cafe-60s", "renaissance", "giallo", "victory-card", "j-magazine", "j-poster", "mascot", "burning-sunset", "japanese-show", "breakdown", "image-effects", "game-styles"] },
@@ -68,7 +81,7 @@ export const IMAGE_TABS = [
 export const imageTabOf = (id) => IMAGE_TABS.find((tab) => tab.apps.includes(id))?.id ?? null;
 
 /** Shown in the top bar next to the studios, like a store's front window. */
-export const FEATURED = [{ id: "trellis-3d", tag: "new" }, { id: "recast", tag: "featured" }, { id: "speak", tag: "new" }, { id: "relight", tag: null }];
+export const FEATURED = [];
 
 /** The open models behind the apps, for the top bar's menus. `file` is a piece of the model file's name: an app that
  *  downloads a matching file uses the model. `app` runs the model on its own. Order matters for modelOf(): an app is
@@ -276,6 +289,7 @@ const TAGLINES = {
   "video-remove-bg": ["Cut the subject out of a clip", "Recorta al sujeto de un clip"],
   "volcano-ad": ["A volcano erupts behind your product", "Un volcán detrás de tu producto"],
   "whats-next": ["The next shot of your scene", "La siguiente toma de tu escena"],
+  wonderfull: ["FaceApp-style beauty, smile, contouring & color studio", "Estudio de belleza facial, sonrisa y color estilo FaceApp", "Bellezza volti, sorriso, contouring ed effetti colore stile FaceApp"],
   zooms: ["Zoom levels of one image", "Niveles de zoom de una imagen"],
   "character-3": ["Three photos, one face", "Tres fotos, una misma cara"],
   moodboard: ["The look of three images", "El look de tres imágenes"],
@@ -290,7 +304,7 @@ export function tagline(app) {
 
 /** Icon name per app for chips and tiles. */
 export function iconOf(app) {
-  const byIdIcon = { "trellis-3d": "box", relight: "sun", "remove-bg": "scissors", "product-shot": "box", character: "user", speak: "user", talking: "user",
+  const byIdIcon = { "trellis-3d": "box", wonderfull: "spark", relight: "sun", "remove-bg": "scissors", "product-shot": "box", character: "user", speak: "user", talking: "user",
     recast: "user", "motion-transfer": "hand", "camera-moves": "camera", "camera-copy": "camera", reshoot: "camera", music: "audio", sfx: "audio", effects: "spark" };
   return byIdIcon[app.id] || (app.section === "video" ? "video" : app.section === "audio" ? "audio" : "image");
 }

@@ -1,0 +1,17 @@
+{
+  "note": "How a preview of a posted animation looks. Set on tools/preview-look.html. (scripts/lib/animation-library/clip-preview.js says what each number is.)",
+  "width": 400,
+  "height": 480,
+  "fps": 30,
+  "seconds": 5,
+  "yaw": 28,
+  "pitch": 18.5,
+  "zoom": 1.2857142857142858,
+  "lift": 0.05,
+  "lens": 35,
+  "background": "#3b3b3b",
+  "ambient": 2.2,
+  "key": 2.4,
+  "inPlace": true,
+  "bitrate": 450000
+}

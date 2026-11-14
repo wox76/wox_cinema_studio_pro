@@ -1,7 +1,7 @@
-import { spawn, type ChildProcess } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, symlinkSync, writeFileSync } from "node:fs";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { cpSync, existsSync, linkSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, posix, resolve, win32 } from "node:path";
 
 export interface CustomNodeDef {
   id: string;
@@ -132,6 +132,17 @@ const CUSTOM_NODES: CustomNodeDef[] = [
     repo: "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite",
     targetRel: "custom_nodes/ComfyUI-VideoHelperSuite",
     usedBy: ["video", "h3-video", "upscale-video", "motion-transfer"],
+  },
+  {
+    id: "comfyui-qwenmultiangle",
+    name: "ComfyUI-qwenmultiangle",
+    description: "Nodo 3D interattivo per controllo angolazione camera (azimut, elevazione, zoom) per Qwen Multiangle Camera.",
+    essential: true,
+    type: "git",
+    repo: "https://github.com/jtydhr88/ComfyUI-qwenmultiangle",
+    commit: "bf8d032a36f1b78296568cda939418b88f0950b3",
+    targetRel: "custom_nodes/ComfyUI-qwenmultiangle",
+    usedBy: ["qwen-multiangle"],
   },
   {
     id: "comfyui-manager",
@@ -277,7 +288,137 @@ const MODEL_DIRS = [
   "diffusion_models", "text_encoders", "vae", "loras", "checkpoints", "clip_vision",
   "latent_upscale_models", "upscale_models", "model_patches", "geometry_estimation",
   "background_removal", "frame_interpolation", "audio_encoders", "embeddings", "detection",
+  "insightface", "facerestore_models",
 ];
+
+export function comfyDirCandidates(
+  root: string,
+  platform: NodeJS.Platform = process.platform,
+  home = homedir(),
+  env: NodeJS.ProcessEnv = process.env
+): string[] {
+  const pathMod = platform === "win32" ? win32 : posix;
+  const raw = [
+    env.COMFYUI_DIR ? pathMod.resolve(env.COMFYUI_DIR) : "",
+    pathMod.join(home, "opt", "ComfyUI"),
+    pathMod.join(home, "ComfyUI"),
+    pathMod.resolve(root, "..", "ComfyUI"),
+    ...(platform === "win32"
+      ? [
+          pathMod.join(home, "Documents", "ComfyUI"),
+          pathMod.join(home, "Desktop", "ComfyUI"),
+          pathMod.resolve(root, "..", "ComfyUI_windows_portable", "ComfyUI"),
+          pathMod.join(home, "ComfyUI_windows_portable", "ComfyUI"),
+          "C:\\ComfyUI",
+          "D:\\ComfyUI",
+          "C:\\ComfyUI_windows_portable\\ComfyUI",
+          "D:\\ComfyUI_windows_portable\\ComfyUI",
+          env.LOCALAPPDATA ? pathMod.join(env.LOCALAPPDATA, "Programs", "@comfyorgcomfyui-electron", "resources", "ComfyUI") : "",
+        ]
+      : ["/home/wox76/opt/ComfyUI", "/opt/ComfyUI"]),
+  ];
+  return [...new Set(raw.filter(Boolean))];
+}
+
+export function pythonCandidates(
+  comfyDir: string,
+  root: string,
+  platform: NodeJS.Platform = process.platform,
+  env: NodeJS.ProcessEnv = process.env
+): string[] {
+  const isWin = platform === "win32";
+  const pathMod = isWin ? win32 : posix;
+  const raw = [
+    env.PYTHON_BIN || "",
+    env.COMFY_PYTHON || "",
+    isWin ? pathMod.join(comfyDir, "venv", "Scripts", "python.exe") : pathMod.join(comfyDir, "venv", "bin", "python"),
+    isWin ? pathMod.join(comfyDir, ".venv", "Scripts", "python.exe") : pathMod.join(comfyDir, ".venv", "bin", "python"),
+    ...(isWin
+      ? [
+          pathMod.resolve(comfyDir, "..", "python_embeded", "python.exe"),
+          pathMod.resolve(comfyDir, "..", "python_embedded", "python.exe"),
+          pathMod.join(comfyDir, "python_embeded", "python.exe"),
+          pathMod.join(comfyDir, "python_embedded", "python.exe"),
+          pathMod.join(root, "venv", "Scripts", "python.exe"),
+          pathMod.join(root, ".venv", "Scripts", "python.exe"),
+        ]
+      : [
+          pathMod.join(root, "venv", "bin", "python"),
+          pathMod.join(root, ".venv", "bin", "python"),
+        ]),
+  ];
+  return [...new Set(raw.filter(Boolean))];
+}
+
+export function proxyBinaryCandidates(
+  comfyDir: string,
+  pythonBin?: string,
+  platform: NodeJS.Platform = process.platform
+): string[] {
+  const isWin = platform === "win32";
+  const pathMod = isWin ? win32 : posix;
+  const exe = isWin ? "comfy-api-proxy.exe" : "comfy-api-proxy";
+  const raw = [
+    ...(pythonBin && (pythonBin.includes("/") || pythonBin.includes("\\"))
+      ? [
+          pathMod.join(pathMod.dirname(pythonBin), exe),
+          pathMod.join(pathMod.dirname(pythonBin), "Scripts", exe),
+        ]
+      : []),
+    isWin ? pathMod.join(comfyDir, "venv", "Scripts", exe) : pathMod.join(comfyDir, "venv", "bin", exe),
+    isWin ? pathMod.join(comfyDir, ".venv", "Scripts", exe) : pathMod.join(comfyDir, ".venv", "bin", exe),
+    ...(isWin
+      ? [
+          pathMod.resolve(comfyDir, "..", "python_embeded", "Scripts", exe),
+          pathMod.resolve(comfyDir, "..", "python_embedded", "Scripts", exe),
+          pathMod.join(comfyDir, "python_embeded", "Scripts", exe),
+          pathMod.join(comfyDir, "python_embedded", "Scripts", exe),
+        ]
+      : []),
+  ];
+  return [...new Set(raw.filter(Boolean))];
+}
+
+export function createModelAliasLink(altPath: string, targetPath: string): boolean {
+  try {
+    // Remove dangling symlink if present so symlink/hardlink creation does not fail with EEXIST
+    if (!existsSync(targetPath)) {
+      try {
+        lstatSync(targetPath);
+        unlinkSync(targetPath);
+      } catch {
+        // does not exist
+      }
+    }
+    if (existsSync(targetPath)) return true;
+    mkdirSync(dirname(targetPath), { recursive: true });
+    try {
+      symlinkSync(altPath, targetPath);
+      return true;
+    } catch {
+      // On Windows without Developer Mode / Admin, symlinkSync throws EPERM; hard link works on NTFS
+      linkSync(altPath, targetPath);
+      return true;
+    }
+  } catch {
+    return false;
+  }
+}
+
+export function buildExtraModelPathsYaml(modelsDir: string): string {
+  const yamlLines = ["wox_studio:", `  base_path: ${modelsDir.replace(/\\/g, "/")}`];
+  for (const d of MODEL_DIRS) yamlLines.push(`  ${d}: ${d}`);
+  return yamlLines.join("\n") + "\n";
+}
+
+function isWorkingPython(bin: string): boolean {
+  try {
+    const res = spawnSync(bin, ["--version"], { timeout: 3000, encoding: "utf-8" });
+    return res.status === 0 && /Python 3\./i.test(`${res.stdout || ""}${res.stderr || ""}`);
+  } catch {
+    return false;
+  }
+}
 
 export class InstallerManager {
   private root: string;
@@ -301,8 +442,8 @@ export class InstallerManager {
       const f = this.settingsFile();
       if (existsSync(f)) {
         const data = JSON.parse(readFileSync(f, "utf-8"));
-        if (data.comfyDir && existsSync(data.comfyDir)) this.customComfyDir = data.comfyDir;
-        if (data.modelsDir && existsSync(data.modelsDir)) this.customModelsDir = data.modelsDir;
+        if (typeof data.comfyDir === "string" && data.comfyDir.trim()) this.customComfyDir = resolve(data.comfyDir.trim());
+        if (typeof data.modelsDir === "string" && data.modelsDir.trim()) this.customModelsDir = resolve(data.modelsDir.trim());
       }
     } catch {
       // ignore
@@ -322,16 +463,14 @@ export class InstallerManager {
 
   detectComfyDir(): string {
     if (this.customComfyDir) return this.customComfyDir;
-    if (process.env.COMFYUI_DIR && existsSync(process.env.COMFYUI_DIR)) return resolve(process.env.COMFYUI_DIR);
-    const candidates = [
-      join(homedir(), "opt", "ComfyUI"),
-      resolve(this.root, "..", "ComfyUI"),
-      "/home/wox76/opt/ComfyUI",
-    ];
+    const candidates = comfyDirCandidates(this.root);
+    for (const c of candidates) {
+      if (existsSync(join(c, "main.py"))) return c;
+    }
     for (const c of candidates) {
       if (existsSync(c)) return c;
     }
-    return join(homedir(), "opt", "ComfyUI");
+    return process.platform === "win32" ? join(homedir(), "ComfyUI") : join(homedir(), "opt", "ComfyUI");
   }
 
   detectModelsDir(comfyDir = this.detectComfyDir()): string {
@@ -343,15 +482,14 @@ export class InstallerManager {
   }
 
   detectPython(comfyDir = this.detectComfyDir()): string {
-    const venvPy = process.platform === "win32"
-      ? join(comfyDir, "venv", "Scripts", "python.exe")
-      : join(comfyDir, "venv", "bin", "python");
-    if (existsSync(venvPy)) return venvPy;
-    const dotVenvPy = process.platform === "win32"
-      ? join(comfyDir, ".venv", "Scripts", "python.exe")
-      : join(comfyDir, ".venv", "bin", "python");
-    if (existsSync(dotVenvPy)) return dotVenvPy;
-    return "python3";
+    for (const py of pythonCandidates(comfyDir, this.root)) {
+      if (existsSync(py)) return py;
+    }
+    const sysFallbacks = process.platform === "win32" ? ["python", "python3"] : ["python3", "python"];
+    for (const bin of sysFallbacks) {
+      if (isWorkingPython(bin)) return bin;
+    }
+    return process.platform === "win32" ? "python" : "python3";
   }
 
   getHfToken(): string | null {
@@ -421,14 +559,21 @@ export class InstallerManager {
   isNodeInstalled(node: CustomNodeDef, comfyDir: string): boolean {
     if (node.type === "backend_deps") {
       const yamlOk = existsSync(join(comfyDir, "extra_model_paths.yaml"));
-      const proxyBin = process.platform === "win32"
-        ? join(comfyDir, "venv", "Scripts", "comfy-api-proxy.exe")
-        : join(comfyDir, "venv", "bin", "comfy-api-proxy");
-      return yamlOk && existsSync(proxyBin);
+      const pyBin = this.detectPython(comfyDir);
+      const proxyOk = proxyBinaryCandidates(comfyDir, pyBin).some((p) => existsSync(p));
+      return yamlOk && proxyOk;
     }
-    const target = join(comfyDir, node.targetRel);
-    if (existsSync(target)) return true;
-    if (node.altTargetRel && existsSync(join(comfyDir, node.altTargetRel))) return true;
+    const nonEmpty = (p: string): boolean => {
+      try {
+        if (!existsSync(p)) return false;
+        const st = statSync(p);
+        return st.isDirectory() ? readdirSync(p).length > 0 : st.size > 0;
+      } catch {
+        return false;
+      }
+    };
+    if (nonEmpty(join(comfyDir, node.targetRel))) return true;
+    if (node.altTargetRel && nonEmpty(join(comfyDir, node.altTargetRel))) return true;
     return false;
   }
 
@@ -458,15 +603,15 @@ export class InstallerManager {
       if (existsSync(targetPath)) continue;
       for (const altRel of alts) {
         const altPath = join(modelsDir, altRel);
-        if (existsSync(altPath) && statSync(altPath).size > 0) {
-          try {
-            mkdirSync(dirname(targetPath), { recursive: true });
-            symlinkSync(altPath, targetPath);
-            created++;
-            break;
-          } catch {
-            // ignore
+        try {
+          if (existsSync(altPath) && statSync(altPath).size > 0) {
+            if (createModelAliasLink(altPath, targetPath)) {
+              created++;
+              break;
+            }
           }
+        } catch {
+          // ignore
         }
       }
     }
@@ -643,7 +788,14 @@ export class InstallerManager {
       this.log(`$ ${cmd} ${args.join(" ")}`);
       const proc = spawn(cmd, args, {
         cwd: cwd && existsSync(cwd) ? cwd : this.root,
-        env: { ...process.env, PYTHONUNBUFFERED: "1", ...env },
+        env: {
+          ...process.env,
+          PYTHONUNBUFFERED: "1",
+          PYTHONUTF8: "1",
+          PYTHONIOENCODING: "utf-8",
+          HF_HUB_DISABLE_TELEMETRY: "1",
+          ...env,
+        },
       });
       this.activeProc = proc;
 
@@ -679,7 +831,11 @@ export class InstallerManager {
       this.cancelRequested = true;
       this.log("⚠️ Interruzione richiesta dall'utente...");
       try {
-        this.activeProc?.kill("SIGTERM");
+        if (process.platform === "win32" && this.activeProc?.pid) {
+          spawn("taskkill", ["/pid", String(this.activeProc.pid), "/T", "/F"], { stdio: "ignore" });
+        } else {
+          this.activeProc?.kill("SIGTERM");
+        }
       } catch {
         // ignore
       }
@@ -688,6 +844,21 @@ export class InstallerManager {
       return true;
     }
     return false;
+  }
+
+  private async pipInstall(pythonBin: string, args: string[], cwd?: string) {
+    await this.runCmd(pythonBin, ["-m", "pip", "install", "--no-warn-script-location", ...args], cwd);
+  }
+
+  private async ensureHfHub(pythonBin: string) {
+    const check = spawnSync(pythonBin, ["-c", "import huggingface_hub"], { timeout: 10000 });
+    if (check.status === 0) return;
+    this.log("Installazione huggingface_hub per il download dei modelli...");
+    try {
+      await this.pipInstall(pythonBin, ["huggingface_hub[hf-xet]"]);
+    } catch {
+      await this.pipInstall(pythonBin, ["huggingface_hub"]);
+    }
   }
 
   private async installSingleNode(node: CustomNodeDef, comfyDir: string, modelsDir: string, pythonBin: string) {
@@ -708,7 +879,7 @@ export class InstallerManager {
       }
       const req = join(dst, "requirements.txt");
       if (existsSync(req)) {
-        await this.runCmd(pythonBin, ["-m", "pip", "install", "-q", "-r", req], dst);
+        await this.pipInstall(pythonBin, ["-q", "-r", req], dst);
       }
       return;
     }
@@ -733,6 +904,20 @@ export class InstallerManager {
       if (!existsSync(dst) && node.altTargetRel && existsSync(join(comfyDir, node.altTargetRel))) {
         dst = join(comfyDir, node.altTargetRel);
       }
+      if (existsSync(dst) && !existsSync(join(dst, ".git"))) {
+        if (readdirSync(dst).length === 0) {
+          rmSync(dst, { recursive: true, force: true });
+        } else {
+          this.log(`! Directory ${dst} già presente senza .git, salto clone`);
+          const req = join(dst, "requirements.txt");
+          if (existsSync(req)) {
+            this.log(`Installazione requirements.txt per ${node.name}...`);
+            await this.pipInstall(pythonBin, ["-r", req], dst);
+          }
+          this.log(`✓ Nodo ${node.name} pronto.`);
+          return;
+        }
+      }
       if (!existsSync(join(dst, ".git"))) {
         this.log(`Clonazione repository ${node.repo}...`);
         await this.runCmd("git", ["clone", node.repo, dst]);
@@ -751,7 +936,7 @@ export class InstallerManager {
       const req = join(dst, "requirements.txt");
       if (existsSync(req)) {
         this.log(`Installazione requirements.txt per ${node.name}...`);
-        await this.runCmd(pythonBin, ["-m", "pip", "install", "-r", req], dst);
+        await this.pipInstall(pythonBin, ["-r", req], dst);
       }
       this.log(`✓ Nodo ${node.name} pronto.`);
       return;
@@ -759,11 +944,14 @@ export class InstallerManager {
 
     if (node.type === "backend_deps") {
       this.log("Installazione comfy-api-proxy, aiohttp e huggingface_hub[hf-xet]...");
-      await this.runCmd(pythonBin, ["-m", "pip", "install", "comfy-api-proxy==0.1.6", "aiohttp", "huggingface_hub[hf-xet]"]);
-      const yamlLines = ["wox_studio:", `  base_path: ${modelsDir.replace(/\\/g, "/")}`];
-      for (const d of MODEL_DIRS) yamlLines.push(`  ${d}: ${d}`);
+      try {
+        await this.pipInstall(pythonBin, ["comfy-api-proxy==0.1.6", "aiohttp", "huggingface_hub[hf-xet]"]);
+      } catch {
+        this.log("! Fallback installazione senza hf-xet...");
+        await this.pipInstall(pythonBin, ["comfy-api-proxy==0.1.6", "aiohttp", "huggingface_hub"]);
+      }
       const yamlPath = join(comfyDir, "extra_model_paths.yaml");
-      writeFileSync(yamlPath, yamlLines.join("\n") + "\n", "utf-8");
+      writeFileSync(yamlPath, buildExtraModelPathsYaml(modelsDir), "utf-8");
       this.log(`✓ Scritto ${yamlPath}`);
       return;
     }
@@ -781,14 +969,28 @@ export class InstallerManager {
     const hfToken = this.getHfToken();
     if (model.directUrl) {
       const pyScript = `
-import urllib.request, sys, shutil
+import os, sys, urllib.request
 url, dest = sys.argv[1], sys.argv[2]
 tmp = dest + ".part"
-print(f"Scaricamento da {url}...")
-with urllib.request.urlopen(url) as r, open(tmp, "wb") as f:
-    shutil.copyfileobj(r, f)
-shutil.move(tmp, dest)
-print("Completato:", dest)
+print(f"Scaricamento da {url}...", flush=True)
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
+    total = int(r.headers.get("Content-Length") or 0)
+    done = 0
+    last_pct = -10
+    while True:
+        chunk = r.read(1024 * 1024)
+        if not chunk:
+            break
+        f.write(chunk)
+        done += len(chunk)
+        if total > 0:
+            pct = int(done * 100 / total)
+            if pct >= last_pct + 10:
+                last_pct = pct
+                print(f"  {pct}% ({done // (1024*1024)} / {total // (1024*1024)} MB)", flush=True)
+os.replace(tmp, dest)
+print("Completato:", dest, flush=True)
 `;
       await this.runCmd(pythonBin, ["-c", pyScript, model.directUrl, dest]);
       this.log(`✓ Scaricato ${model.dir}/${model.name}`);
@@ -809,7 +1011,9 @@ path = hf_hub_download(repo_id=repo, filename=file_in_repo, local_dir=str(tmp_di
 dest.parent.mkdir(parents=True, exist_ok=True)
 shutil.move(path, str(dest))
 shutil.rmtree(str(tmp_dir), ignore_errors=True)
-print(f"✓ Salvato in {dest}")
+if not dest.exists() or dest.stat().st_size == 0:
+    raise RuntimeError(f"File scaricato non valido: {dest}")
+print(f"✓ Salvato in {dest}", flush=True)
 `;
     await this.runCmd(
       pythonBin,
@@ -831,7 +1035,7 @@ print(f"✓ Salvato in {dest}")
 
     const comfyDir = this.detectComfyDir();
     const modelsDir = this.detectModelsDir(comfyDir);
-    const pythonBin = this.detectPython(comfyDir);
+    let pythonBin = this.detectPython(comfyDir);
 
     const titles: Record<string, string> = {
       install_all_starter: "Auto-Install Wox Cinema Studio [PRO] (Nodi + Modelli Core)",
@@ -860,17 +1064,37 @@ print(f"✓ Salvato in {dest}")
     void (async () => {
       try {
         this.log(`=== ${task.title} ===`);
+        this.log(`OS Platform  : ${process.platform} (${process.arch})`);
         this.log(`ComfyUI Path : ${comfyDir}`);
         this.log(`Models Path  : ${modelsDir}`);
         this.log(`Python Env   : ${pythonBin}`);
 
+        // Verify git if needed
+        const needComfyClone = !existsSync(join(comfyDir, "main.py"));
+        if (needComfyClone || opts.action === "install_nodes" || opts.action === "install_all_starter" || opts.action === "install_all_everything") {
+          const gitCheck = spawnSync("git", ["--version"], { timeout: 5000 });
+          if (gitCheck.status !== 0) {
+            throw new Error("Git non trovato nel PATH. Installa Git prima di eseguire l'Auto-Installer (https://git-scm.com).");
+          }
+        }
+
         // Ensure ComfyUI exists if missing
-        if (!existsSync(join(comfyDir, "main.py"))) {
+        if (needComfyClone) {
           task.currentStep = "Clonazione ComfyUI base...";
           this.log("ComfyUI non trovato: clonazione repository ufficiale ComfyUI...");
           mkdirSync(dirname(comfyDir), { recursive: true });
           await this.runCmd("git", ["clone", "https://github.com/Comfy-Org/ComfyUI.git", comfyDir]);
-          await this.runCmd(pythonBin, ["-m", "pip", "install", "-r", join(comfyDir, "requirements.txt")], comfyDir);
+
+          // Create an isolated ComfyUI venv if no local venv/embedded Python exists
+          const hasLocalPy = pythonCandidates(comfyDir, this.root).some((p) => p.startsWith(comfyDir) && existsSync(p));
+          if (!hasLocalPy) {
+            const venvDir = join(comfyDir, "venv");
+            this.log(`Creazione virtualenv Python in ${venvDir}...`);
+            await this.runCmd(pythonBin, ["-m", "venv", venvDir], comfyDir);
+            pythonBin = this.detectPython(comfyDir);
+            this.log(`✓ Virtualenv attivo: ${pythonBin}`);
+          }
+          await this.pipInstall(pythonBin, ["-r", join(comfyDir, "requirements.txt")], comfyDir);
         }
 
         // Determine nodes and models to process
@@ -940,7 +1164,11 @@ print(f"✓ Salvato in {dest}")
 
         const symlinks = this.ensureAliasSymlinks(modelsDir);
         if (symlinks > 0) {
-          this.log(`✓ Creati ${symlinks} symlink di compatibilità modelli.`);
+          this.log(`✓ Creati ${symlinks} link di compatibilità modelli.`);
+        }
+
+        if (modelsToDownload.some((m) => !m.directUrl)) {
+          await this.ensureHfHub(pythonBin);
         }
 
         const failedModels: string[] = [];

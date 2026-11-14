@@ -416,13 +416,13 @@ export function openSettingsModal({ onLang, tab } = {}) {
       type: "text",
       class: "wox-input",
       value: state.comfy_dir || "",
-      placeholder: "/home/wox76/opt/ComfyUI"
+      placeholder: "~/opt/ComfyUI  /  C:\\ComfyUI"
     });
     const modelsInput = el("input", {
       type: "text",
       class: "wox-input",
       value: state.models_dir || "",
-      placeholder: "/home/wox76/opt/ComfyUI/models"
+      placeholder: "~/opt/ComfyUI/models  /  C:\\ComfyUI\\models"
     });
     const hfInput = el("input", {
       type: "password",

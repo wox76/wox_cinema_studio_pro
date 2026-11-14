@@ -7,6 +7,8 @@ import { fullMedia, thumb, downloadName } from "./media.js";
 import { hooks, feed, deleteButton } from "./feed.js";
 import { flags, flagButton } from "./flags.js";
 import { sendToVideoEditor } from "./video_editor.js";
+import { resolveGlbUrl, sendToActionForge } from "./actionforge.js";
+import { create3DViewer } from "./viewer3d.js";
 
 function optionLabel(inp, v) {
   if (Array.isArray(v)) return v.map((x) => optionLabel(inp, x)).join(inp.multiple?.ordered ? " → " : ", ");
@@ -23,6 +25,8 @@ export function openViewer(items, startKey) {
   const modal = el("div", { class: "modal", role: "dialog", "aria-modal": "true" }, stage, aside);
   const prevFocus = document.activeElement;
   const close = () => {
+    active3DContainer?._dispose?.();
+    active3DContainer = null;
     modal.remove();
     document.removeEventListener("keydown", onKey, true);
     document.body.style.overflow = "";
@@ -30,6 +34,8 @@ export function openViewer(items, startKey) {
   };
   const go = (d) => { i = (i + d + items.length) % items.length; out = 0; draw(); };
   let currentVideoEl = null;
+  let active3DContainer = null;
+  let viewMode3D = "3d"; // "3d" for interactive canvas, "turntable" for video loop
 
   function captureCurrentFrame(video, nameBase = "frame") {
     if (!video || !video.videoWidth || !video.videoHeight) {
@@ -110,10 +116,24 @@ export function openViewer(items, startKey) {
     const fileName = output.name || output.file || item.fileName || (url ? url.split("/").pop() : null);
     const nameBase = fileName ? fileName.replace(/\.[a-z0-9]+$/i, "") : `media_${item.id || "item"}`;
 
-    let mediaEl = fullMedia(output.type, output.url, { poster: item.poster });
+    active3DContainer?._dispose?.();
+    active3DContainer = null;
+
+    const glbUrl = resolveGlbUrl(item);
+    const is3dAsset = Boolean(glbUrl);
+
+    let mediaEl;
     let vcrBox = null;
 
-    if (isVideo) {
+    if (is3dAsset && viewMode3D === "3d") {
+      active3DContainer = create3DViewer(glbUrl, { width: "100%", height: "100%" });
+      mediaEl = active3DContainer;
+      currentVideoEl = null;
+    } else {
+      mediaEl = fullMedia(output.type, output.url, { poster: item.poster });
+    }
+
+    if (isVideo && (!is3dAsset || viewMode3D !== "3d")) {
       const v = mediaEl.tagName === "VIDEO" ? mediaEl : mediaEl.querySelector("video");
       currentVideoEl = v;
       if (v) {
@@ -160,8 +180,15 @@ export function openViewer(items, startKey) {
       currentVideoEl = null;
     }
 
+    const viewToggle3D = is3dAsset ? el("div", { class: "tabs", style: { position: "absolute", top: "14px", left: "50%", transform: "translateX(-50%)", zIndex: "10" } },
+      el("button", { type: "button", "aria-selected": String(viewMode3D === "3d"), onclick: () => { viewMode3D = "3d"; draw(); } }, icon("cube"), " Vista 3D Interattiva"),
+      el("button", { type: "button", "aria-selected": String(viewMode3D === "turntable"), onclick: () => { viewMode3D = "turntable"; draw(); } }, icon("play"), " 360° Turntable Video")
+    ) : null;
+
     stage.replaceChildren(...[
       el("button", { class: "round close", type: "button", title: t("act.close"), "aria-label": t("act.close"), onclick: close }, icon("x")),
+      items.length > 1 ? el("div", { class: "viewer-counter" }, `${i + 1} / ${items.length}`) : null,
+      viewToggle3D,
       items.length > 1 ? el("button", { class: "round navb prev", type: "button", "aria-label": t("act.prev"), onclick: () => go(-1) }, icon("chevL")) : null,
       mediaEl,
       items.length > 1 ? el("button", { class: "round navb next", type: "button", "aria-label": t("act.next"), onclick: () => go(1) }, icon("chevR")) : null,
@@ -177,41 +204,105 @@ export function openViewer(items, startKey) {
       item.total && (!item.seconds || item.total - item.seconds > 2) ? [item.seconds ? null : icon("clock"), t("view.total", { s: fmtSeconds(item.total) })] : null,
       item.gpu ? [icon("chip"), item.gpu.split(",")[0]] : null,
       item.peak ? [t("view.peak", { gb: item.peak })] : null,
-      item.seed !== null && item.seed !== undefined ? [icon("dice"), String(item.seed)] : null,
     ].filter(Boolean);
+    const seedChip = (item.seed !== null && item.seed !== undefined) ? el("button", {
+      type: "button",
+      class: "stat-seed",
+      title: "Copia seed",
+      onclick: () => navigator.clipboard?.writeText(String(item.seed)).then(() => toast(`Seed ${item.seed} copiato`))
+    }, icon("dice"), el("span", {}, String(item.seed))) : null;
+
+    const handoffBlock = (url && output.type !== "audio" && hooks.quickHandoff)
+      ? hooks.quickHandoff({ ...item, full: url, card: url, type: output.type }, close)
+      : null;
+
+    const glbBanner = glbUrl ? el("div", { class: "af-handoff-banner" },
+      el("div", { class: "af-handoff-top" },
+        el("strong", {}, "🧊 Modello 3D (.GLB) Pronto"),
+        el("span", {}, "TRELLIS.2 PBR")
+      ),
+      el("div", { class: "af-handoff-btns" },
+        el("button", { class: "btn lime", type: "button", onclick: () => { close(); sendToActionForge(item); } }, "🦴 Rigga in ActionForge"),
+        el("a", { class: "btn ghost", href: glbUrl, download: `wox-trellis-${item.id || "model"}.glb` }, icon("download"), ".GLB")
+      )
+    ) : null;
+
+    const saveToLibBtn = (url && item.kind !== "history") ? el("button", {
+      class: "btn ghost",
+      type: "button",
+      title: "Salva permanentemente nella Library",
+      onclick: async () => {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const filename = downloadName(item, url) || "saved-image.png";
+          const file = new File([blob], filename, { type: blob.type || "image/png" });
+          await feed.upload(file);
+          toast("💾 Salvato nella Library!");
+        } catch (err) {
+          toast(`Errore salvataggio: ${err.message}`, { error: true });
+        }
+      }
+    }, icon("upload"), "Salva") : null;
+
     aside.replaceChildren(...[
-      el("div", { class: "approw" }, app ? thumb({ ...item, kind: "example", card: app.example?.card || item.card, poster: app.example?.poster, type: app.example?.type || item.type }, { play: "none" }) : null,
-        el("div", {}, el("b", {}, app?.name ?? item.app), el("small", {}, item.kind === "example" ? t("view.example") : ago(item.created)))),
-      fileName ? el("div", { class: "viewer-filename", style: { display: "flex", alignItems: "center", gap: "6px", padding: "6px 10px", background: "#1b1b1e", borderRadius: "8px", fontSize: "12px", color: "#e3e3e8", wordBreak: "break-all" } },
-        icon("file"), el("span", { style: { fontWeight: "600" } }, fileName)) : null,
-      prompt ? el("div", { style: { display: "grid", gap: "6px" } },
-        el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, el("small", { class: "dim" }, t("view.prompt")),
-          el("button", { class: "btn small ghost", type: "button", onclick: () => navigator.clipboard?.writeText(prompt).then(() => toast(t("toast.copied"))) }, icon("copy"), t("act.copy"))),
-        el("div", { class: "prompt" }, prompt)) : null,
-      stats.length ? el("div", { class: "statline" }, ...stats.map((s) => el("span", {}, ...s))) : null,
-      settings.length ? el("div", { style: { display: "grid", gap: "8px" } }, el("small", { class: "dim" }, t("view.settings")),
+      el("div", { class: "viewer-head" },
+        el("div", { class: "approw" },
+          app ? thumb({ ...item, kind: "example", card: app.example?.card || item.card, poster: app.example?.poster, type: app.example?.type || item.type }, { play: "none" }) : null,
+          el("div", { class: "approw-txt" },
+            el("b", {}, app?.name ?? item.app),
+            el("small", {}, item.kind === "example" ? t("view.example") : ago(item.created))
+          ),
+          fileName ? el("button", {
+            type: "button",
+            class: "viewer-filechip",
+            title: `${fileName} (clic per copiare)`,
+            onclick: () => navigator.clipboard?.writeText(fileName).then(() => toast(t("toast.copied")))
+          }, icon("file"), el("span", {}, fileName)) : null
+        )
+      ),
+      el("div", { class: "acts viewer-acts" },
+        app ? el("button", { class: "btn lime", type: "button", onclick: () => { close(); hooks.recreate?.(item); } }, icon("redo"), t("act.recreate")) : null,
+        url ? el("a", { class: "btn ghost", href: url, download: downloadName(item, url) }, icon("download"), t("act.download")) : null,
+        el("button", { class: "btn ghost", type: "button", onclick: () => { close(); hooks.compare?.({ ...item, full: url, type: output.type }); } }, icon("compare"), t("act.compare")),
+        url && isVideo ? el("button", { class: "btn ghost", type: "button", title: "Esporta il fotogramma attuale in PNG", onclick: () => captureCurrentFrame(currentVideoEl, nameBase) }, icon("camera"), "Esporta Frame") : null,
+        url && output.type === "audio" ? el("button", { class: "btn ghost", type: "button", onclick: () => { close(); sendToVideoEditor({ ...item, url, type: output.type }); } }, icon("film"), "Editor Video") : null,
+        saveToLibBtn,
+        item.kind === "example" && app ? flagButton(flags.key(app.id)) : null,
+        item.kind === "history"
+          ? deleteButton(async () => {
+              await feed.remove(item.id);
+              items.splice(i, 1);
+              if (!items.length) close(); else { i = Math.min(i, items.length - 1); draw(); }
+            }, "btn ghost danger")
+          : app ? el("a", { class: "btn ghost", href: `#/app/${app.id}`, onclick: close }, icon("ext"), t("act.open")) : null
+      ),
+      glbBanner,
+      handoffBlock,
+      prompt ? el("div", { class: "viewer-box" },
+        el("div", { class: "viewer-box-head" },
+          el("small", { class: "dim" }, t("view.prompt")),
+          el("button", { class: "btn small ghost", type: "button", onclick: () => navigator.clipboard?.writeText(prompt).then(() => toast(t("toast.copied"))) }, icon("copy"), t("act.copy"))
+        ),
+        el("div", { class: "prompt" }, prompt)
+      ) : null,
+      (stats.length || seedChip) ? el("div", { class: "statline" },
+        ...stats.map((s) => el("span", {}, ...s)),
+        seedChip
+      ) : null,
+      settings.length ? el("details", { class: "viewer-details", ...(settings.length <= 6 ? { open: true } : {}) },
+        el("summary", {}, el("span", {}, t("view.settings")), el("small", {}, `${settings.length}`)),
         el("dl", { class: "vals" }, ...settings.flatMap(([k, v]) => [el("dt", {}, labels[k].label),
-          el("dd", {}, labels[k].type === "select" ? optionLabel(labels[k], v) : labels[k].type === "toggle" ? (v === true || v === "true" ? "✓" : "—") : String(v))]))) : null,
-      item.inputs.length ? el("div", { style: { display: "grid", gap: "8px" } }, el("small", { class: "dim" }, t("view.inputs")),
+          el("dd", {}, labels[k].type === "select" ? optionLabel(labels[k], v) : labels[k].type === "toggle" ? (v === true || v === "true" ? "✓" : "—") : String(v))]))
+      ) : null,
+      item.inputs.length ? el("div", { class: "viewer-box" },
+        el("div", { class: "viewer-box-head" }, el("small", { class: "dim" }, t("view.inputs"))),
         el("div", { class: "ins-row" }, ...item.inputs.map((x) => el("figure", {},
           el("a", { class: "media", href: x.file, target: "_blank", rel: "noopener", title: x.label },
             x.thumb ? el("img", { src: x.thumb, alt: x.label }) : el("span", { class: "typeicon", style: { position: "static", margin: "33px auto" } }, icon(x.type || "image"))),
-          el("figcaption", {}, x.label))))) : null,
-      url && output.type !== "audio" && hooks.quickHandoff ? hooks.quickHandoff({ ...item, full: url, card: url, type: output.type }, close) : null,
-      el("div", { class: "acts" },
-        app ? el("button", { class: "btn lime", type: "button", onclick: () => { close(); hooks.recreate?.(item); } }, icon("redo"), t("act.recreate")) : null,
-        url ? el("a", { class: "btn ghost", href: url, download: downloadName(item, url) }, icon("download"), t("act.download")) : null,
-        url && isVideo ? el("button", { class: "btn ghost", type: "button", title: "Esporta solo il fotogramma visualizzato del video (PNG)", onclick: () => captureCurrentFrame(currentVideoEl, nameBase) }, icon("camera"), "Esporta Frame") : null,
-        url ? el("button", { class: "btn ghost", type: "button", title: "Invia all'Editor Video (Timeline)", onclick: () => { close(); sendToVideoEditor({ ...item, url, type: output.type }); } }, icon("film"), "Editor Video") : null,
-        url && output.type === "image" && hooks.edit ? el("button", { class: "btn ghost", type: "button", onclick: () => { close(); hooks.edit({ ...item, full: url, type: "image" }); } }, icon("edit"), "Edit") : null,
-        url && output.type !== "audio" && hooks.useIn ? el("button", { class: "btn ghost", type: "button", onclick: (ev) => hooks.useIn(ev.currentTarget, { ...item, full: url, type: output.type }, close) }, icon("send"), t("act.usein")) : null,
-        el("button", { class: "btn ghost", type: "button", onclick: () => { close(); hooks.compare?.({ ...item, full: url, type: output.type }); } }, icon("compare"), t("act.compare")),
-        item.kind === "example" && app ? flagButton(flags.key(app.id)) : null,
-        item.kind === "history" ? deleteButton(async () => {
-          await feed.remove(item.id);
-          items.splice(i, 1);
-          if (!items.length) close(); else { i = Math.min(i, items.length - 1); draw(); }
-        }, "btn ghost danger") : app ? el("a", { class: "btn ghost", href: `#/app/${app.id}`, onclick: close }, icon("ext"), t("act.open")) : null)].filter(Boolean));
+          el("figcaption", {}, x.label))))
+      ) : null,
+    ].filter(Boolean));
   }
 
   draw();

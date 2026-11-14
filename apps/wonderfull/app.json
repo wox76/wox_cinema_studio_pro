@@ -1,0 +1,431 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "wonderfull",
+  "name": "Wonderfull",
+  "section": "image",
+  "pack": "image-qwen-edit",
+  "status": "ready",
+  "higgsfield_feature": "FaceApp Beauty Studio",
+  "summary": "Studio stile FaceApp: individua i volti, scegli il volto e applica Sorrisi, Impressione, Età, Barbe, Contouring, Capelli e Colori.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "image_qwen_image_edit.json",
+    "comfyui": "0.42.0",
+    "notes": "Wonderfull FaceApp-inspired multi-face studio with face detection, per-face crop & feather blend, and full beauty/expression/age/beard/hair/color categories."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto da migliorare",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "11",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "impression",
+      "type": "select",
+      "label": "Impressione",
+      "default": "Apply the Bacio FaceApp beauty retouch: soften harsh forehead lines, blemishes and dark under-eye shadows into warm radiant healthy skin with realistic natural pores, brighten the eyes and subtly polish lips and brows.",
+      "help": "Esalta la bellezza naturale del volto scelto.",
+      "options": [
+        {
+          "value": "",
+          "label": "Originale"
+        },
+        {
+          "value": "Apply the Bacio FaceApp beauty retouch: soften harsh forehead lines, blemishes and dark under-eye shadows into warm radiant healthy skin with realistic natural pores, brighten the eyes and subtly polish lips and brows.",
+          "label": "Bacio"
+        },
+        {
+          "value": "Apply a Hollywood red-carpet beauty retouch: soften tired lines and dark circles for luminous studio-lit skin with authentic micro-texture, sharpen and brighten the eyes, and add glossy hair sheen.",
+          "label": "Hollywood"
+        },
+        {
+          "value": "Apply the Carino fresh beauty retouch: dewy hydrated skin with soft healthy rosy cheeks, reduced dark circles and wide bright awake eyes.",
+          "label": "Carino"
+        },
+        {
+          "value": "Apply the Fascino editorial beauty retouch: balanced satin complexion free of blemishes and fatigue lines, warm natural highlights on cheekbones and magnetic clear eyes.",
+          "label": "Fascino"
+        },
+        {
+          "value": "Apply a Star magazine-cover beauty retouch: bright crisp eye catchlights, balanced healthy radiant complexion with intact pores, and polished hair.",
+          "label": "Star"
+        },
+        {
+          "value": "Retouch the face like a beauty editor: erase blemishes, redness, forehead wrinkles and dark under-eye circles while keeping realistic skin pores and natural facial texture.",
+          "label": "Pelle Naturale"
+        }
+      ]
+    },
+    {
+      "id": "smile",
+      "type": "select",
+      "label": "Sorrisi",
+      "default": "",
+      "help": "Trasforma l'espressione in un sorriso naturale.",
+      "options": [
+        {
+          "value": "",
+          "label": "Originale"
+        },
+        {
+          "value": "Make the person smile warmly with a classic natural smile showing clean white upper teeth and happy relaxed eyes.",
+          "label": "Classico"
+        },
+        {
+          "value": "Give the person an open wide happy smile showing clean white natural teeth with authentic cheek lift and joyful smiling eyes.",
+          "label": "Ampio"
+        },
+        {
+          "value": "Give the person a confident gentle closed-lip smile with softly upturned mouth corners and warm eyes.",
+          "label": "Stretto"
+        },
+        {
+          "value": "Make the person smile brightly with a radiant smile showing clean white well-aligned teeth and lifted cheeks.",
+          "label": "Bei Denti"
+        },
+        {
+          "value": "Give the person a wide joyful beaming Turbo smile full of energy showing bright white teeth and cheerful smiling eyes.",
+          "label": "Turbo"
+        },
+        {
+          "value": "Give the person a calm serene closed-mouth expression with relaxed lips.",
+          "label": "Chiuso"
+        }
+      ]
+    },
+    {
+      "id": "age",
+      "type": "select",
+      "label": "Età",
+      "default": "",
+      "help": "Modifica l'età apparente mantenendo l'identità.",
+      "options": [
+        {
+          "value": "",
+          "label": "Originale"
+        },
+        {
+          "value": "Make the person look noticeably younger with fresher smoother skin, fewer age lines and energetic bright eyes while keeping their recognizable features.",
+          "label": "Giovane"
+        },
+        {
+          "value": "Transform the person to look like a youthful young adult in their early 20s with fresh unlined skin, fuller hair volume and vibrant youthful gaze.",
+          "label": "Giovanissimo"
+        },
+        {
+          "value": "Make the person look gracefully mature in midlife with refined natural character lines and subtle salt-and-pepper hair.",
+          "label": "Maturo"
+        },
+        {
+          "value": "Transform the person to look realistically older with natural silver-white hair, deep expressive age wrinkles and authentic elderly skin texture.",
+          "label": "Anziano"
+        }
+      ]
+    },
+    {
+      "id": "beard",
+      "type": "select",
+      "label": "Barbe",
+      "default": "",
+      "help": "Aggiungi, modella o rimuovi barba e baffi.",
+      "options": [
+        {
+          "value": "",
+          "label": "Originale"
+        },
+        {
+          "value": "Add a thick, neat, well-groomed full masculine beard and mustache matching the natural hair color.",
+          "label": "Barba Piena"
+        },
+        {
+          "value": "Add stylish short designer stubble evenly across the jawline, chin and upper lip.",
+          "label": "Barba Incolta"
+        },
+        {
+          "value": "Add a clean sharp sculpted goatee beard and neat mustache around the mouth and chin.",
+          "label": "Pizzetto"
+        },
+        {
+          "value": "Add a classic well-groomed mustache above the upper lip.",
+          "label": "Baffi"
+        },
+        {
+          "value": "Clean-shave the face completely smooth, removing all beard, mustache and stubble cleanly with natural skin underneath.",
+          "label": "Rasato"
+        }
+      ]
+    },
+    {
+      "id": "hair_style",
+      "type": "select",
+      "label": "Capelli & Occhiali",
+      "default": "",
+      "help": "Volume, taglio, colore capelli oppure occhiali.",
+      "options": [
+        {
+          "value": "",
+          "label": "Originale"
+        },
+        {
+          "value": "Make the hair noticeably thicker, fuller and more voluminous with glossy healthy texture.",
+          "label": "Volume"
+        },
+        {
+          "value": "Change the hairstyle to long flowing healthy hair reaching past the shoulders.",
+          "label": "Lunghi"
+        },
+        {
+          "value": "Change the hairstyle to a neat, clean, modern short haircut.",
+          "label": "Corto"
+        },
+        {
+          "value": "Add stylish soft flattering bangs / fringe framing the forehead naturally.",
+          "label": "Frangia"
+        },
+        {
+          "value": "Change hair color to natural sunlit golden blonde with realistic highlights.",
+          "label": "Biondo"
+        },
+        {
+          "value": "Change hair color to rich warm copper auburn red.",
+          "label": "Rosso"
+        },
+        {
+          "value": "Change hair color to deep glossy dark chestnut brown.",
+          "label": "Castano"
+        },
+        {
+          "value": "Add stylish thin-framed modern eyeglasses naturally resting on the nose.",
+          "label": "Occhiali"
+        }
+      ]
+    },
+    {
+      "id": "contouring",
+      "type": "select",
+      "label": "Contouring & Trucco",
+      "default": [
+        "Sculpt the cheekbones and jawline cleanly with flattering beauty light highlights",
+        "sharpen and brighten the irises with vivid eye catchlights and clear white sclera"
+      ],
+      "help": "Combina fino a 4 ritocchi mirati (zigomi, occhi, trucco, pelle).",
+      "multiple": {
+        "max": 4,
+        "join": ", ",
+        "suffix": "."
+      },
+      "options": [
+        {
+          "value": "Sculpt the cheekbones and jawline cleanly with flattering beauty light highlights",
+          "label": "Contouring"
+        },
+        {
+          "value": "add soft healthy rosy blush across the cheekbones",
+          "label": "Fard"
+        },
+        {
+          "value": "add crisp clean black eyeliner along the upper lash line",
+          "label": "Eyeliner"
+        },
+        {
+          "value": "add sleek winged cat-eye eyeliner lifting the outer corners of the eyes",
+          "label": "Occhi da Gatto"
+        },
+        {
+          "value": "enhance lips with hydrated satin natural color and crisp contour",
+          "label": "Labbra"
+        },
+        {
+          "value": "shape and thicken eyebrows neatly for a clean groomed arch",
+          "label": "Sopracciglia"
+        },
+        {
+          "value": "sharpen and brighten the irises with vivid eye catchlights and clear white sclera",
+          "label": "Occhi Luminosi"
+        },
+        {
+          "value": "completely remove dark under-eye bags, forehead creases and oily skin shine",
+          "label": "Anti-Occhiaie & Luce"
+        }
+      ]
+    },
+    {
+      "id": "color_effect",
+      "type": "select",
+      "label": "Effetti di colore",
+      "default": "Upgrade the photo's lighting and colors into vibrant crisp DSLR clarity with clean whites, healthy radiant skin tone and balanced rich contrast.",
+      "help": "Trasforma la luce e i colori dell'immagine.",
+      "options": [
+        {
+          "value": "",
+          "label": "Originale"
+        },
+        {
+          "value": "Upgrade the photo's lighting and colors into vibrant crisp DSLR clarity with clean whites, healthy radiant skin tone and balanced rich contrast.",
+          "label": "Armonia Viva"
+        },
+        {
+          "value": "Apply bright airy Aero color grading with lifted clean highlights, luminous creamy skin tones and fresh crisp modern contrast.",
+          "label": "Aero"
+        },
+        {
+          "value": "Apply Freddo cool editorial color grading with crisp cool daylight balance, clean slate-blue shadows and luminous fair skin highlights.",
+          "label": "Freddo"
+        },
+        {
+          "value": "Apply Autunno warm golden-amber color grading with rich honey highlights, warm toasted tones and cozy depth.",
+          "label": "Autunno"
+        },
+        {
+          "value": "Apply Tonici Blu color grading with cool blue-toned shadows contrasted cleanly against bright luminous skin.",
+          "label": "Tonici Blu"
+        },
+        {
+          "value": "Add warm Golden Hour sunlight glow across the portrait, hair rim and scene with gentle amber warmth.",
+          "label": "Golden Hour"
+        },
+        {
+          "value": "Apply cinematic teal and orange movie color grading with warm glowing skin tones and deep teal shadows.",
+          "label": "Teal & Orange"
+        },
+        {
+          "value": "Convert the image into high-contrast editorial black and white monochrome with luminous skin midtones and deep blacks.",
+          "label": "Bianco & Nero"
+        }
+      ]
+    },
+    {
+      "id": "intensity",
+      "type": "select",
+      "label": "Intensità",
+      "default": "Use balanced flattering FaceApp retouch intensity (Level 3): visible lighting, skin and color improvement while keeping authentic skin texture, pores and existing facial hair unless beard change was requested.",
+      "help": "Livello di intensità del ritocco (1 = leggero, 4 = massimo impatto).",
+      "options": [
+        {
+          "value": "Use gentle subtle retouch intensity (Level 1): soft natural polish preserving every skin detail.",
+          "label": "1"
+        },
+        {
+          "value": "Use balanced medium retouch intensity (Level 2): clear freshening and clean color.",
+          "label": "2"
+        },
+        {
+          "value": "Use balanced flattering FaceApp retouch intensity (Level 3): visible lighting, skin and color improvement while keeping authentic skin texture, pores and existing facial hair unless beard change was requested.",
+          "label": "3"
+        },
+        {
+          "value": "Use maximum FaceApp glamour intensity (Level 4): bold transformation, strong radiance and vivid punch while keeping recognizable identity.",
+          "label": "4"
+        }
+      ]
+    },
+    {
+      "id": "details",
+      "type": "textarea",
+      "label": "Dettagli extra",
+      "default": "",
+      "help": "Richieste opzionali libere (es. 'accentua occhi verdi').",
+      "bind": [
+        {
+          "node": "4",
+          "field": "prompt",
+          "template": "{impression} {smile} {age} {beard} {hair_style} {contouring} {color_effect} {intensity} {details} Keep the same recognizable person, exact camera framing, background, clothing, accessories, eyeglasses frames, and natural lighting, with authentic skin pores and photographic realism."
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Qualità (Steps)",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "default": 8,
+      "help": "8 step consigliati con Lightning 2511 + Portrait LoRA; 10-12 per massima rifinitura su pelle, occhi e denti.",
+      "bind": [
+        {
+          "node": "16",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 sceglie un seed casuale",
+      "bind": [
+        {
+          "node": "16",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "9",
+      "type": "image",
+      "label": "Wonderfull Result"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+      "file": "split_files/diffusion_models/qwen_image_edit_2511_fp8mixed.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.53,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.38,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "lightx2v/Qwen-Image-Edit-2511-Lightning",
+      "file": "Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors",
+      "dir": "loras",
+      "gb": 0.85,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "prithivMLmods/Qwen-Image-Edit-2511-Ultra-Realistic-Portrait",
+      "file": "Qwen-Image-Edit-2511-Ultra-Realistic-Portrait-URP_10.safetensors",
+      "dir": "loras",
+      "gb": 0.24,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Qwen-Image-Edit-2511 by Alibaba Qwen (Apache-2.0)",
+    "Lightning 8-Step LoRA by lightx2v (Apache-2.0)",
+    "Ultra-Realistic Portrait LoRA by prithivMLmods (Apache-2.0)",
+    "Inspired by FaceApp beauty, smile, age, beard, contouring & color workflows"
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "note": "OFFICIAL CHARACTERS (CHARACTER_SPEC.md R1), listed in the Character tool in this order. OURS ONLY: a .glb on our skeleton, worn on the full body. Add one: export it from Blender onto the template (downloads/actionforge-skeleton.blend), put it in characters/, add an entry here. scripts/test/character.test.mjs fails if it is not an exact fit. NO OTHER TOOL'S CHARACTER IS BUNDLED (2026-10-05): Unreal's mannequins and Mixamo's Y Bot were listed here for a day and taken out — they are Epic's and Adobe's, not ours to hand out. Someone who has one adds their own file in the Character tool, where it is read as its skeleton (known-rig.js) and stays in their browser. After any change: npm run scan.",
+  "characters": {}
+}

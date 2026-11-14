@@ -13,6 +13,7 @@ import { openPainter, maskPreview } from "./paint.js";
 import { sendToVideoEditor } from "./video_editor.js";
 import { resolveGlbUrl, sendToActionForge } from "./actionforge.js";
 import { createCamera3DWidget } from "./camera3d.js";
+import { wonderfullView } from "./wonderfull.js";
 
 // ------------------------------------------------------------------ form state (per app, kept while the page is open)
 const forms = new Map();
@@ -115,17 +116,7 @@ function setFile(app, inp, file, opts = {}) {
   const fileObj = { file, url: URL.createObjectURL(file), srcUrl: opts.srcUrl || null };
   f.files[inp.id] = fileObj;
   dropMasksOf(app, inp.id);
-  if (!opts.srcUrl) {
-    feed.upload(file).then((entry) => {
-      const uploadedUrl = entry?.outputs?.[0]?.url;
-      if (uploadedUrl && f.files[inp.id] === fileObj) {
-        fileObj.srcUrl = uploadedUrl;
-        persist(app);
-      }
-    }).catch(() => {});
-  } else {
-    persist(app);
-  }
+  persist(app);
   return true;
 }
 function clearFile(app, id) {
@@ -418,12 +409,37 @@ function missingInputs(app) {
   return out;
 }
 
+// Qwen-Image-Edit 2509 + multi-angle LoRA need explicit camera-move instructions, not raw angles
+function anglePrompt2509(hz, vt, zoom) {
+  const h = ((Math.round(Number(hz) || 0) % 360) + 360) % 360;
+  const v = Number(vt) || 0, z = Number(zoom ?? 5);
+  const p = [];
+  if (h >= 22.5 && h < 67.5) p.push("将镜头向右旋转45度 Rotate the camera 45 degrees to the right.");
+  else if (h >= 67.5 && h < 112.5) p.push("将镜头向右旋转90度 Rotate the camera 90 degrees to the right, side view of the subject.");
+  else if (h >= 112.5 && h < 157.5) p.push("将镜头向右旋转135度 Rotate the camera 135 degrees to the right, view from behind on the right.");
+  else if (h >= 157.5 && h < 202.5) p.push("将镜头旋转180度 Rotate the camera 180 degrees, view from behind the subject.");
+  else if (h >= 202.5 && h < 247.5) p.push("将镜头向左旋转135度 Rotate the camera 135 degrees to the left, view from behind on the left.");
+  else if (h >= 247.5 && h < 292.5) p.push("将镜头向左旋转90度 Rotate the camera 90 degrees to the left, side view of the subject.");
+  else if (h >= 292.5 && h < 337.5) p.push("将镜头向左旋转45度 Rotate the camera 45 degrees to the left.");
+  if (v <= -15) p.push("将镜头转为仰视 Turn the camera to a low-angle view looking up.");
+  else if (v >= 40) p.push("将镜头转为俯视 Turn the camera to a top-down view.");
+  else if (v >= 15) p.push("将镜头向上移动 Move the camera up.");
+  if (z < 2.5) p.push("将镜头向后移动 Move the camera backward.");
+  else if (z > 6.5) p.push("将镜头向前移动 Move the camera forward.");
+  return p.join(" ");
+}
+
 function buildForm(app, { randomSeed = false } = {}) {
   const f = formFor(app);
   const fd = new FormData();
   for (const inp of app.inputs) {
     if (isMedia(inp.type)) { const x = f.files[inp.id]; if (x) fd.append(inp.id, x.file, x.file.name); continue; }
-    const v = f.values[inp.id];
+    let v = f.values[inp.id];
+    if (app.id === "qwen-multiangle" && inp.id === "details") {
+      const dir = anglePrompt2509(f.values.horizontal_angle, f.values.vertical_angle, f.values.zoom);
+      v = [dir, v].filter(Boolean).join(" ");
+      console.log("[qwen-multiangle] prompt:", v);
+    }
     if (inp.type === "toggle") { fd.append(inp.id, v ? "true" : "false"); continue; }
     if (inp.multiple) { fd.append(inp.id, JSON.stringify(Array.isArray(v) ? v : [])); continue; }   // none picked is a choice too
     if (inp.type === "seed" && (randomSeed || v === -1 || v === "-1" || v === "" || v === null)) continue;
@@ -512,7 +528,7 @@ export async function recreate(item, { run = false } = {}) {
       const name = i.name || `${i.id}.${extOf(src) || "bin"}`;
       const inp = app.inputs.find((x) => x.id === i.id);
       if (inp) {
-        setFile(app, inp, await fileFromUrl(src, name));
+        setFile(app, inp, await fileFromUrl(src, name), { srcUrl: src });
       } else if (supportsDynamicRefs(app) && /^ref\d+$/.test(i.id)) {
         addDynamicRef(app, await fileFromUrl(src, name), { id: i.id, srcUrl: src, silent: true });
       }
@@ -616,7 +632,7 @@ export async function sendItemToApp(item, targetAppOrId, preferredSlotId = null)
     return false;
   }
   try {
-    const src = item.full || item.card;
+    const src = item.full || item.card || item.url;
     if (!src) return false;
     const ext = extOf(src) || (item.type === "video" ? "mp4" : "png");
     const name = `${item.app || "media"}.${ext}`;
@@ -627,7 +643,7 @@ export async function sendItemToApp(item, targetAppOrId, preferredSlotId = null)
       tag = ` (${refObj.tag})`;
       persist(targetApp);
     } else {
-      if (!setFile(targetApp, slot, file)) return false;
+      if (!setFile(targetApp, slot, file, { srcUrl: src })) return false;
       tag = targetApp.id === "director" ? ` (@${slot.id})` : "";
     }
     if (location.hash !== `#/app/${targetApp.id}`) {
@@ -707,87 +723,79 @@ export function quickHandoffBar(item, done) {
   const type = item.type;
   if (type !== "image" && type !== "video") return null;
 
-  const bar = el("div", { class: "quick-handoff" });
+  const bar = el("section", { class: "quick-handoff" });
   const head = el("div", { class: "qh-head" },
-    el("span", { class: "qh-title" }, icon("send"), t("handoff.title") || "Flusso Rapido"),
-    el("span", { class: "qh-hint" }, t("handoff.hint") || "Invia direttamente ad un'altra app")
+    el("span", { class: "qh-title" }, icon("bolt"), t("handoff.title") || "Flusso Rapido"),
+    el("span", { class: "qh-hint" }, t("handoff.hint") || "1 clic verso un'altra app")
   );
   bar.appendChild(head);
 
   const glbUrl = resolveGlbUrl(item);
   const targets = type === "image" ? [
-    ...(glbUrl ? [{ id: "actionforge", label: "🦴 Rigga 3D in ActionForge", badge: ".GLB", isActionForge: true }] : []),
-    { id: "qwen-multiangle", label: "📐 Cambia Angolo Camera", badge: "Qwen" },
-    { id: "trellis-3d", label: "🧊 Crea Oggetto 3D", badge: "TRELLIS" },
-    { id: "editor", label: "🎞 Editor Video", badge: "Timeline", isEditor: true },
-    { id: "remove-bg", label: "✂ Rimuovi sfondo", badge: "BiRefNet" },
-    { id: "video", label: "🎬 Anima in Video", badge: "H3" },
-    { id: "director", label: "🎥 AI Director", badge: "@ref2..5" },
-    { id: "face-swap", label: "👤 Face Swap", badge: "ReActor" },
-    { id: "upscale", label: "🔍 Upscale", badge: "Clarity" },
+    ...(glbUrl ? [{ id: "actionforge", icon: "🦴", name: "Rigga in ActionForge", sub: "Scheletro .GLB 3D", tone: "lime", span2: true, isActionForge: true }] : []),
+    { id: "wonderfull", icon: "✨", name: "Wonderfull Beauty", sub: "Volto, Sorriso, Contour & Colori", tone: "edit", span2: true },
+    { id: "qwen-multiangle", icon: "📐", name: "Angolo Camera", sub: "Qwen 3D Orbit", tone: "cam" },
+    { id: "trellis-3d", icon: "🧊", name: "Crea Oggetto 3D", sub: "TRELLIS.2 PBR", tone: "3d" },
+    { id: "video", icon: "🎬", name: "Anima in Video", sub: "MiniMax H3", tone: "vid" },
+    { id: "director", icon: "🎥", name: "AI Director", sub: "Multi-Ref @ref2..5", tone: "vid" },
+    { id: "editor", icon: "🎞️", name: "Editor Video", sub: "Timeline Studio", tone: "vid", isEditor: true },
+    { id: "edit", icon: "✏️", name: "Modifica Foto", sub: "Qwen Edit Pro", tone: "edit" },
+    { id: "inpaint", icon: "🎨", name: "Inpaint", sub: "Pennello & Maschera", tone: "edit" },
+    { id: "remove-bg", icon: "✂️", name: "Rimuovi Sfondo", sub: "BiRefNet Alpha", tone: "edit" },
+    { id: "face-swap", icon: "👤", name: "Face Swap", sub: "ReActor Volto", tone: "cam" },
+    { id: "upscale", icon: "🔍", name: "Upscale HD", sub: "Clarity 4K", tone: "3d" },
   ] : [
-    ...(glbUrl ? [{ id: "actionforge", label: "🦴 Rigga 3D in ActionForge", badge: ".GLB", isActionForge: true }] : []),
-    { id: "editor", label: "🎞 Editor Video", badge: "Timeline", isEditor: true },
-    { id: "director", label: "🎥 AI Director", badge: "@ref1" },
-    { id: "upscale-video", label: "🔍 Upscale Video", badge: "Topaz/LTX" },
-    { id: "extend-video", label: "⏩ Allunga Video", badge: "Extend" },
-    { id: "video-remove-bg", label: "✂ Rimuovi sfondo Video", badge: "Matting" },
+    ...(glbUrl ? [{ id: "actionforge", icon: "🦴", name: "Rigga in ActionForge", sub: "Scheletro .GLB 3D", tone: "lime", span2: true, isActionForge: true }] : []),
+    { id: "editor", icon: "🎞️", name: "Editor Video", sub: "Timeline Studio", tone: "vid", isEditor: true },
+    { id: "director", icon: "🎥", name: "AI Director", sub: "Motion @ref1", tone: "vid" },
+    { id: "recast", icon: "🎭", name: "Recast Attore", sub: "SCAIL Character Swap", tone: "cam" },
+    { id: "upscale-video", icon: "🔍", name: "Upscale Video", sub: "Topaz / LTX HD", tone: "3d" },
+    { id: "extend-video", icon: "⏩", name: "Allunga Video", sub: "Estendi Clip", tone: "vid" },
+    { id: "video-remove-bg", icon: "✂️", name: "Rimuovi Sfondo", sub: "Video Matting", tone: "edit" },
   ];
 
-  const pills = el("div", { class: "qh-pills" });
+  const grid = el("div", { class: "qh-grid" });
+  const makeCard = (tgt, onClick) => el("button", {
+    class: `qh-card qh-tone-${tgt.tone || "default"}${tgt.span2 ? " qh-span2" : ""}`,
+    type: "button",
+    onclick: onClick
+  },
+    el("span", { class: "qh-ic" }, tgt.icon),
+    el("span", { class: "qh-meta" },
+      el("span", { class: "qh-name" }, tgt.name),
+      tgt.sub ? el("span", { class: "qh-sub" }, tgt.sub) : null
+    ),
+    el("span", { class: "qh-arr" }, "›")
+  );
+
   for (const tgt of targets) {
     if (tgt.isActionForge) {
-      const btn = el("button", {
-        class: "qh-pill",
-        type: "button",
-        style: { borderColor: "rgba(232,255,90,0.45)", background: "rgba(232,255,90,0.12)" },
-        onclick: (e) => {
-          e.stopPropagation();
-          done?.();
-          sendToActionForge(item);
-        }
-      },
-        el("span", { class: "qh-pill-text", style: { color: "#e8ff5a", fontWeight: "600" } }, tgt.label),
-        tgt.badge ? el("span", { class: "qh-pill-badge" }, tgt.badge) : null
-      );
-      pills.appendChild(btn);
+      grid.appendChild(makeCard(tgt, (e) => {
+        e.stopPropagation();
+        done?.();
+        sendToActionForge(item);
+      }));
       continue;
     }
     if (tgt.isEditor) {
-      const btn = el("button", {
-        class: "qh-pill",
-        type: "button",
-        onclick: (e) => {
-          e.stopPropagation();
-          done?.();
-          sendToVideoEditor(item);
-        }
-      },
-        el("span", { class: "qh-pill-text" }, tgt.label),
-        tgt.badge ? el("span", { class: "qh-pill-badge" }, tgt.badge) : null
-      );
-      pills.appendChild(btn);
+      grid.appendChild(makeCard(tgt, (e) => {
+        e.stopPropagation();
+        done?.();
+        sendToVideoEditor(item);
+      }));
       continue;
     }
     const a = byId.get(tgt.id);
     if (!a) continue;
-    const btn = el("button", {
-      class: "qh-pill",
-      type: "button",
-      onclick: async (e) => {
-        e.stopPropagation();
-        done?.();
-        await sendItemToApp(item, a);
-      }
-    },
-      el("span", { class: "qh-pill-text" }, tgt.label),
-      tgt.badge ? el("span", { class: "qh-pill-badge" }, tgt.badge) : null
-    );
-    pills.appendChild(btn);
+    grid.appendChild(makeCard(tgt, async (e) => {
+      e.stopPropagation();
+      done?.();
+      await sendItemToApp(item, a);
+    }));
   }
 
   const moreBtn = el("button", {
-    class: "qh-pill qh-pill-more",
+    class: "qh-more",
     type: "button",
     onclick: (e) => {
       e.stopPropagation();
@@ -795,11 +803,11 @@ export function quickHandoffBar(item, done) {
     }
   },
     icon("menu"),
-    el("span", {}, t("act.more") || "Altre app…")
+    el("span", {}, t("act.more") || "Altre app compatibili…"),
+    el("span", { class: "qh-more-arr" }, "›")
   );
-  pills.appendChild(moreBtn);
 
-  bar.appendChild(pills);
+  bar.append(grid, moreBtn);
   return bar;
 }
 
@@ -1057,17 +1065,7 @@ export function addDynamicRef(app, file, opts = {}) {
   const refObj = { id, tag, type, file, url, name: file.name, srcUrl: opts.srcUrl || null };
   f.dynamicRefs.push(refObj);
   f.files[id] = { file, url };
-  if (!opts.srcUrl) {
-    feed.upload(file).then((entry) => {
-      const uploadedUrl = entry?.outputs?.[0]?.url;
-      if (uploadedUrl) {
-        refObj.srcUrl = uploadedUrl;
-        persist(app);
-      }
-    }).catch(() => {});
-  } else {
-    persist(app);
-  }
+  persist(app);
   if (!opts.silent) {
     toast(`✔ Reference ${tag} aggiunta (${file.name})`);
   }
@@ -1488,38 +1486,7 @@ function composerBar(app, rerenderBar) {
       attach.querySelector(`[data-slot="${id}"]`)?.classList.add("missing");
     },
   };
-  const build2509AnglePrompt = (hz, vt, zoom) => {
-    const h = ((Math.round(hz) % 360) + 360) % 360;
-    const parts = [];
-    if (h >= 22.5 && h < 67.5) parts.push("将镜头向右旋转45度 Rotate the camera 45 degrees to the right.");
-    else if (h >= 67.5 && h < 112.5) parts.push("将镜头向右移动 Move the camera right, 90 degrees side view.");
-    else if (h >= 112.5 && h < 157.5) parts.push("将镜头向右旋转135度 Rotate the camera 135 degrees to the right, back-right view.");
-    else if (h >= 157.5 && h < 202.5) parts.push("将镜头旋转180度到背面 Rotate the camera 180 degrees to the back view.");
-    else if (h >= 202.5 && h < 247.5) parts.push("将镜头向左旋转135度 Rotate the camera 135 degrees to the left, back-left view.");
-    else if (h >= 247.5 && h < 292.5) parts.push("将镜头向左移动 Move the camera left, 90 degrees side view.");
-    else if (h >= 292.5 && h < 337.5) parts.push("将镜头向左旋转45度 Rotate the camera 45 degrees to the left.");
-
-    if (vt <= -15) parts.push("将镜头转为仰视 Turn the camera to a low-angle view looking up.");
-    else if (vt >= 40) parts.push("将镜头转为俯视 Turn the camera to a top-down high-angle view.");
-    else if (vt >= 15) parts.push("将镜头向上移动 Move the camera up, elevated view.");
-
-    if (zoom < 2.5) parts.push("将镜头向后移动 Move the camera backward, wide shot.");
-    else if (zoom > 6.5) parts.push("将镜头向前移动 Move the camera forward, close-up.");
-    return parts.join(" ");
-  };
-  const go = async () => {
-    let prevDetails = null;
-    if (app.id === "qwen-multiangle") {
-      prevDetails = f.values.details ?? "";
-      const dir = build2509AnglePrompt(f.values.horizontal_angle ?? 0, f.values.vertical_angle ?? 0, f.values.zoom ?? 5);
-      if (dir) f.values.details = prevDetails ? `${dir} ${prevDetails}` : dir;
-    }
-    try {
-      if (await submit(app, ui) && wsTab !== "history") { wsTab = "history"; hooks.rerender?.(); }
-    } finally {
-      if (prevDetails !== null) f.values.details = prevDetails;
-    }
-  };
+  const go = async () => { if (await submit(app, ui) && wsTab !== "history") { wsTab = "history"; hooks.rerender?.(); } };
   const gen = genButton(app, go);
   if (!app.runnable) { hint.hidden = false; hint.textContent = app.status === "draft" ? t("ws.draft") : t("ws.noworkflow"); }
 
@@ -1725,9 +1692,11 @@ function dropzone(app, inp, rerender) {
           onclick: async (e) => {
             e.stopPropagation();
             try {
-              const ext = extOf(it.full) || (inp.type === "video" ? "mp4" : "png");
-              const file = await fileFromUrl(it.full, `${recent.app || "output"}.${ext}`);
-              if (setFile(app, inp, file)) rerender();
+              const src = it.full || it.card;
+              if (!src) return;
+              const ext = extOf(src) || (inp.type === "video" ? "mp4" : "png");
+              const file = await fileFromUrl(src, `${recent.app || "output"}.${ext}`);
+              if (setFile(app, inp, file, { srcUrl: src })) rerender();
               toast(t("toast.loaded", { app: app.name }));
             } catch (err) {
               toast(err.message, { error: true });
@@ -2471,6 +2440,32 @@ export function workspaceView(appId) {
   const app = byId.get(appId);
   if (!app) return { node: el("div", { class: "page" }, el("div", { class: "empty" }, `${appId}?`)), active: "apps" };
   rememberApp(app);
+  if (app.id === "wonderfull") {
+    const f = formFor(app);
+    const switcherBtn = () => {
+      const b = el("button", { type: "button", class: "wf-top-icon", title: t("ws.change") }, icon("swap"));
+      b.onclick = (ev) => { ev.stopPropagation(); popover(b, switcher(app), { width: 520, cls: "drawer-pop" }); };
+      return b;
+    };
+    const wf = wonderfullView(app, {
+      initialFile: f.files.image || null,
+      onImageChange: (fileObj) => { f.files.image = fileObj; },
+      switcherBtn,
+    });
+    const paste = (e) => {
+      const file = [...(e.clipboardData?.files || [])].find((x) => x.type.startsWith("image/"));
+      if (file) { e.preventDefault(); wf.loadPhoto(file); }
+    };
+    document.addEventListener("paste", paste);
+    return {
+      node: wf.node,
+      dispose: () => {
+        document.removeEventListener("paste", paste);
+        wf.dispose?.();
+      },
+      app,
+    };
+  }
   const vt = videoTabOf(app.id);
   if (vt) store.set(`last.vtab.${vt}`, app.id);
   const layout = layoutOf(app);
@@ -2498,6 +2493,7 @@ export function workspaceView(appId) {
     let side = null;
     const drawSide = () => {
       const scrollTop = side?.querySelector(".side-scroll")?.scrollTop || 0;
+      side?.querySelectorAll(".camera-3d-widget").forEach((w) => w._dispose?.());
       const next = sidebarPanel(app, drawSide);
       if (side) side.replaceWith(next); else root.prepend(next);
       side = next;
@@ -2505,6 +2501,7 @@ export function workspaceView(appId) {
     };
     root.append(mainArea(app, layout, disposers));
     drawSide();
+    disposers.push(() => side?.querySelectorAll(".camera-3d-widget").forEach((w) => w._dispose?.()));
     const paste = (e) => { const files = [...(e.clipboardData?.files || [])]; if (files.length && assignFiles(app, files)) { e.preventDefault(); drawSide(); } };
     document.addEventListener("paste", paste);
     disposers.push(() => document.removeEventListener("paste", paste));

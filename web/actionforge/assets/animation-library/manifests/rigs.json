@@ -1,0 +1,17 @@
+{
+  "note": "CANONICAL RIG TABLE. Read by scripts/scan-animations.mjs and, via a bundled copy, by the Blender addon. Adding a rig is an entry here plus a clip folder — nothing else. See MULTI_RIG_SPEC.md.",
+  "skeleton": "quaternius-human",
+  "rigs": {
+    "human": {
+      "label": "Full body",
+      "rel": "animations",
+      "file": "rig/rig-human.glb",
+      "default": true
+    },
+    "fps": {
+      "label": "First person",
+      "rel": "animations/fps",
+      "file": "rig/rig-fps.glb"
+    }
+  }
+}

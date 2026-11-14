@@ -12,3 +12,5 @@ __pycache__/
 .venv/
 lab/queue/
 .github/workflows/
+/actionforge/
+screenshot/github-recovery-codes.txt

@@ -1,0 +1,125 @@
+{
+  "note": "Frequently asked questions, shown in this order by the FAQ button in the top bar (faq-ui.js). Add one: a new entry with \"q\" (the question, as a visitor would ask it) and \"a\" (the answer: a list of short paragraphs, plain words, no technical detail). Optional \"links\": [{ \"text\", \"href\" }] shown under the answer; an href starts with https:// or /. Everything goes in as text, never as markup.",
+  "entries": [
+    {
+      "q": "Can I use the animations commercially?",
+      "a": [
+        "Yes. Every animation here, and the mannequin they play on, is in the public domain (CC0). Use them in any project, paid or free, and no credit is needed.",
+        "The library is built on the work of Quaternius, who gives it away. A credit or some support for him is welcome, never required."
+      ],
+      "links": [
+        { "text": "What CC0 means", "href": "https://creativecommons.org/publicdomain/zero/1.0/" },
+        { "text": "Quaternius", "href": "https://quaternius.com/" }
+      ]
+    },
+    {
+      "q": "Where are the Unreal and Mixamo characters?",
+      "a": [
+        "They are not included. Manny, Quinn and the UE4 mannequin belong to Epic Games, and the Y Bot belongs to Adobe (Mixamo), so they are not ours to hand out.",
+        "You don't need them here to export for them. Set Skeleton to Unreal or Mixamo next to the Download button, and you get the animation for the character you already have.",
+        "If you want to see an animation on one of them first, add your own copy in Characters with \"+ Rigged character\". It stays in your browser."
+      ]
+    },
+    {
+      "q": "Do you get or store my uploaded models?",
+      "a": [
+        "No. Anything you add, whether a character, an animation or a prop, is read and kept in your own browser, on your own computer. It is never sent to us or to anyone else.",
+        "That also means it lives only in that browser. A shared link does not carry it, and clearing your browser data removes it. Use the down arrow on a character's card to save a backup."
+      ]
+    },
+    {
+      "q": "Why is it in the browser? Will there be an offline or desktop version?",
+      "a": [
+        "So there is nothing to install. It runs the same on Windows, Mac and Linux, and your files stay on your own computer.",
+        "Your browser can install it as an app, which also helps it keep your characters and projects. It still needs an internet connection. There is no offline or desktop version at the moment."
+      ]
+    },
+    {
+      "q": "What file formats are supported?",
+      "a": [
+        "Characters come in as GLB or FBX. Animations of your own come in as FBX. Props come in as GLB.",
+        "Downloads are GLB or FBX. For FBX you can pick who it is for: Blender, Unreal, Unity or Maya."
+      ]
+    },
+    {
+      "q": "Which export preset do I pick for Unreal, Mixamo or Reallusion?",
+      "a": [
+        "Next to the Download button, set Skeleton to where the animation is going: Unreal Engine 5 (then Manny or Quinn), Unreal Engine 4, Reallusion (CC / ActorCore) or Mixamo. The format switches to FBX for you.",
+        "For anything else, such as Blender, Unity, Godot or the web, leave it on Default.",
+        "If the character you added in Characters is already on one of those skeletons, Default downloads for that character."
+      ]
+    },
+    {
+      "q": "Do I need to import the UE4/UE5 mannequin?",
+      "a": [
+        "No. To send an animation to Unreal, set Skeleton to Unreal Engine 5 or Unreal Engine 4 next to the Download button. Nothing needs importing.",
+        "If you want to see the animation on Manny, Quinn or the UE4 mannequin first, add your own copy in Characters with \"+ Rigged character\"."
+      ]
+    },
+    {
+      "q": "Can I use it with my custom rigged character?",
+      "a": [
+        "Yes. In Characters, choose \"+ Rigged character\" and pick a GLB or FBX file.",
+        "Its bones are matched to ours. For Mixamo, Unreal and Reallusion skeletons that happens by itself. For any other skeleton, a side-by-side panel lets you link the joints.",
+        "The character keeps its own skeleton, and downloads come out on it."
+      ]
+    },
+    {
+      "q": "Does it work with A-pose characters, or a rest pose other than a T-pose?",
+      "a": [
+        "Yes. A rigged character keeps its own rest pose, whether that is an A-pose or something else. It is read when you add the character, and the animations are fitted to it.",
+        "A model with no rig can be in an A-pose too."
+      ]
+    },
+    {
+      "q": "Can I upload my own character and auto-rig it? How good is the auto weight painting?",
+      "a": [
+        "Yes. In Characters, choose \"+ Unrigged model\", put a few dots on its joints and press Rig. It is rigged and skinned in your browser.",
+        "The weights are good on human-shaped characters, including ones made of separate pieces such as clothes and armour. Capes, skirts and long hair work best when you tag them as cloth, and you can resize a bone's area if a spot needs it."
+      ]
+    },
+    {
+      "q": "Why don't I see the front and side views when rigging?",
+      "a": [
+        "They appear after you confirm the markers: place the dots, then press Rig. The Front, Side, Back and Free views show up from that point."
+      ]
+    },
+    {
+      "q": "Can I use my own props or weapons?",
+      "a": [
+        "Yes. Open Props and drop a GLB file onto it. It goes into either hand and you can move it into place. It is kept in your browser."
+      ]
+    },
+    {
+      "q": "Does FPS mode work with custom characters?",
+      "a": [
+        "Not yet. First person has its own body for now. Your characters are worn on the full body."
+      ]
+    },
+    {
+      "q": "Does it support animals, quadrupeds or horses?",
+      "a": [
+        "Not yet. Everything here is for two-legged, human-shaped characters."
+      ]
+    },
+    {
+      "q": "Does it do facial rigging or face animation?",
+      "a": [
+        "No. The animations move the body and the fingers. There is no face rig and no facial animation."
+      ]
+    },
+    {
+      "q": "Can I submit or share my own animations to the library?",
+      "a": [
+        "No. Everything in the library has to be safe to use commercially. Once anyone can upload, there is no way to guarantee that a clip isn't taken from Mixamo or ripped from a game. One bad file and the \"free to use\" promise stops meaning anything.",
+        "You can still import your own animations and use every tool here on them. They stay in your browser."
+      ]
+    },
+    {
+      "q": "Is there an API, CLI or headless mode, for example for scripts or Claude Code?",
+      "a": [
+        "Not yet. It is planned for later."
+      ]
+    }
+  ]
+}

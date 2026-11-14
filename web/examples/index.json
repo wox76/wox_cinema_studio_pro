@@ -4630,7 +4630,125 @@
       "card": "examples/director/card.jpg",
       "poster": null,
       "full": "examples/director/full.jpg"
+    },
+    "wonderfull": {
+      "case": "wonderfull-beauty",
+      "type": "image",
+      "card": "examples/wonderfull/card.jpg",
+      "poster": null,
+      "full": "examples/wonderfull/full.jpg",
+      "inputs": [
+        {
+          "id": "image",
+          "label": "Foto",
+          "type": "image",
+          "src": "examples/wonderfull/input-image.jpg",
+          "full": "examples/wonderfull/input-image-full.jpg"
+        }
+      ],
+      "values": {
+        "steps": 8
+      },
+      "seed": 42,
+      "seconds": 28.0
+    },
+    "qwen-multiangle": {
+      "case": "qwen-multiangle-portrait",
+      "type": "image",
+      "card": "examples/qwen-multiangle/card.jpg",
+      "poster": null,
+      "full": "examples/qwen-multiangle/full.jpg",
+      "inputs": [
+        {
+          "id": "image",
+          "label": "Foto Originale",
+          "type": "image",
+          "src": "examples/qwen-multiangle/input-image.jpg",
+          "full": "examples/qwen-multiangle/input-image-full.jpg"
+        }
+      ],
+      "values": {
+        "horizontal_angle": 35,
+        "vertical_angle": 0,
+        "zoom": 5,
+        "details": ""
+      },
+      "seed": 42,
+      "seconds": 32.0
+    },
+    "trellis-3d": {
+      "case": "trellis-3d-portrait",
+      "type": "3d",
+      "card": "examples/trellis-3d/card.jpg",
+      "poster": "examples/trellis-3d/poster.jpg",
+      "full": "examples/trellis-3d/full.jpg",
+      "glb": "examples/trellis-3d/out.glb",
+      "inputs": [
+        {
+          "id": "image",
+          "label": "Foto Riferimento (Soggetto)",
+          "type": "image",
+          "src": "examples/trellis-3d/input-image.jpg",
+          "full": "examples/trellis-3d/input-image-full.jpg"
+        }
+      ],
+      "values": {
+        "prompt": "",
+        "resolution": "1024_cascade",
+        "steps": 24,
+        "guidance_strength": 6.5
+      },
+      "seed": 42,
+      "seconds": 95.0
+    },
+    "music-video": {
+      "case": "music-video-portrait",
+      "type": "video",
+      "card": "examples/music-video/card.mp4",
+      "poster": "examples/music-video/poster.jpg",
+      "full": "examples/music-video/full.mp4",
+      "inputs": [
+        {
+          "id": "image",
+          "label": "Foto Personaggio",
+          "type": "image",
+          "src": "examples/music-video/input-image.jpg",
+          "full": "examples/music-video/input-image-full.jpg"
+        }
+      ],
+      "values": {
+        "prompt": "Natural expressive singing performance to camera, warm studio lighting",
+        "duration": 5,
+        "steps": 20
+      },
+      "seed": 42,
+      "seconds": 65.0
     }
   },
-  "updated_from": "20261026-041209-l40s"
+  "updated_from": "20261026-041209-l40s",
+  "trellis-3d": {
+    "type": "image",
+    "card": "card.jpg",
+    "poster": "poster.jpg",
+    "full": "latest.glb",
+    "seconds": 24.5,
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU (16GB)",
+    "peak": 5.9,
+    "inputs": [
+      {
+        "id": "image",
+        "label": "Source Photo",
+        "type": "image",
+        "file": "input-image-full.jpg",
+        "thumb": "input-image.jpg"
+      }
+    ],
+    "values": {
+      "resolution": "1024 (16GB VRAM Recommended)",
+      "steps": 12,
+      "decimation_target": 100000,
+      "texture_size": 2048,
+      "low_vram": true
+    }
+  }
 }

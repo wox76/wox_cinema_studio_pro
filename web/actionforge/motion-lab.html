@@ -1,0 +1,410 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/actionforge/_next/static/css/a71623f727c22f91.css" data-precedence="next"/><link rel="stylesheet" href="/actionforge/_next/static/css/e4a51800b4c57279.css" data-precedence="next"/><link rel="stylesheet" href="/actionforge/_next/static/css/a9618d47ade328f2.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/actionforge/_next/static/chunks/webpack-bc2d41f9710b81be.js"/><script src="/actionforge/_next/static/chunks/4bd1b696-c7408084347438ae.js" async=""></script><script src="/actionforge/_next/static/chunks/794-393acf47db4aab05.js" async=""></script><script src="/actionforge/_next/static/chunks/main-app-38ee231de6c259dc.js" async=""></script><script src="/actionforge/_next/static/chunks/66-186623ba48a68f71.js" async=""></script><script src="/actionforge/_next/static/chunks/app/motion-lab/page-bbdc3451df829b32.js" async=""></script><meta name="theme-color" content="#0a0a0a"/><title>ActionForge – Character Animation in Your Browser</title><meta name="description" content="Edit, blend, rig and export game-ready character animations in your browser."/><link rel="manifest" href="/actionforge/manifest.webmanifest"/><link rel="icon" href="/actionforge/assets/app-icons/icon-32.png"/><link rel="apple-touch-icon" href="/actionforge/assets/app-icons/icon-180.png"/><script src="/actionforge/_next/static/chunks/polyfills-42372ed130431b0a.js" noModule=""></script></head><body><div hidden=""><!--$--><!--/$--></div><style>
+  /* The site's own colours and type (styles/base.css): this page's short names for them. CHARACTER_LAB_SPEC.md L9. */
+  :root { color-scheme: dark; --pri:var(--primary-color); --bg:var(--bg-dark); --bg2:var(--bg-medium); --bg3:var(--bg-light); --bd:var(--border-color); --mut:var(--text-muted); }
+  * { box-sizing: border-box; }
+  [hidden] { display:none !important; }
+  /* What a visitor doesn't need is behind one switch (Advanced, in the bar; CHARACTER_LAB_SPEC.md L1): shown only with
+     it on. It only shows and hides — what is set there stays set, and is used. */
+  html:not(.advanced) .adv { display:none !important; }
+  /* An animation that is not a walk or a run (CHARACTER_LAB_SPEC.md L13, L14) takes what any motion can: a pose, a
+     control, the posture, the follow-through, and its curves — the hips', the feet's, a control's. What only a walk has
+     a say in — a style, the gait, the trails' keys, a second step kept the same, the foot plant slid — stays where it
+     is, greyed. */
+  html.plain .walk, html.plain #curvePlantReset, html.plain label:has(#curvePlant, #curveMirror) { opacity:.35; pointer-events:none; }
+  /* "One cycle only" has nothing to choose on an animation that is played once: it is ticked, and greyed. */
+  label:has(#curveOne:disabled) { opacity:.35; pointer-events:none; }
+  /* One that stays where it stands has no eight to make: what makes them stays where it is, greyed. */
+  html.still .eight { opacity:.35; pointer-events:none; }
+  #curveNone { position:absolute; left:14px; top:10px; right:14px; margin:0; }
+  /* Facing: Face the travel — each of the eight is the source turned whole. What only a strafe set has a say in (how
+     each direction's legs are turned; a strafe made by hand) stays where it is, greyed. */
+  html.travel .aim { opacity:.35; pointer-events:none; }
+  html:not(.nocurve) #curveNone { display:none; }
+  html, body { margin:0; height:100%; background:var(--bg); color:#f1f5f9; overflow:hidden; -webkit-font-smoothing:antialiased; }
+  body { font:12px/1.45 var(--font-primary); letter-spacing:-0.01em; }
+  /* The workspace: a bar across the top; what's set on the left; the view; what's picked on the right; time and
+     curves along the bottom; and the library — the main page's own panel — down the right edge, the page's whole
+     height. Nothing moves when something is switched on: every panel keeps its place and size. */
+  body { display:grid; grid-template-columns:300px minmax(0, 1fr) 280px clamp(236px, 22vw, 360px); grid-template-rows:auto minmax(0, 1fr) var(--dock-h, min(320px, 42vh));
+         grid-template-areas:"bar bar bar bar" "left view right lib" "dock dock dock lib"; }
+  /* (In a window too narrow for them in one row — a laptop's, a half screen's — the bar's controls go on to a
+     second row. In one row they ran off the right edge, where nothing scrolls: under 1100 px Generate and Advanced
+     could not be reached.) */
+  #bar { grid-area:bar; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; padding:8px 14px; background:linear-gradient(180deg, #141a26 0%, #0f141e 100%); border-bottom:1px solid var(--bd); min-width:0; }
+  #bar h1 { font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; margin:0; color:var(--pri); white-space:nowrap; }
+  /* The site's wordmark, at this bar's size: the way back to the main page. */
+  #bar .af-mark { font-size:14.5px; letter-spacing:-0.025em; text-transform:none; }
+  #status { flex:1; min-width:0; color:var(--mut); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #status.bad { color:#ff6b6b; }
+  #left, #right { overflow:auto; background:var(--bg2); padding:6px 10px 12px; min-height:0; }
+  #left { grid-area:left; border-right:1px solid var(--bd); }
+  #right { grid-area:right; border-left:1px solid var(--bd); }
+  #viewport { grid-area:view; position:relative; min-width:0; min-height:0; overflow:hidden; background:radial-gradient(ellipse at 50% 42%, #161d2b 0%, #0b0e14 78%); }
+  canvas#stage { display:block; position:absolute; inset:0; }
+  /* What's drawn in the view: switches floating in its corner. */
+  #viewOpts { position:absolute; left:8px; top:8px; display:flex; flex-wrap:wrap; gap:4px 12px; padding:5px 10px; background:rgba(16,22,33,.82); backdrop-filter:blur(8px); border:1px solid var(--bd); border-radius:6px; z-index:1; max-width:calc(100% - 16px); }
+  label { display:flex; align-items:center; gap:6px; color:#cbd5e1; }
+  select, input, button { background:var(--bg3); border:1px solid var(--bd); border-radius:5px; color:#f1f5f9; font:inherit; padding:4px 8px; transition:border-color .14s ease, background .14s ease, color .14s ease; }
+  select { min-width:0; }
+  button { cursor:pointer; font-weight:500; text-transform:none; letter-spacing:-0.01em; }
+  button:hover:not(:disabled) { border-color:var(--pri); color:var(--pri); }
+  button:disabled { opacity:.4; cursor:default; }
+  /* Generate: the one button that makes something — in the site's own green (as its "is-good" buttons are). */
+  #generate, #generate:hover:not(:disabled) { color:#041910; background:#2ee88a; border-color:#2ee88a; font-weight:600; }
+  #generate:hover:not(:disabled) { background:#5cf0a6; border-color:#5cf0a6; }
+  input[type=checkbox] { accent-color:var(--pri); }
+  /* A section of a panel: its name, and what's in it — folded away or open, as it's left. */
+  details { border-bottom:1px solid var(--bd); padding:3px 0 8px; }
+  summary { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--pri); cursor:pointer; padding:6px 0 4px; user-select:none; }
+  summary:hover { color:#fff; }
+  h3 { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); margin:8px 0 2px; font-weight:normal; }
+  .note { color:var(--mut); margin:4px 0; }
+  .note.bad { color:#ff6b6b; }
+  .polRow { display:flex; flex-wrap:wrap; gap:3px 5px; align-items:center; color:#ccc; margin:3px 0; }
+  .polRow input[type=number] { width:46px; padding:2px 3px; }
+  /* A slider with its number beside it: the number can be typed past the slider's end, which then reaches that far. */
+  .slRow > span { flex:none; width:112px; }
+  .slRow input.soft { flex:1; min-width:60px; padding:0; }
+  /* What's picked, on the right: a name and its value, one to a line. */
+  .prop { display:flex; align-items:center; justify-content:space-between; gap:8px; color:#ccc; margin:3px 0; min-height:24px; }
+  .prop > span:first-child { flex:none; }
+  .prop input[type=number] { width:70px; padding:2px 4px; }
+  .prop select { flex:1; max-width:160px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+  .grid2 .prop input[type=number] { width:54px; }
+  .pair { display:flex; gap:6px; margin:4px 0; }
+  .pair > * { flex:1; min-width:0; }
+  #dirTable, #stRows { width:100%; border-collapse:collapse; font-size:11px; }
+  #dirTable th, #dirTable td, #stRows th, #stRows td { padding:2px 1px; text-align:left; }
+  #dirTable th, #stRows th { color:#aaa; font-weight:normal; }
+  #dirTable input, #stRows input { width:38px; padding:2px; }
+  #stRows select { padding:1px; font-size:11px; }
+  /* What Generate made: a line a direction — which, and in a few words what became of it; the whole of it under it,
+     with Advanced on (and on hover). */
+  #results .res { display:flex; gap:8px; margin:1px 0; }
+  #results .res b { flex:none; width:3ch; font-weight:normal; color:#aaa; }
+  #results .res.ok span { color:#6bdc7a; }
+  #results .res.bad span { color:#ff6b6b; }
+  #results .full { color:var(--mut); margin:0 0 5px calc(3ch + 8px); }
+  #export { display:grid; grid-template-columns:auto 1fr; gap:5px 8px; align-items:center; margin-bottom:8px; }
+  #export select { width:100%; }
+  #export .wide { grid-column:1 / -1; }
+  #exNote { min-height:3em; }
+  #gaitShare { width:70px; padding:0; }
+  #gaitOut { min-height:6em; }
+  #polGrip { width:110px; padding:0; }
+  #strafe, #mixamo { width:190px; }
+  #styleName { min-width:0; }
+  #styleNote { min-height:1.5em; }
+  #strafeNote { min-height:1.5em; }
+  /* Along the bottom: time (the cycle, and when each foot is down), then the curves — their list, and the graph. Its top edge sizes it. */
+  #curveDock { grid-area:dock; position:relative; display:flex; flex-direction:column; gap:5px; padding:7px 12px 9px; background:var(--bg2); border-top:1px solid var(--bd); min-height:0; }
+  #curveGrip { position:absolute; left:0; right:0; top:-4px; height:9px; cursor:ns-resize; z-index:2; }
+  #time { display:block; width:100%; margin:0; padding:0; flex:none; }
+  #clock { width:52px; color:#ccc; }
+  #contacts { display:block; width:100%; height:52px; flex:none; background:#111; border:1px solid #222; }
+  #curveCol { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; gap:4px; }
+  #curveBox { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; gap:4px; }
+  #curveRow2 { margin:0; }
+  #curveMain { flex:1; min-height:0; display:flex; gap:8px; }
+  #curveArea { position:relative; flex:1; min-width:0; background:#111; border:1px solid #222; }
+  #curveList { flex:none; width:190px; font-size:11px; overflow:auto; border:1px solid #222; padding:4px 6px; }
+  #curveList h3 { margin:6px 0 2px; }
+  #curveList h3:first-child { margin-top:0; }
+  #curveList div { display:flex; align-items:center; gap:5px; }
+  /* (A curve's box shows it beside the one edited: only with "several curves" on.) */
+  #curveList:not(.several) input { visibility:hidden; width:0; margin:0; }
+  #curveList button { flex:1; text-align:left; text-transform:none; letter-spacing:0; border-color:transparent; background:none; padding:1px 4px; }
+  #curveList button.on { border-color:currentColor; background:#1a1a1a; }
+  #curveList button.also { border-color:currentColor; border-style:dashed; }
+  #hipCurve { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:crosshair; }
+  #hipCurve:focus { outline:none; }
+  .sep { width:1px; align-self:stretch; background:var(--bd); margin:0 4px; }
+  .help { cursor:help; color:var(--mut); border:1px solid var(--bd); padding:0 7px; }
+  /* The graph's second row: the curve picked, the key picked, its handles as pictures. */
+  #curveRowKey { margin:0; min-height:26px; }
+  #curveRowKey select { max-width:110px; }
+  #curveName { min-width:150px; white-space:nowrap; }
+  #keyFrame, #keyValue { width:58px; }
+  button.ico { padding:2px 4px; line-height:0; color:#bbb; }
+  button.ico.on { color:var(--pri); border-color:var(--pri); background:#12282a; }
+  /* What the graph is doing (a move, a turn), what was copied: at the end of its bar, while it lasts. */
+  #curveHint { margin-left:auto; color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  /* The outliner: a control to a line. */
+  .outRow { display:flex; align-items:center; gap:3px; margin:1px 0; }
+  .outRow button { border-color:transparent; background:none; text-transform:none; letter-spacing:0; padding:1px 5px; color:#bbb; }
+  .outRow button.name { flex:1; min-width:0; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .outRow.sel button.name { color:var(--pri); border-color:var(--pri); }
+  .outRow button.off { color:#555; }
+  .outRow button.lit { color:var(--pri); }
+  .outRow.unseen button.name { opacity:.45; }
+  /* The library: the main page's own panel — its markup, its styles (the two stylesheets above), its grid code — in a
+     column of its own (CHARACTER_LAB_SPEC.md L4, L5). What follows only sits it in this page: its type as the main
+     page's body has it; this page's own button rules kept off its tiles and tabs; and what it has no use for here
+     (the ticks that pick clips for a bundle; the mark of a clip that travels) out of sight. */
+  /* (As wide as its column, whatever the window: the main page's stylesheet gives its own panel a fixed 380 px on
+     windows under 1500 px, which is wider than this column, and the panel's right side — the Characters tab, the
+     last tiles — was cut off.) */
+  #lib { grid-area:lib; width:auto; border-left:1px solid var(--bd); min-width:0; font-family:var(--font-primary); font-size:16px; line-height:normal; color:var(--text-primary); }
+  :where(#lib) button { text-transform:none; letter-spacing:normal; }
+  #lib .lib-panel__tab:hover:not(.is-on) { color:var(--text-primary); border-color:var(--border-color); }
+  #lib .lib-tile__pick, #lib .lib-tile__rm { display:none; }
+  #lib .lib-note { grid-column:1 / -1; margin:.7rem .2rem .3rem; font-family:var(--font-heading); font-size:.66rem; color:var(--text-muted); }
+</style>
+
+<div id="bar">
+  <a class="af-mark" href="/actionforge/" title="ActionForge: the animations, the Character tool, export"><b>Action</b>Forge</a>
+  <h1 title="One motion, reshaped in depth: given a style, seen on your own character, made into its eight directions, and exported.">Motion Lab</h1>
+  <label title="Which clip is in the view: the animation picked in the library (on the right), the same adjusted, or one of the eight made from it.">Show <select id="source"></select></label>
+  <label title="A Mixamo FBX from this computer — an animation that loops: a walk, a run, an idle — retargeted onto our skeleton as the Import tab does. Read here, never uploaded.">Add a Mixamo FBX <input id="mixamo" type="file" accept=".fbx"/></label>
+  <label class="eight">View <select id="view"><option value="single">One</option><option value="grid">All directions</option></select></label>
+  <label class="eight" title="What the eight are. Aim forward: a strafe set — the body keeps looking ahead while the legs carry it to the side or backward, as a game that aims does it. Face the travel: each of the eight is the source turned whole to face the way it goes, nothing else of it changed — as a game that runs free does it.">Facing <select id="facing"><option value="aim">Aim forward</option><option value="travel">Face the travel</option></select></label>
+  <button id="generate" class="eight" type="button" title="Make the other seven directions from the source, with the values in the panel. An animation that stays where it stands has none to make.">Generate</button>
+  <label title="Everything there is to set. Off: what makes a set, and no more — the rest is as it stands, and still used. Remembered in this browser."><input id="advanced" type="checkbox"/> Advanced</label>
+  <div id="status">Loading…</div>
+</div>
+
+<div id="left">
+  <details open=""><summary title="Everything set here — the gait, the posture, the follow-through, every curve and every control — as one named set. Kept in this browser, saved to a file, loaded onto another cycle: its keys go where they were in the step, counted from the left foot&#x27;s landing. A style is a walk&#x27;s or a run&#x27;s.">Style</summary>
+    <div class="walk">
+    <div class="pair">
+      <select id="styleList" title="The styles saved in this browser"></select>
+      <button id="styleLoad" type="button" title="The picked style, in place of everything set now">Load</button>
+    </div>
+    <div class="pair">
+      <input id="styleName" type="text" placeholder="name" title="The name to save what&#x27;s set now under"/>
+      <button id="styleSave" type="button" title="What&#x27;s set now, saved in this browser under that name">Save</button>
+    </div>
+    <div class="pair">
+      <button id="styleFile" type="button" title="What&#x27;s set now, as a file">To file</button>
+      <button id="styleOpenBtn" type="button" title="A style from a file, in place of everything set now">From file</button>
+      <button id="styleDelete" type="button" title="The picked style, out of this browser">Delete</button>
+    </div>
+    </div>
+    <input id="styleOpen" type="file" accept=".json,application/json" hidden=""/>
+    <button id="startOver" type="button" title="Everything set on this animation — its gait, its posture, the follow-through, every curve, every control and pose — back to the source&#x27;s own, and no longer kept for it. (Ctrl+Z brings it back.) What is set on an animation is kept in this browser, and is there again when it is picked.">Start over</button>
+    <div id="styleNote" class="note"></div>
+  </details>
+  <details open="" class="walk"><summary title="A walk&#x27;s or a run&#x27;s. The source made slower or quicker, longer or shorter in the step, heavier, lower. What it makes is a cycle like any other: it plays, Generate makes its eight, Export takes them. It uses the Polish switches below (foot lock, reach, arms).">Gait</summary>
+    <div class="polRow">Preset <select id="gaitPreset"><option value="">(none)</option><option>Stroll</option><option>Brisk</option><option>Heavy</option><option>Sneak</option></select> <button id="gaitReset" type="button" title="Everything back to the source&#x27;s own">Reset</button></div>
+    <div class="polRow" title="One number for both: the speed × this, shared between longer steps and quicker ones. In the middle each takes the square root of it (speed × 1.44 is stride × 1.2 and cadence × 1.2).">Speed × <input id="gaitSpeed" type="number" min="0.3" max="2.5" step="0.05" value="1"/> stride <input id="gaitShare" type="range" min="0" max="1" step="0.05" value="0.5"/> cadence</div>
+    <div class="grid2">
+      <label class="prop" title="Each step longer or shorter, the steps a minute kept — the speed follows."><span>Stride ×</span><input id="gaitStride" type="number" min="0.5" max="1.5" step="0.02" value="1"/></label>
+      <label class="prop" title="The steps a minute, the stride kept — the speed follows."><span>Cadence ×</span><input id="gaitCadence" type="number" min="0.5" max="2" step="0.02" value="1"/></label>
+      <label class="prop" title="Centimetres added to each foot&#x27;s lane (less to narrow; never under what keeps the legs apart)."><span>Width cm</span><input id="gaitWidth" type="number" min="-6" max="12" step="0.5" value="0"/></label>
+      <label class="prop" title="How high the feet go through the air."><span>Lift ×</span><input id="gaitLift" type="number" min="0.5" max="2" step="0.05" value="1"/></label>
+      <label class="prop" title="Centimetres the hips sit lower."><span>Lower cm</span><input id="gaitDrop" type="number" min="-3" max="20" step="0.5" value="0"/></label>
+      <label class="prop" title="The hips&#x27; up-and-down, about the cycle&#x27;s own middle."><span>Bounce ×</span><input id="gaitBounce" type="number" min="0" max="2.5" step="0.05" value="1"/></label>
+      <label class="prop" title="The hips&#x27; side-to-side, about the cycle&#x27;s own middle."><span>Sway ×</span><input id="gaitSway" type="number" min="0" max="2.5" step="0.05" value="1"/></label>
+      <label class="prop" title="The arms&#x27; swing, about its own middle."><span>Arms ×</span><input id="gaitSwing" type="number" min="0" max="2" step="0.05" value="1"/></label>
+      <label class="prop" title="How much the body&#x27;s lean follows the speed: 1, a walk twice as fast leans twice as far; 0, it leans as the source does whatever the speed."><span>Lean / speed</span><input id="gaitLean" type="number" min="0" max="2" step="0.1" value="1"/></label>
+      <label class="prop" title="How much of the cycle each foot spends on the ground. More: a longer stance and a quicker swing — heavier. The landings stay where they are; the lift-off moves. It starts at the source&#x27;s own."><span>On ground %</span><input id="gaitGround" type="number" min="30" max="90" step="1"/></label>
+    </div>
+  </details>
+  <details open=""><summary title="A set turn of the spine, held through the whole animation: an adjustment on top of it. On any animation.">Posture</summary>
+    <div class="polRow"><label title="On: the head stays looking where it looked while the spine bends — a sneak looks ahead, not at the floor. Off: the head goes with the chest."><input id="gaitHeadAhead" type="checkbox" checked=""/> head looks ahead</label></div>
+    <div class="polRow slRow" title="The spine bent forward (less than 0: back), held through the whole cycle and spread up it — an adjustment on top of the animation. With the hips lower: a sneak."><span>Spine forward °</span><input id="gaitPostF" data-soft="" type="number" min="-30" max="60" step="1" value="0"/></div>
+    <div class="polRow slRow" title="The spine bent to the character&#x27;s left (less than 0: right)."><span>Spine side °</span><input id="gaitPostS" data-soft="" type="number" min="-30" max="30" step="1" value="0"/></div>
+    <div class="polRow slRow" title="The spine twisted to the character&#x27;s left (less than 0: right)."><span>Spine twist °</span><input id="gaitPostT" data-soft="" type="number" min="-45" max="45" step="1" value="0"/></div>
+  </details>
+  <details open=""><summary title="The body above the hips arrives late: what you change on the hips, the chest follows a moment after, overshoots a little, and settles; the head and the arms after the chest. Nothing changed on the hips: nothing added. On an animation that is not a walk it follows what the hips&#x27; curves change — or, with Loosen, the animation&#x27;s own hips.">Follow-through</summary>
+    <div class="polRow"><label title="The body above the hips arrives late: what you change on the hips — their curves, the bounce, the sway — the chest follows a moment after, overshoots a little, and settles; the head and the arms after the chest. Nothing changed on the hips: nothing added. Holding a weapon keeps the chest and the arms out of it."><input id="ftOn" type="checkbox" checked=""/> on</label> <select id="ftPreset" title="A set of values to start from"><option value="">(own)</option><option>Stiff</option><option>Loose</option><option>Heavy</option></select> <button id="ftReset" type="button" title="The follow-through back as the page opens with it: on, and every value its own. (Ctrl+Z brings it back.)">Reset</button></div>
+    <div class="polRow slRow" title="How far the chest is let lag behind the hips: × what the spring gives. 0: it rides rigidly, as before."><span>Chest</span><input id="ftChest" data-soft="" type="number" min="0" max="2" step="0.05" value="1"/></div>
+    <div class="polRow slRow" title="How far the head is let lag behind the chest."><span>Head</span><input id="ftHead" data-soft="" type="number" min="0" max="2" step="0.05" value="0.5"/></div>
+    <div class="polRow slRow" title="How far the arms are let swing behind the chest."><span>Arms</span><input id="ftArms" data-soft="" type="number" min="0" max="2" step="0.05" value="1"/></div>
+    <div class="polRow slRow" title="How late they arrive: 0 close behind the hips, 1 well behind."><span>Lag</span><input id="ftLag" data-soft="fixed" type="number" min="0" max="1" step="0.01" value="0.5"/></div>
+    <div class="polRow slRow" title="How much they overshoot before settling: 0 none, 1 a lot."><span>Bounce</span><input id="ftBounce" data-soft="fixed" type="number" min="0" max="1" step="0.01" value="0.4"/></div>
+    <div class="polRow slRow" title="How much of the source&#x27;s own hip movement is followed too: 0 only what you changed; more loosens a stiff walk as it is."><span>Loosen</span><input id="ftLoosen" data-soft="" type="number" min="0" max="2" step="0.05" value="0"/></div>
+  </details>
+  <details class="aim eight"><summary title="Per angle away from forward: how far the hips turn toward the travel (the chest turns back to stay on aim), how far the knees and feet point along it (0 the hips&#x27; way, 1 the travel&#x27;s), the closest the legs may come (the lanes widen until it holds, shins included), how far the swinging foot bulges out past the planted leg, and the stride — shorter and quicker at once, so the speed stays and the set still blends. 135° and 180° start from the walk played backward (it lands toe first, knee bent, as backward walking does); the back diagonals turn it ±45° with the hips turned away from the travel side.">Directions</summary>
+    <table id="dirTable" class="adv"><tbody><tr><th></th><th>Hips°</th><th>Knees</th><th>Feet</th><th title="The closest the legs may come to each other, centimetres.">Leg gap</th><th title="How far the swinging foot goes out past the planted leg, centimetres.">Swing out</th><th>Stride</th></tr><tr data-a="45"><td>45°</td><td><input data-k="hips" type="number" step="1"/></td><td><input data-k="knees" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="feet" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="gap" type="number" step="0.5"/></td><td><input data-k="bulge" type="number" step="0.5"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td></tr><tr data-a="90"><td>90°</td><td><input data-k="hips" type="number" step="1"/></td><td><input data-k="knees" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="feet" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="gap" type="number" step="0.5"/></td><td><input data-k="bulge" type="number" step="0.5"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td></tr><tr data-a="135"><td>135°</td><td><input data-k="hips" type="number" step="1"/></td><td><input data-k="knees" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="feet" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="gap" type="number" step="0.5"/></td><td><input data-k="bulge" type="number" step="0.5"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td></tr><tr data-a="180"><td>180°</td><td><input data-k="hips" type="number" step="1"/></td><td><input data-k="knees" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="feet" type="number" step="0.05" min="0" max="1"/></td><td><input data-k="gap" type="number" step="0.5"/></td><td><input data-k="bulge" type="number" step="0.5"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td></tr></tbody></table>
+    <div class="polRow" title="What a strafe changes, measured on reference packs against their own forward clip: each preset fills the values below. Auto: picked from how the source itself stands — square: the unarmed walk’s; turned, as with a rifle on aim: the rifle’s, a walk’s or a run’s, with the away strafe on the side it is turned from (the rifle presets are changes on top of a stance already turned: on a source that stands square, their small turns leave the legs no room). Classic: the set as it was before — the chest held exactly on the aim, both strafes toward. Chest: how much of the hips’ turn the chest goes with (0: none, the spine takes it all back; 1: all of it) — the head stays on the aim either way. Hips swing: how many degrees further the hips turn while the legs are crossed, and less while the stance is open.">
+      <span>Preset</span><select id="stPreset"><option value="auto">Auto (from how it stands)</option><option value="unarmed">Unarmed walk</option><option value="rifleWalk">Rifle walk</option><option value="rifleRun">Rifle run</option><option value="classic">Classic</option></select>
+      <span class="adv">chest</span><input class="adv" id="stChest" type="number" min="0" max="1" step="0.05"/><span class="adv">hips swing°</span><input class="adv" id="stSwing" type="number" min="0" max="30" step="1"/></div>
+    <div class="polRow adv" title="An animation played once (a roll, a strike, a stop). An end that is kept is the source&#x27;s own pose in every direction: nothing is added there, however fast it is going. Read off the clip when it is picked — an end it stands still at is kept — and overruled here. A strike or a dash: both. A stop: its last.">
+      <span>Played once: keep its</span><label><input id="shotOpens" type="checkbox" disabled=""/> first pose</label><label><input id="shotCloses" type="checkbox" disabled=""/> last pose</label></div>
+    <table id="stRows" class="adv" title="Each direction’s own values. Hips: degrees they turn. Stride: × the source’s. Toes and knees: degrees toward the travel side (less than nothing: away), the lead foot’s — the travel side’s — and the trailing foot’s. Blank: the row of the table above for that angle. A diagonal takes half its strafe’s turns: what a blend of the forward clip and the strafe was measured to come to."><tbody><tr><th>Direction</th><th>Family</th><th>Hips°</th><th>Stride</th><th>Toe lead°</th><th>Toe trail°</th><th>Knee lead°</th><th>Knee trail°</th></tr><tr data-dir="L"><td>Left 90°</td><td><select data-k="fam" title="Toward: made from the walk, the hips turned toward the travel, the trailing foot crossing in front. Away: made from the walk reversed, the hips turned away, the trailing foot crossing behind."><option value="toward">toward</option><option value="away">away</option></select></td><td><input data-k="hips" type="number" step="1" min="0" max="90"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td><td><input data-k="toeLead" type="number" step="1"/></td><td><input data-k="toeTrail" type="number" step="1"/></td><td><input data-k="kneeLead" type="number" step="1"/></td><td><input data-k="kneeTrail" type="number" step="1"/></td></tr><tr data-dir="R"><td>Right 90°</td><td><select data-k="fam" title="Toward: made from the walk, the hips turned toward the travel, the trailing foot crossing in front. Away: made from the walk reversed, the hips turned away, the trailing foot crossing behind."><option value="toward">toward</option><option value="away">away</option></select></td><td><input data-k="hips" type="number" step="1" min="0" max="90"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td><td><input data-k="toeLead" type="number" step="1"/></td><td><input data-k="toeTrail" type="number" step="1"/></td><td><input data-k="kneeLead" type="number" step="1"/></td><td><input data-k="kneeTrail" type="number" step="1"/></td></tr><tr data-dir="FL"><td>Front left 45°</td><td>toward</td><td><input data-k="hips" type="number" step="1" min="0" max="90"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td><td><input data-k="toeLead" type="number" step="1"/></td><td><input data-k="toeTrail" type="number" step="1"/></td><td><input data-k="kneeLead" type="number" step="1"/></td><td><input data-k="kneeTrail" type="number" step="1"/></td></tr><tr data-dir="FR"><td>Front right 45°</td><td>toward</td><td><input data-k="hips" type="number" step="1" min="0" max="90"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td><td><input data-k="toeLead" type="number" step="1"/></td><td><input data-k="toeTrail" type="number" step="1"/></td><td><input data-k="kneeLead" type="number" step="1"/></td><td><input data-k="kneeTrail" type="number" step="1"/></td></tr><tr data-dir="BL"><td>Back left 135°</td><td>away</td><td><input data-k="hips" type="number" step="1" min="0" max="90"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td><td><input data-k="toeLead" type="number" step="1"/></td><td><input data-k="toeTrail" type="number" step="1"/></td><td><input data-k="kneeLead" type="number" step="1"/></td><td><input data-k="kneeTrail" type="number" step="1"/></td></tr><tr data-dir="BR"><td>Back right 135°</td><td>away</td><td><input data-k="hips" type="number" step="1" min="0" max="90"/></td><td><input data-k="stride" type="number" step="0.05" min="0.3" max="1.5"/></td><td><input data-k="toeLead" type="number" step="1"/></td><td><input data-k="toeTrail" type="number" step="1"/></td><td><input data-k="kneeLead" type="number" step="1"/></td><td><input data-k="kneeTrail" type="number" step="1"/></td></tr></tbody></table>
+  </details>
+  <details class="eight"><summary title="One switch per stage, each to judge on and off; the set is made again when one changes.">Polish</summary>
+    <label class="adv" title="On: a planted foot is held where it landed — the heel as it lands, the ball once that&#x27;s down. Flat, the whole foot is carried back to its place; up on its toe it rolls about the ball instead, the heel a little higher. What that moved it by is given back over the swing, in step with the foot&#x27;s own travel. The hold gives way before the leg would go straighter than the clip&#x27;s legs ever are."><input id="polLock" type="checkbox"/> Foot lock</label>
+    <label class="adv" title="How long a foot that&#x27;s still on the floor is held once it starts to move. 1: until it has left the floor — a toe dragged along the floor before it lifts is held still. 0: only while it&#x27;s still — the drag stays as the source has it.">Grip <input id="polGrip" type="range" min="0" max="1" step="0.05" value="1"/> <span id="polGripOut">1.00</span></label>
+    <label title="The forward clip is the source, untouched. On: it goes through the same lock, and that is what All directions and the export use."><input id="polLockSource" type="checkbox"/> Lock the source&#x27;s feet</label>
+    <label class="adv" title="On: the body&#x27;s lean goes where it travels, and its sway is laid along the travel like the feet — each bone by its share. And the hips&#x27; place over the feet is laid like the feet&#x27;s, growing with the lanes, so the weight still gets over the foot that&#x27;s down (as far as the legs allow)."><input id="polLean" type="checkbox" checked=""/> Lean and weight</label>
+    <div class="polRow adv" title="How much of the lean goes toward the travel, per angle away from forward. 1: all of it turns to where the body&#x27;s going. 0: none — backward stands upright (people don&#x27;t lean back).">Toward travel: 45° <input id="polLean45" type="number" min="0" max="1.5" step="0.05"/> 90° <input id="polLean90" type="number" min="0" max="1.5" step="0.05"/> 135° <input id="polLean135" type="number" min="0" max="1.5" step="0.05"/> 180° <input id="polLean180" type="number" min="0" max="1.5" step="0.05"/></div>
+    <div class="polRow adv" title="Each one&#x27;s share of that turn, in percent: 100 its tilt goes where the travel goes, 0 it stays exactly the source&#x27;s. The spine and the neck take what lies between.">Share %: hips <input id="polHips" type="number" min="0" max="100" step="5" value="100"/> chest <input id="polChest" type="number" min="0" max="100" step="5" value="50"/> head <input id="polHead" type="number" min="0" max="100" step="5" value="0"/></div>
+    <label title="On: the chest and the head keep exactly the source&#x27;s tilt, whatever their share — so what the hands hold points exactly where the source pointed it."><input id="polWeapon" type="checkbox"/> Holding a weapon</label>
+    <label class="adv" title="Off: the hips sit over the root as before, turned with the hips&#x27; turn only."><input id="polWeight" type="checkbox"/> Weight over the foot</label>
+    <label class="adv" title="On: no leg past its reach. Where a leg bearing weight would be, the hips move — the least that brings it back, eased over the frames either side. A foot in the air is drawn in instead. With it on, the foot lock may ask a little more of a leg: the hips give where before the foot had to slip."><input id="polReach" type="checkbox" checked=""/> Reach</label>
+    <div class="polRow adv" title="The furthest a hip may be from its ankle, as a share of the leg&#x27;s length: under 100, so a knee never goes dead straight. And which ways the hips may move for it.">Limit % <input id="polReachLimit" type="number" min="90" max="100" step="0.1" value="99.5"/> <label><input id="polReachDown" type="checkbox" checked=""/> down</label> <label><input id="polReachSide" type="checkbox" checked=""/> sideways</label></div>
+    <label class="adv" title="On: the arms are swung clear of the body. A clip turned to a new direction swings its legs toward the travel while its arms swing as the source&#x27;s did — a thigh can pass through the hand on that side. Where an arm comes too close, it swings wider from the shoulder, as far as it takes; the elbow keeps its bend. Off when holding a weapon: two hands on one thing are left alone."><input id="polArms" type="checkbox" checked=""/> Arms kept clear</label>
+    <div class="polRow adv" title="Gap: the least room between an arm and the body, skin to skin — or the source&#x27;s own closest, where that&#x27;s less. Shapes ×: the body and arm are round shapes sized off the mannequin&#x27;s skin; thinner shapes ask less.">Arm gap cm <input id="polGap" type="number" min="0" max="10" step="0.5" value="2"/> Shapes × <input id="polScale" type="number" min="0.5" max="1.5" step="0.05" value="1"/> <label title="Draws the shapes on the character in the One view."><input id="polShapes" type="checkbox"/> show</label></div>
+    <div class="polRow adv" title="The arms&#x27; swing, bigger or smaller about its own middle, per angle away from forward. 1: as the source.">Arm swing ×: 45° <input id="polSwing45" type="number" min="0" max="1.5" step="0.05"/> 90° <input id="polSwing90" type="number" min="0" max="1.5" step="0.05"/> 135° <input id="polSwing135" type="number" min="0" max="1.5" step="0.05"/> 180° <input id="polSwing180" type="number" min="0" max="1.5" step="0.05"/></div>
+  </details>
+  <details class="adv aim eight"><summary title="Optional: a strafe made by hand in place of the generated one — a Mixamo FBX walking left or right. It&#x27;s restarted where the set&#x27;s left foot lands, so it blends; the other side is its mirror. Kept through Generate.">Authored strafe</summary>
+    <label>Mixamo FBX <input id="strafe" type="file" accept=".fbx"/></label>
+    <div id="strafeNote" class="note">None.</div>
+    <button id="strafeClear" type="button" disabled="">Use the generated strafes</button>
+  </details>
+  <details open=""><summary title="What is made here, kept as an animation of your own: in this browser, with the ones you imported. It is then on the main page, under Yours. Nothing is uploaded.">Save</summary>
+    <input id="saveName" type="text" spellCheck="false" style="width:100%" title="The name it is saved under. Left empty, the one shown is used: the animation&#x27;s, and its style&#x27;s. Saved again under the same name, it takes the earlier one&#x27;s place."/>
+    <div class="pair">
+      <button id="saveOne" type="button" disabled="" title="The clip in the view — the cycle as styled, or the one of its eight that is shown — saved as an animation of yours, with a picture of it. It needs no Generate.">Save this one</button>
+      <button id="saveEight" type="button" disabled="" title="All eight, once they are made, saved as eight animations of yours: the name, and F, FL, L, BL, B, BR, R, FR.">Save all 8</button>
+    </div>
+    <button id="toPlay" type="button" disabled="" hidden="" style="width:100%" title="The eight as a set, kept in this browser for the playground under that name: listed there under Walk, Run and Sprint, and walked on as they were made here. Several can be kept side by side; the same name takes the earlier one&#x27;s place.">Send the 8 to the playground</button>
+    <div class="pair">
+      <select id="savedList" title="What was saved from here."></select>
+      <button id="savedRemove" type="button" style="flex:none" title="The one picked, out of this browser. (An animation of yours can also be removed on the main page, in its Import pane.)">Remove</button>
+    </div>
+    <div id="saveNote" class="note" style="min-height:3em"></div>
+  </details>
+  <details><summary title="Through the site&#x27;s own exporter. The clip in the view, by itself; or all eight at once: one file holding eight takes, or one file each in a zip, named after the source: _F, _FL, _L, _BL, _B, _BR, _R, _FR.">Export</summary>
+    <div id="export">
+      <span>Skeleton</span><select id="exSkeleton"></select>
+      <span>Format</span><select id="exFormat"><option value="fbx">FBX</option><option value="glb">GLB</option></select>
+      <span>FBX for</span><select id="exTarget"></select>
+      <span>Files</span><select id="exSplit"><option value="one">One file, all takes inside</option><option value="zip">Zip, one file per clip</option></select>
+      <span>Motion</span><select id="exMotion"><option value="root">Root motion</option><option value="inplace">In place</option><option value="both">Both (16 takes)</option></select>
+      <label class="wide"><input id="exMesh" type="checkbox"/> Include the character</label>
+    </div>
+    <div class="pair">
+      <button id="exOne" type="button" disabled="" title="The clip in the view — the cycle as it is, as adjusted, or the one of its eight that is shown — as one file. It needs no Generate.">Export this one</button>
+      <button id="exGo" type="button" disabled="" title="All eight, once they are made: Generate first.">Export all 8</button>
+    </div>
+    <button id="exRest" type="button" style="width:100%" title="The character alone, standing in its rest pose with its skeleton — no animation in the file. Who is picked in the Characters tab, or our mannequin. Import it into your engine first, to make the character; then export the animations without the character and import them onto its skeleton.">Export the character (rest pose)</button>
+    <div id="exNote" class="note">The one in the view can be exported now; all eight, after Generate.</div>
+  </details>
+</div>
+
+<div id="viewport">
+  <div id="viewOpts">
+    <label title="Off: in place, the floor slides under the feet. On: travelling as the clip does, the camera following"><input id="rootMotion" type="checkbox"/> Root motion</label>
+    <label class="adv"><input id="prints" type="checkbox"/> Footprints</label>
+    <label class="adv"><input id="lanes" type="checkbox"/> Foot lanes</label>
+    <label class="adv"><input id="trails" type="checkbox"/> Swing trails</label>
+    <label class="adv" title="The hips&#x27; path, drawn like the feet&#x27;s: its wave seen from the side, its sway from above"><input id="hipTrail" type="checkbox"/> Hip trail</label>
+    <label class="adv"><input id="bones" type="checkbox"/> Bones</label>
+    <label class="walk" title="Keys on the trails: a dot on the hips&#x27; path, the feet&#x27;s and an aim&#x27;s target at each of its keys. Drag one in the view and the motion goes there (Shift: up and down only); double-click a trail for a new key. The trails are shaded by speed: bright where it&#x27;s fast. The hips&#x27; and the feet&#x27;s trails are drawn for it, and go again with it."><input id="trailEdit" type="checkbox"/> Edit trails</label>
+    <label title="Pose a bone in the view: dots show on the bones that can be — click one, then turn it (or move it) with the gizmo. The turn is that bone&#x27;s set pose through the whole animation, which carries on around it; or, set so on the right, a key at the playhead."><input id="poseOn" type="checkbox"/> Pose</label>
+  </div>
+</div>
+
+<div id="right">
+  <details open=""><summary title="A bone&#x27;s set pose: turned once about its own axes, moved once, the same through the whole animation — which carries on around it. On any animation. Tick Pose over the view, click a bone&#x27;s dot, and turn it with the gizmo; or type the numbers here. The other side of a pair takes its mirror image."><span id="poseWho">Pose</span></summary>
+    <div class="pair">
+      <select id="poseMode" title="What the gizmo does: turns the bone, or moves it (off its joint)."><option value="rotate">Rotate</option><option value="translate">Move</option></select>
+      <select id="poseWhen" title="Whole cycle: what the gizmo does is the bone&#x27;s set pose, the same in every frame. Key at the playhead: it becomes a key there on the bone&#x27;s curves (made if there&#x27;s none), easing in and out as keys do."><option value="cycle">whole cycle</option><option value="key">key at the playhead</option></select>
+    </div>
+    <label class="prop" title="The gizmo&#x27;s axes: the bone&#x27;s own (as posing has it in an animation program), or the world&#x27;s."><span>Gizmo axes</span><select id="poseSpace"><option value="local">the bone&#x27;s own</option><option value="world">the world&#x27;s</option></select></label>
+    <div class="grid2">
+      <label class="prop" title="Turned about the bone&#x27;s own X axis, degrees."><span>Rot X °</span><input id="poseRX" type="number" step="1" disabled="" value="0"/></label>
+      <label class="prop" title="Moved to the character&#x27;s left (less than 0: right), centimetres."><span>Loc X cm</span><input id="poseLX" type="number" step="0.5" disabled="" value="0"/></label>
+      <label class="prop" title="Turned about the bone&#x27;s own Y axis (along it), degrees."><span>Rot Y °</span><input id="poseRY" type="number" step="1" disabled="" value="0"/></label>
+      <label class="prop" title="Moved ahead (less than 0: back), centimetres."><span>Loc Y cm</span><input id="poseLY" type="number" step="0.5" disabled="" value="0"/></label>
+      <label class="prop" title="Turned about the bone&#x27;s own Z axis, degrees."><span>Rot Z °</span><input id="poseRZ" type="number" step="1" disabled="" value="0"/></label>
+      <label class="prop" title="Moved up (less than 0: down), centimetres."><span>Loc Z cm</span><input id="poseLZ" type="number" step="0.5" disabled="" value="0"/></label>
+    </div>
+    <div class="pair">
+      <button id="poseReset" type="button" disabled="" title="This bone&#x27;s set pose back to none">Reset pose</button>
+      <button id="poseResetAll" type="button" title="Every bone&#x27;s set pose back to none">Reset all poses</button>
+    </div>
+  </details>
+  <details><summary title="A control holds a part of the body as an empty holds it in Blender: its curves join the list below the view. Here: one added, every one there is, and the settings of the aim or the pin being edited. Nothing changes until a control&#x27;s curves are touched. On any animation.">Controls</summary>
+    <h3 title="A control holds a part of the body as an empty holds it in Blender: its curves join the list below the view. Nothing changes until one of them is touched.">Add</h3>
+    <div class="pair">
+      <select id="ctlKind" title="The kind of control. On the bone: an empty sitting on the bone — its rotation and its location. Aim: an empty out from the bone, a set distance along one of its axes — the bone points at it, and you move the target. Pin a hand: the hand kept where it is against something else (the other hand, the hips…), the arm solved to it — an IK target with a Child Of."><option value="bone">On the bone</option><option value="aim">Aim</option><option value="pin">Pin a hand</option></select>
+      <select id="ctlPart" title="A part of the body to put a control on — what an empty does in Blender: its rotation and its location in the world, as the source has them, become six curves (Rot X, Y, Z; Loc X, Y, Z), each to be made late, bigger or smaller, or reshaped, by itself. A location changed takes the bone off its joint by that much. A run of bones (the spine, an arm) takes each bone along it later than the one before."></select>
+    </div>
+    <button id="ctlAdd" type="button" title="Add a control of that kind on that part: its curves join the list (and an aim&#x27;s target shows in the view). Nothing changes until one of them is touched.">+ Control</button>
+    <h3 title="Every control there is, in one place. The dot shows or hides its gizmo in the view (an aim&#x27;s target, its path, its line); the ring shows it alone; its name picks it (its curves, in the graph); the box switches it off without losing its curves; the cross takes it away.">Outliner</h3>
+    <label title="On: only the gizmo of the control being edited shows in the view — the others are out of the way until one of them is picked."><input id="outOnly" type="checkbox"/> only the one picked, in the view</label>
+    <div id="outList"></div>
+    <h3 title="An aim&#x27;s settings: those of the aim being edited — or, once the kind or the part is chosen above, those the next one added will take."><span id="aimWho" title="Whose settings these are: the aim being edited, or the next one to be added (after the kind or the part is chosen).">Aim</span></h3>
+    <label class="prop" title="How far out the target is from the bone&#x27;s joint, centimetres. Near, a centimetre on the target turns the bone a lot; far, a little — and the bone holds steadier than the body under it."><span>Distance (cm)</span><input id="aimDist" type="number" min="1" step="5" disabled="" value="100"/></label>
+    <label class="prop" title="Which of the bone&#x27;s own axes points at the target — where it sits from the bone. (In brackets: where that axis points as the character stands at rest.)"><span>Axis</span><select id="aimAxis" disabled=""></select></label>
+    <label class="prop" title="The bone&#x27;s roll about the line to its target. None: left as it falls. A curve: its own curve, Roll. Up target: a second target, which one of the bone&#x27;s other axes is kept toward."><span>Roll</span><select id="aimRoll" disabled=""><option value="none">none</option><option value="curve">a curve</option><option value="up">up target</option></select></label>
+    <label class="prop" title="The bone&#x27;s axis kept toward the up target."><span>Up axis</span><select id="aimUpAxis" disabled=""></select></label>
+    <label class="prop" title="How far out the up target is, centimetres."><span>Up distance (cm)</span><input id="aimUpDist" type="number" min="1" step="5" disabled="" value="30"/></label>
+    <label class="prop" title="What the target rides. The world: it stays where the source put it, whatever the body now does — the bone keeps looking there. A bone: it&#x27;s carried by that bone as it now moves (never the aimed bone itself, nor one hanging from it)."><span>Rides</span><select id="aimSpace" disabled=""><option value="">the world</option><option value="pelvis">the hips</option><option value="spine_03">the chest</option><option value="Head">the head</option><option value="hand_l">the left hand</option><option value="hand_r">the right hand</option></select></label>
+    <h3 title="A pin&#x27;s setting: that of the pin being edited — or, once the kind or the part is chosen above, that the next one added will take."><span id="pinWho">Pin</span></h3>
+    <label class="prop" title="What the hand is kept against: where it is, and how it&#x27;s turned, in that thing&#x27;s own frame, as the source has it. The other hand: two hands on one thing. The world: it stays where the source put it, whatever the body does."><span>Pinned to</span><select id="pinTo" disabled=""><option value="other">the other hand</option><option value="pelvis">the hips</option><option value="spine_03">the chest</option><option value="Head">the head</option><option value="">the world</option></select></label>
+  </details>
+  <details open=""><summary title="What the last change made: the adjusted cycle&#x27;s figures, and what each stage had to do for it.">Result</summary>
+    <div id="gaitOut" class="note">Nothing changed yet.</div>
+    <h3 title="What Generate made: a line for each direction — made, or a warning and what it is about. The whole of it on hover, and under each with Advanced on.">The eight</h3>
+    <p id="resultsStale" class="note" hidden="">These are of the cycle as it was before the last change. They are made again when they are next looked at (View: All directions, or one of them under Show) or exported — or with Generate.</p>
+    <div id="results"><p class="note">Press Generate.</p></div>
+  </details>
+</div>
+
+<aside class="lib-panel" id="lib">
+  <div class="lib-panel__head">
+    <div class="lib-panel__tabs" role="tablist">
+      <button class="lib-panel__tab is-on" id="lib-tab-anims" type="button" role="tab" aria-selected="true">Animations</button>
+      <button class="lib-panel__tab" id="lib-tab-chars" type="button" role="tab" aria-selected="false">Characters</button>
+    </div>
+    <input class="lib-search" id="lib-search" type="search" placeholder="Search name or tag…" autoComplete="off"/>
+    <span class="lib-count" id="lib-count">—</span>
+  </div>
+  <div class="lib-grid" id="lib-grid"></div>
+  <div class="lib-grid lib-chargrid" id="lib-chargrid" hidden=""></div>
+</aside>
+
+<div id="curveDock" class="on">
+  <div id="curveGrip" title="Drag to size"></div>
+  <div id="curveBox">
+    <div class="polRow" id="curveRow2">
+      <button id="play" type="button">Pause</button>
+      <label>Speed <select id="rate"><option>0.1</option><option>0.25</option><option>0.5</option><option>1</option></select></label>
+      <span id="clock">0.00 s</span>
+      <span class="sep"></span>
+      <button id="curveUndo" type="button" disabled="" title="Undo the last change to the curves (Ctrl+Z)">Undo</button>
+      <button id="curveRedo" type="button" disabled="" title="Redo (Ctrl+Shift+Z)">Redo</button>
+      <button id="curveFit" type="button" title="The whole cycle and every value back in view (Home)">Fit</button>
+      <span class="sep"></span>
+      <button id="curveReset" type="button" title="Every key of this curve back where the source has it (a foot&#x27;s lift-off and landing stay as they are)">Reset curve</button>
+      <button id="curvePlantReset" type="button" title="Each foot&#x27;s lift-off and landing back where this animation has them: its own foot plant">Reset foot plant</button>
+      <button id="curveResetAll" type="button" title="Every curve, and the foot plant, back to the source&#x27;s">Reset all</button>
+      <span class="sep"></span>
+      <label title="A foot&#x27;s square keys are its lift-off and landing: moving one moves when the foot is planted — the foot plant itself. Off: they can&#x27;t be dragged. On: they slide."><input id="curvePlant" type="checkbox"/> unlock foot plant</label>
+      <label title="The graph as an animation program has it: every curve of the hips or the feet together, each in its colour (side to side red, forward green, up blue), a list to show, hide and pick them. Click any curve&#x27;s key to edit that curve."><input id="curveAdv" type="checkbox"/> several curves</label>
+      <label title="On: only the curves of the part being edited are drawn (and any picked beside it) — the rest out of the way."><input id="curveOnly" type="checkbox"/> only this part</label>
+      <label title="On: the graph shows the cycle once, from its first frame to its last — nothing drawn again either side of it, and the view stays on it — so it is plain where the animation itself begins and ends. It still comes round: a key near its end still shapes its start. Off: the graph carries on round the loop either side. An animation that is played once is always shown so."><input id="curveOne" type="checkbox"/> one cycle only</label>
+      <label id="curveNormWrap" hidden="" title="On: each curve drawn to its own range, so all can be read at once. Off: all on one scale of centimetres, each about its own middle."><input id="curveNorm" type="checkbox" checked=""/> each to its own scale</label>
+      <span class="help" title="As the main page&#x27;s graph. A key dragged sideways: that part of the curve comes earlier or later; up or down: more or less there. Click a key to pick it (its handles show); Shift-click adds; a box picks several (Shift adds, Ctrl takes out) — on every curve shown, with &quot;several curves&quot;. Alt-click: every key on that frame; Ctrl+Alt-click: every key of that curve. A handle&#x27;s end: drag it (Alt: each side its own). With the pointer over the graph: G move, R turn, S scale (X or Y: time or value only; a number typed; Ctrl snaps; click or Enter keeps, Esc cancels); Shift+D copies, moved; Ctrl+C, Ctrl+V at the playhead; T interpolation, Ctrl+E easing, V handles, Shift+S snap; A all, Alt+A none, Ctrl+I the others, L the whole curve, [ ] before or after the playhead; H, Shift+H, Alt+H hide and show curves; Delete or X: the picked ones away; F the picked in view, Home all. Right-click: the menu. Double-click the curve: a new key. Wheel: zoom (Ctrl: time only, Shift: values only); middle drag: pan. Ctrl+Z undoes. A foot&#x27;s square keys are its lift-off and landing — the foot plant: locked until &quot;unlock foot plant&quot; is ticked. A key on a foot&#x27;s lift while it&#x27;s planted raises its heel; the toe stays down.">?</span>
+      <span id="curveHint" aria-live="polite"></span>
+      <select id="curveChan" hidden="" title="Which curve is shown and edited"><option value="hipY">Hips: height</option><option value="hipX">Hips: side to side</option><option value="hipZ">Hips: forward</option><option value="footY">Feet: lift</option><option value="footX">Feet: side to side</option><option value="footZ">Feet: forward</option></select>
+    </div>
+    <div class="polRow" id="curveRowKey">
+      <span id="curveName" title="The curve being edited: picked in the list, or by a click on its line or one of its keys."></span>
+      <label title="This curve read so many frames late (less than 0: early), round the loop — the whole curve slid, its keys staying where they are. Only this curve: the part&#x27;s other two stay on the source&#x27;s time. (Advanced: Ctrl-click more curves in the list, and it goes to them too.) Or drag the curve&#x27;s line sideways in the graph.">Late <input id="chLate" type="number" step="0.5" value="0"/></label>
+      <label title="This curve&#x27;s movement about its own middle ×: 0 held still there, 1 as it is, more exaggerated.">Amount × <input id="chAmt" type="number" min="0" step="0.05" value="1"/></label>
+      <label title="A run of bones: this curve so many frames more for each bone along it — the chest after the spine below it, the hand after the elbow. Only this curve (or those picked): the others stay as they are.">Step <input id="ctlStep" type="number" step="0.25" disabled="" value="0"/></label>
+      <label title="A run of bones: which bone&#x27;s curve is shown. What&#x27;s set goes to every bone of the run.">bone <select id="ctlBone" disabled=""></select></label>
+      <label title="On: Late and Amount go to all of this part&#x27;s curves together (the whole turn late, as one empty slid later). Off: only the curve being edited."><input id="chAll" type="checkbox"/> all its curves</label>
+      <label title="A walk is two steps. On: a key moved in one step (or on one foot) moves the same in the other. Off: each is its own."><input id="curveMirror" type="checkbox" checked=""/> both the same</label>
+      <label title="Which foot&#x27;s curve — when the two aren&#x27;t kept the same">foot <select id="curveFoot" disabled=""><option value="l">left</option><option value="r">right</option></select></label>
+      <span class="sep"></span>
+      <label title="The picked key&#x27;s frame. Typed, the key goes there (with the others picked, by as much).">Frame <input id="keyFrame" type="number" step="0.25" disabled=""/></label>
+      <label title="The curve&#x27;s value at the picked key. Typed, the key is lifted to it (the others picked, by as much).">Value <input id="keyValue" type="number" step="0.1" disabled=""/></label>
+      <button id="hAuto" class="ico" type="button" disabled="" title="Automatic: the curve chooses its slope here, the smoothest that doesn&#x27;t overshoot (1)"><svg viewBox="0 0 20 14" width="20" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 11 C6 11 6 3 10 7 S14 3 18 3"></path><circle cx="10" cy="7" r="1.9" fill="currentColor" stroke="none"></circle></svg></button>
+      <button id="hAligned" class="ico" type="button" disabled="" title="Aligned: your handles, the two sides in one line (2)"><svg viewBox="0 0 20 14" width="20" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 10 L17 4"></path><circle cx="3" cy="10" r="1.1"></circle><circle cx="17" cy="4" r="1.1"></circle><circle cx="10" cy="7" r="1.9" fill="currentColor" stroke="none"></circle></svg></button>
+      <button id="hFree" class="ico" type="button" disabled="" title="Free: your handles, each side its own (3)"><svg viewBox="0 0 20 14" width="20" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 4 L10 7 L16 2"></path><circle cx="3" cy="4" r="1.1"></circle><circle cx="16" cy="2" r="1.1"></circle><circle cx="10" cy="7" r="1.9" fill="currentColor" stroke="none"></circle></svg></button>
+      <button id="hVector" class="ico" type="button" disabled="" title="Vector: each side straight at the key next to it — no ease (4)"><svg viewBox="0 0 20 14" width="20" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 12 L10 7 L18 12"></path><circle cx="10" cy="7" r="1.9" fill="currentColor" stroke="none"></circle></svg></button>
+      <button id="curveFlat" class="ico" type="button" disabled="" title="Flat: the handles level — the curve comes in and goes out flat here (5)"><svg viewBox="0 0 20 14" width="20" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 7 L17 7"></path><circle cx="3" cy="7" r="1.1"></circle><circle cx="17" cy="7" r="1.1"></circle><circle cx="10" cy="7" r="1.9" fill="currentColor" stroke="none"></circle></svg></button>
+      <select id="curveHandle" hidden="" disabled=""><option value="auto">Handles: automatic</option><option value="aligned">Handles: aligned</option><option value="free">Handles: free</option><option value="vector">Handles: vector</option></select>
+    </div>
+    <div id="curveMain">
+      <div id="curveList"></div>
+      <div id="curveCol">
+        <input id="time" hidden="" type="range" min="0" max="1" step="0.0005" title="Where in the cycle; drag while paused" value="0"/>
+        <canvas id="contacts" title="When each foot is down (left above, right below); ▲ where it lands. Drag in it to move through the cycle."></canvas>
+        <div id="curveArea"><canvas id="hipCurve" tabindex="0"></canvas><p id="curveNone" class="note">This animation&#x27;s feet are never read on the floor, so its hips&#x27; and its feet&#x27;s curves have nothing to hold to. A control&#x27;s curves are edited here: add one under Controls, on the right. A pose, the posture and the follow-through are set in the panels.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- -->
+
+
+<nav class="lab-mobile-nav" aria-label="Motion Lab panels" data-panel="viewport"><button type="button" aria-controls="viewport" aria-pressed="true">Preview</button><button type="button" aria-controls="left" aria-pressed="false">Edit</button><button type="button" aria-controls="right" aria-pressed="false">Results</button><button type="button" aria-controls="lib" aria-pressed="false">Library</button><button type="button" aria-controls="curveDock" aria-pressed="false">Curves</button></nav><!--$--><!--/$--><script src="/actionforge/_next/static/chunks/webpack-bc2d41f9710b81be.js" id="_R_" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n2:I[7121,[],\"\"]\n3:I[4581,[],\"\"]\n7:\"static/chunks/66-186623ba48a68f71.js\"\n8:\"static/chunks/app/motion-lab/page-bbdc3451df829b32.js\"\n9:I[9066,[\"66\",\"$7\",\"587\",\"$8\"],\"Application\"]\na:I[484,[],\"OutletBoundary\"]\nb:\"$Sreact.suspense\"\nd:\"ViewportBoundary\"\ne:I[484,[],\"$d\"]\n10:\"MetadataBoundary\"\n11:I[484,[],\"$10\"]\n13:I[7123,[],\"default\",1]\n:HL[\"/actionforge/_next/static/css/a71623f727c22f91.css\",\"style\"]\n:HL[\"/actionforge/_next/static/css/e4a51800b4c57279.css\",\"style\"]\n:HL[\"/actionforge/_next/static/css/a9618d47ade328f2.css\",\"style\"]\n5:X\n6:[[\"children\",{\"s\":\"__PAGE__\",\"h\":512,\"d\":{\"r\":[\"$\",\"$1\",\"c\",{\"children\":[[\"$\",\"$L9\",null,{\"page\":\"motion-lab\"}],[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/actionforge/_next/static/css/a9618d47ade328f2.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]],[\"$\",\"$La\",null,{\"children\":[\"$\",\"$b\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@c\"}]}]]}],\"p\":false,\"v\":null}}]]\n4:[[\"children\",{\"s\":\"motion-lab\",\"h\":512,\"d\":{\"r\":[\"$\",\"$1\",\"c\",{\"children\":[null,[\"$\",\"$L2\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L3\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]]}],\"p\":false,\"v\":\"$5\"},\"c\":\"$Q6\"}]]\n0:{\"P\":null,\"c\":[\"\",\"motion-lab\"],\"q\":\"\",\"i\":false,\"t\":{\"t\":{\"s\":\"\",\"h\":528,\"d\":{\"r\":[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/actionforge/_next/static/css/a71623f727c22f91.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"link\",\"1\",{\"rel\":\"stylesheet\",\"href\":\"/actionforge/_next/static/css/e4a51800b4c57279.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"children\":[\"$\",\"body\",null,{\"children\":[\"$\",\"$L2\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L3\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404}],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"}]}]]}]}]],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]}]}]]}],\"p\":false,\"v\":null},\"c\":\"$Q4\"},\"h\":{\"r\":[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$Le\",null,{\"children\":\"$Lf\"}],[\"$\",\"$L11\",null,{\"children\":[[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$b\",null,{\"name\":\"Next.Metadata\",\"children\":\"$L12\"}]}],null]}],null]}],\"p\":false,\"v\":null}},\"m\":\"$undefined\",\"G\":[\"$13\",[]],\"S\":true,\"r\":\"$undefined\",\"s\":\"$undefined\",\"a\":\"$undefined\",\"l\":\"$undefined\",\"p\":\"$undefined\",\"d\":\"$undefined\",\"b\":\"Sf-Ycdftzrv8glsylt_Cs\"}\n5:C\nf:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}],[\"$\",\"meta\",\"2\",{\"name\":\"theme-color\",\"content\":\"#0a0a0a\"}]]\n14:I[6869,[],\"IconMark\"]\nc:null\n12:[[\"$\",\"title\",\"0\",{\"children\":\"ActionForge – Character Animation in Your Browser\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Edit, blend, rig and export game-ready character animations in your browser.\"}],[\"$\",\"link\",\"2\",{\"rel\":\"manifest\",\"href\":\"/actionforge/manifest.webmanifest\",\"crossOrigin\":\"$undefined\"}],[\"$\",\"link\",\"3\",{\"rel\":\"icon\",\"href\":\"/actionforge/assets/app-icons/icon-32.png\"}],[\"$\",\"link\",\"4\",{\"rel\":\"apple-touch-icon\",\"href\":\"/actionforge/assets/app-icons/icon-180.png\"}],[\"$\",\"$L14\",\"5\",{}]]\n"])</script></body></html>

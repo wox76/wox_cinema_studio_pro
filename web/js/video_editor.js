@@ -134,12 +134,12 @@ export function toggleVideoEditor(force) {
 
 export function createEditorToggleBtn() {
   toggleBtn = el("button", {
-    class: "icon-btn video-editor-toggle-btn",
+    class: "video-editor-toggle-btn",
     type: "button",
-    title: "Video Studio · Editor Video Timeline (Sotto)",
-    "aria-label": "Video Studio Editor",
+    title: "Montaggio video · Timeline Studio",
+    "aria-label": "Montaggio video",
     onclick: () => toggleVideoEditor()
-  }, icon("chevD"));
+  }, icon("film"), el("span", { class: "lbl-long" }, "Montaggio video"));
   return toggleBtn;
 }
 

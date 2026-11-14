@@ -1,12 +1,13 @@
 // The pages that are not a workspace: Explore (home), Apps (the store), Library and the VRAM map.
 import { el, icon, masonry } from "./util.js";
 import { t } from "./i18n.js";
-import { apps, byId, CATEGORIES, HERO, START_HERE, hosted, tagline, iconOf, fitOf, categoryOf, studioOf, menuGroups, IMAGE_TABS, VIDEO_TABS } from "./catalog.js";
+import { apps, byId, CATEGORIES, HERO, START_HERE, hosted, tagline, iconOf, fitOf, categoryOf, studioOf, menuGroups, IMAGE_TABS, VIDEO_TABS, recentApps } from "./catalog.js";
 import { exampleItem, thumb, hoverPlay, optionTile } from "./media.js";
 import { feed, feedView, hooks } from "./feed.js";
 import { pickOption, recreate } from "./workspace.js";
 import { flags, flagButton } from "./flags.js";
 import { sendToVideoEditor, toggleVideoEditor, isVideoEditorOpen } from "./video_editor.js";
+import { toggleActionForge, isActionForgeOpen } from "./actionforge.js";
 
 const go = (hash) => () => { location.hash = hash; };
 const appTag = (a) => (a.status === "draft" ? el("span", { class: "tag dark" }, t("tag.draft")) : null);
@@ -77,6 +78,7 @@ export function exploreView() {
   const count = (studio) => menuGroups(studio).reduce((n, g) => n + g.apps.length, 0);
   const tiles = [
     ["image", "image", "#/image", count("image")], ["video", "video", "#/video", count("video")], ["audio", "audio", "#/audio", count("audio")],
+    ["3d", "cube", "#/app/trellis-3d", 1],
     ["apps", "layers", "#/apps", apps.length], ["library", "film", "#/library", null], ["vram", "chip", "#/vram", null],
   ].map(([key, ic, hash, n]) => el("a", { class: "tile6", href: hash },
     el("span", { class: "ic" }, icon(ic)),
@@ -173,10 +175,24 @@ export function appsView() {
       : null;
     const prefix = appsStudio === "video" ? "vtab" : appsStudio === "image" ? "itab" : "cat";
 
-    const cats = activeList
-      ? activeList.map((g) => ({ id: g.id, label: t(`${prefix}.${g.id}`), desc: "", getApps: () => g.apps.map((id) => byId.get(id)).filter(Boolean) }))
-      : [...CATEGORIES.map((c) => ({ id: c.id, label: t(`cat.${c.id}.t`), desc: t(`cat.${c.id}.d`), getApps: () => c.apps.map((id) => byId.get(id)).filter(Boolean) })),
-         ...(apps.some((a) => categoryOf(a.id) === "more") ? [{ id: "more", label: t("cat.more.t"), desc: "", getApps: () => apps.filter((a) => categoryOf(a.id) === "more") }] : [])];
+    const recentSection = (pool) => ({
+      id: "recent",
+      label: t("cat.recent.t"),
+      desc: t("cat.recent.d"),
+      getApps: () => recentApps(10, pool),
+    });
+
+    const studioPool = activeList
+      ? activeList.flatMap((g) => g.apps.map((id) => byId.get(id)).filter(Boolean))
+      : apps;
+
+    const cats = [
+      recentSection(studioPool),
+      ...(activeList
+        ? activeList.map((g) => ({ id: g.id, label: t(`${prefix}.${g.id}`), desc: "", getApps: () => g.apps.map((id) => byId.get(id)).filter(Boolean) }))
+        : [...CATEGORIES.map((c) => ({ id: c.id, label: t(`cat.${c.id}.t`), desc: t(`cat.${c.id}.d`), getApps: () => c.apps.map((id) => byId.get(id)).filter(Boolean) })),
+           ...(apps.some((a) => categoryOf(a.id) === "more") ? [{ id: "more", label: t("cat.more.t"), desc: "", getApps: () => apps.filter((a) => categoryOf(a.id) === "more") }] : [])]),
+    ];
 
     pills.replaceChildren(
       el("button", { type: "button", "aria-pressed": String(appsCat === "all"), onclick: () => { appsCat = "all"; draw(); } }, t("apps.all")),
@@ -269,6 +285,14 @@ export function libraryView() {
     onclick: () => toggleVideoEditor()
   }, icon(isVideoEditorOpen() ? "x" : "film"), isVideoEditorOpen() ? "Chiudi Editor Video" : "Apri Editor Video");
 
+  const actionforgeBtn = el("button", {
+    class: `btn ghost af-lib-btn ${isActionForgeOpen() ? "active" : ""}`,
+    type: "button",
+    style: { display: "inline-flex", gap: "8px", alignItems: "center" },
+    title: "Apri o chiudi ActionForge 3D Studio (Rigging & Animazioni)",
+    onclick: () => toggleActionForge()
+  }, el("span", { style: { fontSize: "14px", lineHeight: "1" } }, "🦴"), isActionForgeOpen() ? "Chiudi ActionForge" : "Apri ActionForge");
+
   const onEditorToggle = (ev) => {
     const open = ev.detail?.open;
     editorBtn.replaceChildren(icon(open ? "x" : "film"), open ? "Chiudi Editor Video" : "Apri Editor Video");
@@ -276,14 +300,31 @@ export function libraryView() {
   };
   window.addEventListener("wox:video-editor-toggle", onEditorToggle);
 
+  const onActionForgeToggle = (ev) => {
+    const open = ev.detail?.open;
+    actionforgeBtn.replaceChildren(el("span", { style: { fontSize: "14px", lineHeight: "1" } }, "🦴"), open ? "Chiudi ActionForge" : "Apri ActionForge");
+    actionforgeBtn.classList.toggle("active", Boolean(open));
+  };
+  window.addEventListener("wox:actionforge-toggle", onActionForgeToggle);
+
   const node = el("div", { class: "page" },
     el("div", { class: "sec-head", style: { marginTop: "6px" } },
       el("div", {}, el("h2", { class: "display", style: { fontSize: "34px" } }, t("lib.title")), el("p", {}, t("lib.sub"))),
-      editorBtn
+      el("div", { style: { display: "flex", gap: "8px", alignItems: "center" } }, actionforgeBtn, editorBtn)
     ),
     el("div", { style: { display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginBottom: "14px" } }, tabs, filter),
     body);
-  return { node, active: "library", dispose: () => { disposeFeed?.(); off(); offFlags(); window.removeEventListener("wox:video-editor-toggle", onEditorToggle); } };
+  return {
+    node,
+    active: "library",
+    dispose: () => {
+      disposeFeed?.();
+      off();
+      offFlags();
+      window.removeEventListener("wox:video-editor-toggle", onEditorToggle);
+      window.removeEventListener("wox:actionforge-toggle", onActionForgeToggle);
+    }
+  };
 }
 
 // ------------------------------------------------------------------ VRAM map

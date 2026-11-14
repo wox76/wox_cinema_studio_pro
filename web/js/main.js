@@ -34,7 +34,7 @@ function route() {
     const featured = app && FEATURED.some((f) => f.id === app.id);
     return { ...view, active: app ? (featured ? app.id : studioOf(app)) : "apps" };
   }
-  const studio = /^#\/(image|video|audio)$/.exec(hash);
+  const studio = /^#\/(image|video|audio|3d)$/.exec(hash);
   if (studio) {
     location.replace(`#/app/${lastAppFor(studio[1])}`);
     return null;

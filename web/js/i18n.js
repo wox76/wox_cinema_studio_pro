@@ -4,7 +4,7 @@
 import { store } from "./util.js";
 
 const en = {
-  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Image", "nav.video": "Video", "nav.audio": "Audio", "nav.apps": "Apps", "nav.library": "Library",
+  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Image", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.apps": "Apps", "nav.library": "Library",
   "nav.vram": "VRAM map", "nav.create": "Create", "nav.lang": "Language", "nav.shell": "ComfyUI Terminal",
   "menu.features": "Features", "menu.models": "Models", "menu.used": "{n} apps", "menu.used1": "1 app",
   "tag.featured": "Featured", "tag.new": "New", "tag.draft": "Draft", "tag.top": "Top",
@@ -29,6 +29,7 @@ const en = {
   "tile.image.t": "Image studio", "tile.image.d": "Text to image, styles, references and edits.",
   "tile.video.t": "Video studio", "tile.video.d": "Animate stills, recast actors, move the camera.",
   "tile.audio.t": "Audio", "tile.audio.d": "Songs with lyrics and sound effects for any scene.",
+  "tile.3d.t": "3D & Rigging", "tile.3d.d": "TRELLIS 3D generator (16GB VRAM) and ActionForge auto-rigger.",
   "tile.apps.t": "Apps", "tile.apps.d": "Every workflow as a one-click app.",
   "tile.library.t": "Library", "tile.library.d": "Your generations and the lab's examples, side by side.",
   "tile.vram.t": "VRAM map", "tile.vram.d": "What fits on a 24 GB card, phase by phase.",
@@ -42,6 +43,7 @@ const en = {
   "apps.title.a": "Welcome to", "apps.title.b": "Wox Cinema Studio Pro apps",
   "apps.sub": "One-click effects built from open ComfyUI workflows: recast a clip, relight a photo, make a portrait talk.",
   "apps.search": "Search", "apps.all": "All", "apps.try": "Try it", "apps.seeall": "See all", "apps.none": "No app matches “{q}”.",
+  "cat.recent.t": "Latest creations", "cat.recent.d": "The 10 most recently created apps, newest first.",
   "cat.create.t": "Create", "cat.create.d": "From a prompt or a single image.",
   "cat.style.t": "Enhance & style", "cat.style.d": "Light, resolution, motion and looks.",
   "cat.identity.t": "Face & identity", "cat.identity.d": "Keep a character, swap one in, make it talk.",
@@ -107,7 +109,7 @@ const en = {
 };
 
 const es = {
-  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Imagen", "nav.video": "Video", "nav.audio": "Audio", "nav.apps": "Apps", "nav.library": "Biblioteca",
+  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Imagen", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.apps": "Apps", "nav.library": "Biblioteca",
   "nav.vram": "Mapa de VRAM", "nav.create": "Crear", "nav.lang": "Idioma", "nav.shell": "Consola ComfyUI",
   "menu.features": "Funciones", "menu.models": "Modelos", "menu.used": "{n} apps", "menu.used1": "1 app",
   "tag.featured": "Destacado", "tag.new": "Nuevo", "tag.draft": "Borrador", "tag.top": "Top",
@@ -132,6 +134,7 @@ const es = {
   "tile.image.t": "Estudio de imagen", "tile.image.d": "Texto a imagen, estilos, referencias y ediciones.",
   "tile.video.t": "Estudio de video", "tile.video.d": "Anima fotos, cambia actores, mueve la cámara.",
   "tile.audio.t": "Audio", "tile.audio.d": "Canciones con letra y efectos de sonido para cualquier escena.",
+  "tile.3d.t": "3D y Rigging", "tile.3d.d": "Generador 3D TRELLIS (16GB VRAM) y auto-rigger ActionForge.",
   "tile.apps.t": "Apps", "tile.apps.d": "Cada workflow como una app de un clic.",
   "tile.library.t": "Biblioteca", "tile.library.d": "Tus generaciones y los ejemplos del lab, lado a lado.",
   "tile.vram.t": "Mapa de VRAM", "tile.vram.d": "Qué cabe en una tarjeta de 24 GB, fase por fase.",
@@ -145,6 +148,7 @@ const es = {
   "apps.title.a": "Bienvenido a las", "apps.title.b": "apps de Wox Cinema Studio Pro",
   "apps.sub": "Efectos de un clic hechos con workflows abiertos de ComfyUI: cambia al actor de un clip, reilumina una foto, haz hablar un retrato.",
   "apps.search": "Buscar", "apps.all": "Todas", "apps.try": "Pruébala", "apps.seeall": "Ver todo", "apps.none": "Ninguna app coincide con “{q}”.",
+  "cat.recent.t": "Últimas creaciones", "cat.recent.d": "Las 10 apps creadas más recientemente, de la última a la primera.",
   "cat.create.t": "Crear", "cat.create.d": "Desde un prompt o una sola imagen.",
   "cat.style.t": "Mejora y estilo", "cat.style.d": "Luz, resolución, movimiento y estilo.",
   "cat.identity.t": "Rostro e identidad", "cat.identity.d": "Mantén un personaje, pon otro en su lugar, hazlo hablar.",
@@ -211,7 +215,7 @@ const es = {
 
 const it = {
   ...en,
-  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Immagine", "nav.video": "Video", "nav.audio": "Audio", "nav.apps": "App", "nav.library": "Libreria",
+  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Immagine", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.apps": "App", "nav.library": "Libreria",
   "nav.vram": "Mappa VRAM", "nav.create": "Crea", "nav.lang": "Lingua", "nav.shell": "Terminale ComfyUI",
   "menu.features": "Strumenti", "menu.models": "Modelli AI", "menu.used": "{n} app", "menu.used1": "1 app",
   "tag.featured": "In primo piano", "tag.new": "Nuovo", "tag.draft": "Bozza", "tag.top": "Top",
@@ -220,6 +224,7 @@ const it = {
   "apps.title.a": "Benvenuto nelle", "apps.title.b": "App Wox Cinema Studio Pro",
   "apps.sub": "Effetti one-click basati su workflow ComfyUI a pesi aperti: genera video, cambia attore, riposiziona le luci.",
   "apps.search": "Cerca", "apps.all": "Tutti", "apps.try": "Prova", "apps.seeall": "Vedi tutti", "apps.none": "Nessuna app corrisponde a “{q}”.",
+  "cat.recent.t": "Ultime creazioni", "cat.recent.d": "Le prime 10 app in ordine di creazione, dalla più recente.",
   "cat.create.t": "Crea", "cat.create.d": "Da prompt o da una singola immagine.",
   "cat.style.t": "Migliora & Stile", "cat.style.d": "Luce, risoluzione, movimento e look artistici.",
   "cat.identity.t": "Volto & Identità", "cat.identity.d": "Mantieni il personaggio, scambia il volto, fallo parlare.",

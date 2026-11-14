@@ -1,0 +1,527 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "trellis-3d",
+  "name": "TRELLIS 3D Studio",
+  "section": "3d",
+  "pack": "image",
+  "status": "ready",
+  "higgsfield_feature": "TRELLIS 3D Asset & Rig Studio",
+  "summary": "Crea oggetti e personaggi 3D PBR ad alta qualità con TRELLIS.2 (ottimizzato per 16GB VRAM) e invia il modello .GLB ad ActionForge per il rigging.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "pixal3d_trellis2_image_to_3d.json",
+    "comfyui": "0.42.0",
+    "notes": "Runs TRELLIS.2 / Pixal3D 4B in 16GB Low-VRAM sequential offload mode, exports PBR .glb + 360° turntable video, and integrates directly with ActionForge."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Immagine di riferimento (Opzionale: se vuota genera da Prompt)",
+      "required": false,
+      "help": "Carica un personaggio o oggetto da trasformare in 3D, oppure lascia vuoto per generare prima il concept da testo con Z-Image Turbo.",
+      "bind": [
+        {
+          "node": "load_image",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Prompt Concept 3D (usato se non carichi un'immagine)",
+      "required": false,
+      "default": "Full body stylized sci-fi explorer character standing in neutral A-pose, arms slightly away from body, legs straight and separated, clean studio lighting, isolated on plain grey background, ultra-detailed PBR textures",
+      "help": "Per personaggi da riggare su ActionForge, descrivi il personaggio a figura intera in posa A/T (A-pose / T-pose) ben visibile frontalmente.",
+      "bind": [
+        {
+          "node": "57:27",
+          "field": "text"
+        }
+      ]
+    },
+    {
+      "id": "resolution",
+      "type": "select",
+      "label": "Risoluzione Voxel 3D (VRAM 16GB)",
+      "default": "1536 (Ultra High-Res)",
+      "options": [
+        {
+          "value": "1536 (Ultra High-Res)",
+          "label": "1536 Cascade · Massima Fedeltà Volto & Dettagli (Consigliato)"
+        },
+        {
+          "value": "1024 (16GB VRAM Recommended)",
+          "label": "1024 Cascade · Standard Veloce 16GB VRAM"
+        },
+        {
+          "value": "512 (Fast Preview)",
+          "label": "512 · Anteprima Veloce"
+        }
+      ],
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "resolution"
+        }
+      ]
+    },
+    {
+      "id": "poly_preset",
+      "type": "select",
+      "label": "Topologia Mesh & Destinazione",
+      "default": "Face & Detail Sculpt (1M faces)",
+      "options": [
+        {
+          "value": "Face & Detail Sculpt (1M faces)",
+          "label": "🎭 Face & Detail Sculpt (1M facce · Massimo Volto & Occhi/Labbra)"
+        },
+        {
+          "value": "Cinema Sculpt (800k faces)",
+          "label": "🏛️ Cinema Sculpt (800k facce · Scultura Ultra Dettagliata)"
+        },
+        {
+          "value": "Ultra High-Poly (500k faces)",
+          "label": "💎 Ultra High-Poly (500k facce · Volti & Armature Nitidi)"
+        },
+        {
+          "value": "Balanced HD (250k faces)",
+          "label": "✨ Balanced HD (250k facce · Rigging Dettagliato)"
+        },
+        {
+          "value": "Rig-Ready / ActionForge (100k faces)",
+          "label": "🦴 ActionForge Leggero (100k facce · Low-Poly)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "poly_preset"
+        }
+      ]
+    },
+    {
+      "id": "surface_mode",
+      "type": "select",
+      "label": "Ricostruzione Superficie Mesh",
+      "default": "Native Sharp (Massimo Dettaglio Volto)",
+      "help": "Native Sharp conserva palpebre, labbra, narici e orecchie senza levigarli col remesher.",
+      "options": [
+        {
+          "value": "Native Sharp (Massimo Dettaglio Volto)",
+          "label": "✨ Native Sharp · Volto Ultra Nitido (Consigliato)"
+        },
+        {
+          "value": "Watertight Remesh (Stampa 3D)",
+          "label": "🧱 Watertight Remesh · Mesh Chiusa per Stampa 3D"
+        }
+      ],
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "surface_mode"
+        }
+      ]
+    },
+    {
+      "id": "texture_size",
+      "type": "select",
+      "label": "Risoluzione Texture PBR (BaseColor / Metallic / Roughness)",
+      "default": "4096 (4K Ultra PBR)",
+      "options": [
+        {
+          "value": "4096 (4K Ultra PBR)",
+          "label": "4096×4096 (4K PBR · Massima Nitidezza Volto & Materiali)"
+        },
+        {
+          "value": "2048 (2K Fast & Rig-Ready)",
+          "label": "2048×2048 (2K PBR · Veloce & Leggero)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "texture_size"
+        }
+      ]
+    },
+    {
+      "id": "max_tokens",
+      "type": "select",
+      "label": "Densità Voxel 1536 (Token Budget)",
+      "default": "65536 (1536 Reale · Consigliato Volti)",
+      "help": "Impedisce a TRELLIS 1536 di scalare a 1024 su ritratti ricchi di dettagli.",
+      "options": [
+        {
+          "value": "65536 (1536 Reale · Consigliato Volti)",
+          "label": "65K Token · 1536 Reale per Volti & Ritratti"
+        },
+        {
+          "value": "81920 (Massimo Dettaglio · 16GB Tight)",
+          "label": "82K Token · Densità Estrema (fallback automatico se VRAM piena)"
+        },
+        {
+          "value": "49152 (Standard · Risparmio VRAM)",
+          "label": "49K Token · Standard Leggero"
+        }
+      ],
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "max_tokens"
+        }
+      ]
+    },
+    {
+      "id": "camera_fov",
+      "type": "select",
+      "label": "Obiettivo Camera / Prospettiva Volto",
+      "default": -1.0,
+      "help": "Per ritratti in primo piano, 0.28 rad evita distorsioni grandangolari di naso e orecchie.",
+      "options": [
+        {
+          "value": -1.0,
+          "label": "🎯 Auto Bilanciato (MoGe-2 Clamped)"
+        },
+        {
+          "value": 0.28,
+          "label": "📸 Ritratto Tele 85mm (0.28 rad · Zero Distorsione Volto)"
+        },
+        {
+          "value": 0.4,
+          "label": "👤 Mezzo Busto Studio (0.40 rad)"
+        },
+        {
+          "value": 0.6,
+          "label": "🧍 Figura Intera / Oggetto (0.60 rad)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "camera_fov"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps di campionamento 3D",
+      "min": 8,
+      "max": 36,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "guidance_strength",
+      "type": "slider",
+      "label": "Fedeltà Geometria 3D (Shape CFG)",
+      "min": 3.0,
+      "max": 12.0,
+      "step": 0.5,
+      "default": 7.5,
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "guidance_strength"
+        }
+      ]
+    },
+    {
+      "id": "tex_guidance_strength",
+      "type": "slider",
+      "label": "Nitidezza Texture Volto (Texture CFG)",
+      "min": 1.0,
+      "max": 6.0,
+      "step": 0.5,
+      "default": 2.5,
+      "help": "Valori 2.5–3.5 rendono più nitidi occhi, ciglia, labbra e pelle rispetto a 1.0.",
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "tex_guidance_strength"
+        }
+      ]
+    },
+    {
+      "id": "turntable_frames",
+      "type": "select",
+      "label": "Rotazione Anteprima 360°",
+      "default": 36,
+      "options": [
+        {
+          "value": 24,
+          "label": "24 frame (1.0s Rapido)"
+        },
+        {
+          "value": 36,
+          "label": "36 frame (1.5s Standard)"
+        },
+        {
+          "value": 48,
+          "label": "48 frame (2.0s Fluido)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "turntable_frames"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": 42,
+      "help": "-1 sceglie un seed casuale",
+      "bind": [
+        {
+          "node": "trellis",
+          "field": "seed"
+        },
+        {
+          "node": "57:3",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "face-portrait-cinema",
+      "label": "🎭 Ritratto / Volto Ultra HD (Zero Distorsione)",
+      "sets": [
+        {
+          "node": "trellis",
+          "field": "resolution",
+          "value": "1536 (Ultra High-Res)"
+        },
+        {
+          "node": "trellis",
+          "field": "poly_preset",
+          "value": "Face & Detail Sculpt (1M faces)"
+        },
+        {
+          "node": "trellis",
+          "field": "surface_mode",
+          "value": "Native Sharp (Massimo Dettaglio Volto)"
+        },
+        {
+          "node": "trellis",
+          "field": "texture_size",
+          "value": "4096 (4K Ultra PBR)"
+        },
+        {
+          "node": "trellis",
+          "field": "max_tokens",
+          "value": "81920 (Massimo Dettaglio · 16GB Tight)"
+        },
+        {
+          "node": "trellis",
+          "field": "camera_fov",
+          "value": 0.28
+        },
+        {
+          "node": "trellis",
+          "field": "steps",
+          "value": 24
+        },
+        {
+          "node": "trellis",
+          "field": "guidance_strength",
+          "value": 8.0
+        },
+        {
+          "node": "trellis",
+          "field": "tex_guidance_strength",
+          "value": 3.0
+        }
+      ]
+    },
+    {
+      "id": "actionforge-character",
+      "label": "🦴 Personaggio Rig-Ready HD (ActionForge)",
+      "sets": [
+        {
+          "node": "trellis",
+          "field": "resolution",
+          "value": "1536 (Ultra High-Res)"
+        },
+        {
+          "node": "trellis",
+          "field": "poly_preset",
+          "value": "Balanced HD (250k faces)"
+        },
+        {
+          "node": "trellis",
+          "field": "surface_mode",
+          "value": "Native Sharp (Massimo Dettaglio Volto)"
+        },
+        {
+          "node": "trellis",
+          "field": "texture_size",
+          "value": "4096 (4K Ultra PBR)"
+        },
+        {
+          "node": "trellis",
+          "field": "max_tokens",
+          "value": "65536 (1536 Reale · Consigliato Volti)"
+        },
+        {
+          "node": "trellis",
+          "field": "camera_fov",
+          "value": -1.0
+        },
+        {
+          "node": "trellis",
+          "field": "steps",
+          "value": 20
+        },
+        {
+          "node": "trellis",
+          "field": "tex_guidance_strength",
+          "value": 2.5
+        }
+      ]
+    },
+    {
+      "id": "ultra-pbr-prop",
+      "label": "💎 Cinema Ultra-PBR (4K / 500k)",
+      "sets": [
+        {
+          "node": "trellis",
+          "field": "resolution",
+          "value": "1536 (Ultra High-Res)"
+        },
+        {
+          "node": "trellis",
+          "field": "poly_preset",
+          "value": "Ultra High-Poly (500k faces)"
+        },
+        {
+          "node": "trellis",
+          "field": "surface_mode",
+          "value": "Native Sharp (Massimo Dettaglio Volto)"
+        },
+        {
+          "node": "trellis",
+          "field": "texture_size",
+          "value": "4096 (4K Ultra PBR)"
+        },
+        {
+          "node": "trellis",
+          "field": "max_tokens",
+          "value": "65536 (1536 Reale · Consigliato Volti)"
+        },
+        {
+          "node": "trellis",
+          "field": "steps",
+          "value": 20
+        },
+        {
+          "node": "trellis",
+          "field": "tex_guidance_strength",
+          "value": 2.5
+        }
+      ]
+    },
+    {
+      "id": "fast-preview",
+      "label": "⚡ Bozza Rapida 3D",
+      "sets": [
+        {
+          "node": "trellis",
+          "field": "resolution",
+          "value": "512 (Fast Preview)"
+        },
+        {
+          "node": "trellis",
+          "field": "poly_preset",
+          "value": "Rig-Ready / ActionForge (100k faces)"
+        },
+        {
+          "node": "trellis",
+          "field": "texture_size",
+          "value": "2048 (2K Fast & Rig-Ready)"
+        },
+        {
+          "node": "trellis",
+          "field": "max_tokens",
+          "value": "49152 (Standard · Risparmio VRAM)"
+        },
+        {
+          "node": "trellis",
+          "field": "steps",
+          "value": 10
+        },
+        {
+          "node": "trellis",
+          "field": "tex_guidance_strength",
+          "value": 1.5
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "75",
+      "type": "video",
+      "label": "360° Turntable"
+    },
+    {
+      "node": "9",
+      "type": "image",
+      "label": "3D Render Still"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/diffusion_models/z_image_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 6.2,
+      "phase": "denoise",
+      "license": "Apache-2.0",
+      "optional": true
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
+      "dir": "text_encoders",
+      "gb": 5.63,
+      "phase": "encode",
+      "license": "Apache-2.0",
+      "optional": true
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/vae/ae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "decode",
+      "license": "Apache-2.0",
+      "optional": true
+    }
+  ],
+  "vram": {
+    "peak_gb": 11.4,
+    "measured_on": "NVIDIA GeForce RTX 4090 Laptop GPU (16GB VRAM Low-VRAM Offload Mode)"
+  },
+  "credits": [
+    "TRELLIS.2 by Microsoft Research (MIT)",
+    "Pixal3D Camera-Aligned Conditioning by Pixar Animation Studios",
+    "ActionForge 3D Character Rigging & Animation Studio by Yingting Huang (MIT)"
+  ],
+  "notes": "Ottimizzato per schede da 16 GB di VRAM grazie allo scaricamento sequenziale CPU/GPU (low_vram=True). Una volta completata la generazione, clicca '🦴 Rigga in ActionForge' per aprire il modello .GLB direttamente nello studio di rigging interattivo.",
+  "test": {
+    "prompt": "Stylized armored robot character in neutral A-pose, studio lighting, isolated background"
+  }
+}

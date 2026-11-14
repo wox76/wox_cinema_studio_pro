@@ -46,6 +46,39 @@ function modelItem(m, menuApps, studio) {
 }
 
 function panelFor(studio) {
+  if (studio === "3d") {
+    const trellisApp = byId.get("trellis-3d");
+    const feats = el("section", { class: "mm-feats" },
+      el("h4", {}, "3D Asset & Animation Studio", el("span", { class: "n" }, "2 strumenti")),
+      el("div", { class: "mm-cols one" },
+        el("div", { class: "mm-group", role: "group" },
+          el("h5", {}, "Generazione & Rigging"),
+          trellisApp ? appItem(trellisApp) : null,
+          el("a", {
+            class: "mm-item",
+            href: "/actionforge/",
+            target: "_blank",
+            rel: "noopener",
+            role: "menuitem",
+            title: "ActionForge - 3D Character Rigging & Animation Studio"
+          },
+            el("span", { class: "mm-thumb glyph" }, icon("cube")),
+            el("span", { class: "mm-txt" },
+              el("b", {}, el("span", { class: "nm" }, "ActionForge [Studio]"), el("span", { class: "tag violet" }, "Rigging")),
+              el("small", {}, "Auto-rigging scheletrico interattivo, pose ed esportazione FBX/GLB")
+            )
+          )
+        )
+      )
+    );
+    const m = MODELS.find((x) => x.app === "trellis-3d");
+    const mods = el("section", { class: "mm-models" },
+      el("h4", {}, t("menu.models")),
+      m && trellisApp ? modelItem(m, [trellisApp], "3d") : null
+    );
+    return el("div", { class: "mm-inner mm-3d" }, feats, mods);
+  }
+
   const groups = menuGroups(studio);
   const menuApps = groups.flatMap((g) => g.apps);
   const models = MODELS.map((m, i) => ({ m, i, n: menuApps.filter((a) => usesModel(a, m)).length }))
@@ -90,7 +123,7 @@ export function attachMenus(bar, links) {
   };
   const later = () => { clearTimeout(openTimer); clearTimeout(closeTimer); closeTimer = setTimeout(close, CLOSE_MS); };
 
-  for (const key of ["image", "video", "audio"]) {
+  for (const key of ["image", "video", "audio", "3d"]) {
     const a = links.get(key);
     if (!a || !apps.length) continue;
     a.setAttribute("aria-haspopup", "true");

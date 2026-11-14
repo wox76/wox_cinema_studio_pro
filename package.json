@@ -9,11 +9,13 @@
     "node": ">=22.6.0"
   },
   "scripts": {
+    "start": "node --env-file-if-exists=.env --experimental-strip-types --disable-warning=ExperimentalWarning server/server.ts",
     "validate": "node --experimental-strip-types --disable-warning=ExperimentalWarning server/cli.ts validate",
     "apps": "node --experimental-strip-types --disable-warning=ExperimentalWarning server/cli.ts apps",
     "app": "node --env-file-if-exists=.env --experimental-strip-types --disable-warning=ExperimentalWarning server/cli.ts app",
     "serve": "node --watch --watch-path=apps --watch-path=server --env-file-if-exists=.env --experimental-strip-types --disable-warning=ExperimentalWarning server/server.ts",
     "build:editor": "cd editor && npm install && npm run build",
+    "export": "python3 tools/export_package.py",
     "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test test/*.test.ts",
     "typecheck": "tsc --noEmit"
   },

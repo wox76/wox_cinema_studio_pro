@@ -64,7 +64,7 @@ export type AppManifest = {
   notes?: string;
 };
 
-export type App = AppManifest & { dir: string; workflowPath?: string; graph?: ApiWorkflow };
+export type App = AppManifest & { dir: string; createdAt: number; updatedAt: number; workflowPath?: string; graph?: ApiWorkflow };
 export type Problem = { app: string; severity: "error" | "warning"; message: string };
 
 const FILE_TYPES = new Set(["image", "video", "audio"]);
@@ -203,7 +203,13 @@ export function loadRegistry(root = repoRoot()): { apps: App[]; problems: Proble
     if (manifest.id !== folder) {
       problems.push({ app: folder, severity: "error", message: `id "${manifest.id}" must match its folder name` });
     }
-    const app: App = { ...manifest, dir };
+    const dirStat = statSync(dir);
+    const manifestStat = statSync(manifestPath);
+    const dirBirth = dirStat.birthtimeMs > 0 ? dirStat.birthtimeMs : manifestStat.birthtimeMs || manifestStat.mtimeMs;
+    const fileBirth = manifestStat.birthtimeMs > 0 ? manifestStat.birthtimeMs : manifestStat.mtimeMs;
+    const createdAt = Math.floor(dirBirth / 1000) * 1000;
+    const updatedAt = Math.round(Math.max(fileBirth, manifestStat.mtimeMs));
+    const app: App = { ...manifest, dir, createdAt, updatedAt };
     const severity: Problem["severity"] = manifest.status === "ready" ? "error" : "warning";
     if (manifest.workflow) {
       const wp = join(dir, manifest.workflow);

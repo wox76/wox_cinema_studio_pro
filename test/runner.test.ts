@@ -413,6 +413,7 @@ test("wonderfull builds a FaceApp-inspired beauty, smile, contouring and color p
 
   const wfCustom = recorder();
   const smileOpt = app.inputs.find((i) => i.id === "smile")!.options!.find((o) => o.label === "Bei Denti")!.value;
+  const openEyesOpt = app.inputs.find((i) => i.id === "eyes")!.options!.find((o) => o.label === "Apri Occhi")!.value;
   const ageOpt = app.inputs.find((i) => i.id === "age")!.options!.find((o) => o.label === "Giovane")!.value;
   const beardOpt = app.inputs.find((i) => i.id === "beard")!.options!.find((o) => o.label === "Barba Piena")!.value;
   const hairOpt = app.inputs.find((i) => i.id === "hair_style")!.options!.find((o) => o.label === "Volume")!.value;
@@ -424,6 +425,7 @@ test("wonderfull builds a FaceApp-inspired beauty, smile, contouring and color p
     resolveValues(app, {
       image: file,
       smile: smileOpt,
+      eyes: openEyesOpt,
       age: ageOpt,
       beard: beardOpt,
       hair_style: hairOpt,
@@ -439,6 +441,7 @@ test("wonderfull builds a FaceApp-inspired beauty, smile, contouring and color p
   const customPrompt = wfCustom.sets["4.prompt"] as string;
   assert.equal(wfCustom.sets["16.steps"], 8);
   assert.match(customPrompt, /radiant smile showing clean white/);
+  assert.match(customPrompt, /wide awake open eyes looking directly at the camera/);
   assert.match(customPrompt, /noticeably younger/);
   assert.match(customPrompt, /full masculine beard/);
   assert.match(customPrompt, /more voluminous/);

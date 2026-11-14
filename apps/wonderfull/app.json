@@ -63,6 +63,10 @@
         {
           "value": "Retouch the face like a beauty editor: erase blemishes, redness, forehead wrinkles and dark under-eye circles while keeping realistic skin pores and natural facial texture.",
           "label": "Pelle Naturale"
+        },
+        {
+          "value": "Open both closed or half-closed eyes naturally so the person has wide awake open eyes looking directly at the camera with realistic detailed irises, natural pupils, upper eyelids and eyelashes matching their face.",
+          "label": "Apri Occhi"
         }
       ]
     },
@@ -100,6 +104,35 @@
         {
           "value": "Give the person a calm serene closed-mouth expression with relaxed lips.",
           "label": "Chiuso"
+        }
+      ]
+    },
+    {
+      "id": "eyes",
+      "type": "select",
+      "label": "Occhi & Sguardo",
+      "default": "",
+      "help": "Apri gli occhi chiusi o socchiusi e valorizza lo sguardo.",
+      "options": [
+        {
+          "value": "",
+          "label": "Originale"
+        },
+        {
+          "value": "Open both closed or half-closed eyes naturally so the person has wide awake open eyes looking directly at the camera with realistic detailed irises, natural pupils, upper eyelids and eyelashes matching their face.",
+          "label": "Apri Occhi"
+        },
+        {
+          "value": "Make the eyes look wide awake, rested and alert with lifted upper eyelids, bright clear sclera and crisp iris catchlights.",
+          "label": "Sguardo Sveglio"
+        },
+        {
+          "value": "Give the eyes a magnetic, focused, expressive gaze looking straight into the lens with sharp iris detail and defined lashes.",
+          "label": "Sguardo Intenso"
+        },
+        {
+          "value": "Subtly enlarge and open up the eyes for a bright, expressive, youthful look while keeping natural facial proportions.",
+          "label": "Occhi Grandi"
         }
       ]
     },
@@ -226,6 +259,10 @@
       },
       "options": [
         {
+          "value": "open both closed or half-closed eyes naturally wide and awake with clear detailed irises, natural pupils, upper eyelids and eyelashes",
+          "label": "Apri Occhi"
+        },
+        {
           "value": "Sculpt the cheekbones and jawline cleanly with flattering beauty light highlights",
           "label": "Contouring"
         },
@@ -339,7 +376,7 @@
         {
           "node": "4",
           "field": "prompt",
-          "template": "{impression} {smile} {age} {beard} {hair_style} {contouring} {color_effect} {intensity} {details} Keep the same recognizable person, exact camera framing, background, clothing, accessories, eyeglasses frames, and natural lighting, with authentic skin pores and photographic realism."
+          "template": "{impression} {smile} {eyes} {age} {beard} {hair_style} {contouring} {color_effect} {intensity} {details} Keep the same recognizable person, exact camera framing, background, clothing, accessories, eyeglasses frames, and natural lighting, with authentic skin pores and photographic realism."
         }
       ]
     },

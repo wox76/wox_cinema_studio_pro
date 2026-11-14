@@ -13,6 +13,7 @@ import { t } from "./i18n.js";
 
 const FACEAPP_CATEGORIES = [
   { id: "smile", inputId: "smile", label: "Sorrisi", scope: "face", hasIntensity: false, multi: false },
+  { id: "eyes", inputId: "eyes", label: "Occhi", scope: "face", hasIntensity: true, multi: false },
   { id: "impression", inputId: "impression", label: "Impressione", badge: "PRO", scope: "face", hasIntensity: true, multi: false },
   { id: "age", inputId: "age", label: "Età", scope: "face", hasIntensity: true, multi: false },
   { id: "beard", inputId: "beard", label: "Barbe", scope: "face", hasIntensity: false, multi: false },
@@ -72,6 +73,10 @@ const OPTION_EMOJI = {
   "Sopracciglia": "〰️",
   "Occhi Luminosi": "✨",
   "Anti-Occhiaie & Luce": "🌟",
+  "Apri Occhi": "👀",
+  "Sguardo Sveglio": "👁️",
+  "Sguardo Intenso": "✨",
+  "Occhi Grandi": "🤩",
 };
 
 function faceSvg(id) {
@@ -89,6 +94,8 @@ function faceSvg(id) {
   switch (id) {
     case "smile":
       return mk(`<circle cx="18" cy="18" r="11"/><path d="M13 15.5v-.5M23 15.5v-.5"/><path d="M12.5 21c1.5 2.5 3.4 3.5 5.5 3.5s4-1 5.5-3.5z"/>`);
+    case "eyes":
+      return mk(`<path d="M5 18s4.8-7.5 13-7.5S31 18 31 18s-4.8 7.5-13 7.5S5 18 5 18Z"/><circle cx="18" cy="18" r="4"/><circle cx="19.2" cy="16.8" r="1" fill="currentColor"/>`);
     case "impression":
       return mk(`<path d="M11 20c0 4.5 3 8 7 8s7-3.5 7-8v-3c0-3.8-3.1-7-7-7s-7 3.2-7 7v3Z"/><path d="M8 9l1.2 2.4L11.6 12.6 9.2 13.8 8 16.2 6.8 13.8 4.4 12.6 6.8 11.4 8 9Z"/><path d="M15 18h.01M21 18h.01M15.5 23h5"/>`);
     case "age":
@@ -204,6 +211,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     draftValues: {
       impression: "",
       smile: "",
+      eyes: "",
       age: "",
       beard: "",
       hair_style: "",
@@ -504,6 +512,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     const out = {
       impression: "",
       smile: "",
+      eyes: "",
       age: "",
       beard: "",
       hair_style: "",

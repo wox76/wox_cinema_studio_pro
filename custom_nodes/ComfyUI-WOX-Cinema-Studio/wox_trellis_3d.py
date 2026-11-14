@@ -123,12 +123,28 @@ class WOXTrellis3DNode:
         surface_mode="Native Sharp (Massimo Dettaglio Volto)",
         max_tokens="65536 (1536 Reale · Consigliato Volti)",
     ):
-        # 1. Unload any active ComfyUI models so all 16GB VRAM is free for TRELLIS.2
-        print("\n[WOX TRELLIS 3D] Unloading ComfyUI models from VRAM before launching TRELLIS.2 (16GB VRAM Mode)...")
+        # 1. Unload any active ComfyUI models from BOTH GPU VRAM and CPU RAM pressure cache
+        # so TRELLIS.2 has maximum system RAM and 16GB VRAM available
+        print("\n[WOX TRELLIS 3D] Unloading ComfyUI models from VRAM & RAM cache before launching TRELLIS.2...")
         mm.unload_all_models()
+        try:
+            if hasattr(mm, "free_memory"):
+                mm.free_memory(10**13, mm.get_torch_device())
+                mm.free_memory(10**13, torch.device("cpu"))
+            if hasattr(mm, "ram_cache") and hasattr(mm.ram_cache, "clear"):
+                mm.ram_cache.clear()
+        except Exception:
+            pass
         mm.soft_empty_cache()
+        import gc
+        gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+        try:
+            import ctypes
+            ctypes.CDLL("libc.so.6").malloc_trim(0)
+        except Exception:
+            pass
 
         res_code = "1536"
         if str(resolution).startswith("1024"):
@@ -244,12 +260,18 @@ class WOXTrellis3DNode:
             pbar = comfy.utils.ProgressBar(6)
             pbar.update_absolute(1, 6)
 
+            worker_env = os.environ.copy()
+            worker_env.setdefault("OMP_NUM_THREADS", "8")
+            worker_env.setdefault("MKL_NUM_THREADS", "8")
+            worker_env.setdefault("OPENBLAS_NUM_THREADS", "8")
+
             proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
+                env=worker_env,
             )
 
             stage = 1

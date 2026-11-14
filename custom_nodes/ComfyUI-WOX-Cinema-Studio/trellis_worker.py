@@ -14,6 +14,10 @@ import time
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 os.environ.setdefault("ATTN_BACKEND", "sdpa")
+# Cap OpenMP / BLAS threads so xatlas UV unwrapping does not lock all 32 CPU cores
+os.environ.setdefault("OMP_NUM_THREADS", "8")
+os.environ.setdefault("MKL_NUM_THREADS", "8")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "8")
 
 def _resolve_pixar3d_root() -> str:
     candidates = [
@@ -75,54 +79,617 @@ IMAGE_COND_CONFIGS = {
 }
 
 
-def build_image_cond_model(config: dict):
+def _free_ram_and_vram():
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    try:
+        import ctypes
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except Exception:
+        pass
+
+
+def _patch_naf_cross_attention(naf_model):
+    """Patch NAF CrossAttention to use 256-row spatial tiling and per-head bfloat16 interpolation."""
+    if naf_model is None or not hasattr(naf_model, "upsampler"):
+        return
+    import types
+    import torch.nn.functional as F
+
+    def _tiled_forward(self, q, k, v, image=None, return_weights=False, **kwargs):
+        B, Cq, hq, wq = q.shape
+        _, Cv, hk, wk = v.shape
+        dilation = (hq // hk, wq // wk)
+        self.dilation = dilation
+
+        N = self.num_heads
+        Dq = Cq // N
+        Dv = Cv // N
+        kh, kw = self.kernel_size if isinstance(self.kernel_size, tuple) else (self.kernel_size, self.kernel_size)
+        dh, dw = dilation
+        pad_h = (kh // 2) * dh
+        pad_w = (kw // 2) * dw
+        tile_h = 256
+
+        out = torch.empty((B, Cv, hq, wq), device=q.device, dtype=q.dtype)
+        for n in range(N):
+            kn = F.interpolate(
+                k[:, n * Dq : (n + 1) * Dq].to(torch.bfloat16),
+                size=(hq, wq),
+                mode="nearest-exact",
+            )
+            kn = F.pad(kn, (pad_w, pad_w, pad_h, pad_h), mode="replicate")
+            vn = F.interpolate(
+                v[:, n * Dv : (n + 1) * Dv].to(torch.bfloat16),
+                size=(hq, wq),
+                mode="nearest-exact",
+            )
+            vn = F.pad(vn, (pad_w, pad_w, pad_h, pad_h), mode="replicate")
+
+            for y_start in range(0, hq, tile_h):
+                y_end = min(hq, y_start + tile_h)
+                th = y_end - y_start
+                qn = (
+                    q[:, n * Dq : (n + 1) * Dq, y_start:y_end, :]
+                    .to(torch.bfloat16)
+                    .contiguous()
+                    * self.scale
+                )
+                m = torch.full((B, 1, th, wq), -float("inf"), device=q.device, dtype=torch.float32)
+                l = torch.zeros((B, 1, th, wq), device=q.device, dtype=torch.float32)
+                acc = torch.zeros((B, Dv, th, wq), device=q.device, dtype=torch.float32)
+
+                for dy in range(kh):
+                    y0 = y_start + dy * dh
+                    y1 = y0 + th
+                    for dx in range(kw):
+                        x0 = dx * dw
+                        x1 = x0 + wq
+                        ky = kn[:, :, y0:y1, x0:x1]
+                        vy = vn[:, :, y0:y1, x0:x1]
+                        score = (qn * ky).sum(dim=1, keepdim=True).float()
+                        m_new = torch.maximum(m, score)
+                        alpha = torch.exp(m - m_new)
+                        beta = torch.exp(score - m_new)
+                        l.mul_(alpha).add_(beta)
+                        acc.mul_(alpha).addcmul_(beta, vy.float())
+                        m = m_new
+
+                acc.div_(l)
+                out[:, n * Dv : (n + 1) * Dv, y_start:y_end, :] = acc.to(q.dtype)
+                del qn, m, l, acc
+            del kn, vn
+        return out
+
+    naf_model.upsampler.forward = types.MethodType(_tiled_forward, naf_model.upsampler)
+
+
+def build_image_cond_model(config: dict, shared_dino=None, shared_naf=None):
     from pixal3d.trainers.flow_matching.mixins.image_conditioned_proj import DinoV3ProjFeatureExtractor
-    model = DinoV3ProjFeatureExtractor(**config)
+    import inspect
+    sig = inspect.signature(DinoV3ProjFeatureExtractor.__init__)
+    if "shared_model" in sig.parameters:
+        model = DinoV3ProjFeatureExtractor(
+            **config,
+            shared_model=shared_dino,
+            shared_naf_model=shared_naf if config.get("use_naf_upsample") else None,
+        )
+    else:
+        model = DinoV3ProjFeatureExtractor(**config)
+        if shared_dino is not None:
+            model.model = shared_dino
+        if shared_naf is not None and config.get("use_naf_upsample"):
+            model.naf_model = shared_naf
     model.eval()
     return model
 
 
-def init_pipeline(model_path: str, device: str = "cuda", low_vram: bool = True):
-    print(f"[TRELLIS-3D] Loading pipeline from {model_path}...", flush=True)
-    pipeline = Pixal3DImageTo3DPipeline.from_pretrained(model_path)
+def _fast_load_stage_model(ckpt_path: str):
+    """
+    Load a single Pixal3D/TRELLIS.2 checkpoint on-demand without redundant CPU weight
+    initialization or float32->bfloat16 CPU copies.
+    Flow models use zero-copy safetensors mmap assignment (`assign=True`) and convert
+    their transformer blocks to bfloat16 directly on GPU when `.to('cuda')` is called.
+    """
+    import json
+    import types
+    import torch.nn as nn
+    from safetensors.torch import load_file
+    from pixal3d import models
 
-    print("[TRELLIS-3D] Building DinoV3ProjFeatureExtractor conditioning models...", flush=True)
-    pipeline.image_cond_model_ss = build_image_cond_model(IMAGE_COND_CONFIGS["ss"])
-    pipeline.image_cond_model_shape_512 = build_image_cond_model(IMAGE_COND_CONFIGS["shape_512"])
-    pipeline.image_cond_model_shape_1024 = build_image_cond_model(IMAGE_COND_CONFIGS["shape_1024"])
-    pipeline.image_cond_model_tex_1024 = build_image_cond_model(IMAGE_COND_CONFIGS["tex_1024"])
-
-    if low_vram:
-        for attr in [
-            "image_cond_model_ss",
-            "image_cond_model_shape_512",
-            "image_cond_model_shape_1024",
-            "image_cond_model_tex_1024",
-        ]:
-            m = getattr(pipeline, attr, None)
-            if m is not None and getattr(m, "use_naf_upsample", False):
-                m._load_naf()
-        pipeline._device = torch.device(device)
-        pipeline.low_vram = True
-        print("[TRELLIS-3D] 16GB Low-VRAM mode enabled (stage-by-stage GPU offload).", flush=True)
+    if os.path.exists(f"{ckpt_path}.json") and os.path.exists(f"{ckpt_path}.safetensors"):
+        config_file = f"{ckpt_path}.json"
+        model_file = f"{ckpt_path}.safetensors"
     else:
-        pipeline.low_vram = False
-        pipeline.cuda()
-        pipeline.image_cond_model_ss.cuda()
-        pipeline.image_cond_model_shape_512.cuda()
-        pipeline.image_cond_model_shape_1024.cuda()
-        pipeline.image_cond_model_tex_1024.cuda()
-        for attr in [
-            "image_cond_model_ss",
-            "image_cond_model_shape_512",
-            "image_cond_model_shape_1024",
-            "image_cond_model_tex_1024",
-        ]:
-            m = getattr(pipeline, attr, None)
-            if m is not None and getattr(m, "use_naf_upsample", False):
-                m._load_naf()
+        from huggingface_hub import hf_hub_download
+        path_parts = ckpt_path.split("/")
+        repo_id = f"{path_parts[0]}/{path_parts[1]}"
+        model_name = "/".join(path_parts[2:])
+        config_file = hf_hub_download(repo_id, f"{model_name}.json")
+        model_file = hf_hub_download(repo_id, f"{model_name}.safetensors")
 
+    with open(config_file, "r") as f:
+        cfg = json.load(f)
+
+    cls_name = cfg["name"]
+    cls = models.__getattr__(cls_name)
+    is_flow = "FlowModel" in cls_name
+
+    orig_init_w = getattr(cls, "initialize_weights", None)
+    orig_conv = getattr(cls, "convert_to", None)
+    orig_linear_reset = nn.Linear.reset_parameters
+    if orig_init_w is not None:
+        cls.initialize_weights = lambda self: None
+    if is_flow and orig_conv is not None:
+        cls.convert_to = lambda self, dtype: setattr(self, "dtype", dtype)
+    nn.Linear.reset_parameters = lambda self: None
+    try:
+        model = cls(**cfg["args"])
+    finally:
+        nn.Linear.reset_parameters = orig_linear_reset
+        if orig_init_w is not None:
+            cls.initialize_weights = orig_init_w
+        if is_flow and orig_conv is not None:
+            cls.convert_to = orig_conv
+
+    sd = load_file(model_file)
+    model.load_state_dict(sd, strict=False, assign=is_flow)
+    del sd
+    model.eval()
+    model.requires_grad_(False)
+    model._converted_bf16 = False
+    model._on_meta = False
+
+    orig_to = model.to
+
+    def _smart_to(self, *args, **kwargs):
+        device = args[0] if args else kwargs.get("device", None)
+        dev_str = str(device) if device is not None else ""
+        if "cuda" in dev_str:
+            res = orig_to(*args, **kwargs)
+            if is_flow and orig_conv is not None and hasattr(self, "dtype") and not getattr(self, "_converted_bf16", False):
+                orig_conv(self, self.dtype)
+                self._converted_bf16 = True
+                torch.cuda.empty_cache()
+            return res
+        return orig_to(*args, **kwargs)
+
+    def _smart_cpu(self):
+        # Free GPU VRAM immediately by moving tensors to 'meta' instead of allocating
+        # 5.2 GB of dirty anonymous CPU RAM for a stage model that is already done.
+        orig_to("meta")
+        self._on_meta = True
+        _free_ram_and_vram()
+        return self
+
+    model.to = types.MethodType(_smart_to, model)
+    model.cpu = types.MethodType(_smart_cpu, model)
+    return model
+
+
+class LazyStageModelDict(dict):
+    """
+    On-demand stage model dictionary that keeps at most ONE checkpoint in memory at a time.
+    Prevents loading all 22.5 GB of checkpoints into system RAM upfront.
+    """
+
+    def __init__(self, base_path: str, model_specs: dict):
+        super().__init__()
+        self._base_path = base_path
+        self._specs = {
+            k: v for k, v in model_specs.items() if k != "tex_slat_flow_model_512"
+        }
+        self._active_key = None
+        self._active_model = None
+
+    def evict_all(self):
+        if self._active_model is not None:
+            try:
+                self._active_model.cpu()
+            except Exception:
+                pass
+            self._active_model = None
+            self._active_key = None
+            _free_ram_and_vram()
+
+    def __contains__(self, key):
+        return key in self._specs
+
+    def keys(self):
+        return self._specs.keys()
+
+    def __iter__(self):
+        return iter(self._specs)
+
+    def __len__(self):
+        return len(self._specs)
+
+    def values(self):
+        if self._active_model is not None and not getattr(self._active_model, "_on_meta", False):
+            return [self._active_model]
+        return []
+
+    def items(self):
+        if self._active_model is not None and not getattr(self._active_model, "_on_meta", False):
+            return [(self._active_key, self._active_model)]
+        return []
+
+    def __getitem__(self, key):
+        if key not in self._specs:
+            raise KeyError(key)
+        if self._active_key == key and self._active_model is not None:
+            return self._active_model
+        self.evict_all()
+        rel = self._specs[key]
+        full_path = f"{self._base_path}/{rel}"
+        t0 = time.time()
+        print(f"[TRELLIS-3D] Loading stage model '{key}' on-demand...", flush=True)
+        self._active_model = _fast_load_stage_model(full_path)
+        self._active_key = key
+        print(f"[TRELLIS-3D] Stage model '{key}' ready in {time.time() - t0:.2f}s", flush=True)
+        return self._active_model
+
+
+def init_pipeline(model_path: str, device: str = "cuda", low_vram: bool = True):
+    import json
+    from pixal3d.pipelines import samplers, rembg
+
+    try:
+        torch.set_num_threads(min(8, os.cpu_count() or 8))
+    except Exception:
+        pass
+
+    print(f"[TRELLIS-3D] Initializing lazy on-demand pipeline from {model_path}...", flush=True)
+    config_file = os.path.join(model_path, "pipeline.json")
+    with open(config_file, "r") as f:
+        args = json.load(f)["args"]
+
+    pipeline = Pixal3DImageTo3DPipeline(models=None)
+    pipeline.models = LazyStageModelDict(model_path, args["models"])
+    pipeline._pretrained_args = args
+
+    pipeline.sparse_structure_sampler = getattr(samplers, args["sparse_structure_sampler"]["name"])(
+        **args["sparse_structure_sampler"]["args"]
+    )
+    pipeline.sparse_structure_sampler_params = args["sparse_structure_sampler"]["params"]
+
+    pipeline.shape_slat_sampler = getattr(samplers, args["shape_slat_sampler"]["name"])(
+        **args["shape_slat_sampler"]["args"]
+    )
+    pipeline.shape_slat_sampler_params = args["shape_slat_sampler"]["params"]
+
+    pipeline.tex_slat_sampler = getattr(samplers, args["tex_slat_sampler"]["name"])(
+        **args["tex_slat_sampler"]["args"]
+    )
+    pipeline.tex_slat_sampler_params = args["tex_slat_sampler"]["params"]
+
+    pipeline.shape_slat_normalization = args["shape_slat_normalization"]
+    pipeline.tex_slat_normalization = args["tex_slat_normalization"]
+
+    pipeline.rembg_model = getattr(rembg, args["rembg_model"]["name"])(**args["rembg_model"]["args"])
+    pipeline.low_vram = True
+    pipeline.default_pipeline_type = args.get("default_pipeline_type", "1024_cascade")
+    pipeline.pbr_attr_layout = {
+        "base_color": slice(0, 3),
+        "metallic": slice(3, 4),
+        "roughness": slice(4, 5),
+        "alpha": slice(5, 6),
+    }
+    pipeline._device = torch.device(device)
+
+    print("[TRELLIS-3D] Building shared DINOv3 + NAF conditioning models (RAM-optimized)...", flush=True)
+    from transformers import DINOv3ViTModel
+    shared_dino = DINOv3ViTModel.from_pretrained(IMAGE_COND_CONFIGS["ss"]["model_name"])
+    shared_dino.eval()
+    shared_dino.requires_grad_(False)
+
+    shared_naf = torch.hub.load("valeoai/NAF", "naf", pretrained=True, device="cpu", trust_repo=True)
+    shared_naf.eval()
+    shared_naf.requires_grad_(False)
+    _patch_naf_cross_attention(shared_naf)
+
+    pipeline.image_cond_model_ss = build_image_cond_model(IMAGE_COND_CONFIGS["ss"], shared_dino, shared_naf)
+    pipeline.image_cond_model_shape_512 = build_image_cond_model(IMAGE_COND_CONFIGS["shape_512"], shared_dino, shared_naf)
+    pipeline.image_cond_model_shape_1024 = build_image_cond_model(IMAGE_COND_CONFIGS["shape_1024"], shared_dino, shared_naf)
+    pipeline.image_cond_model_tex_1024 = build_image_cond_model(IMAGE_COND_CONFIGS["tex_1024"], shared_dino, shared_naf)
+
+    print("[TRELLIS-3D] 16GB Low-VRAM + Low-RAM mode enabled (zero-copy single-stage loading + tiled NAF).", flush=True)
+    _patch_pipeline_sparse_proj(pipeline)
+    _free_ram_and_vram()
     return pipeline
+
+
+def _patch_pipeline_sparse_proj(pipeline):
+    """Patch get_proj_cond_shape so it projects only sparse coordinates instead of a dense 96^3 / 64^3 cube."""
+    import types
+    from pixal3d.modules.sparse import SparseTensor
+
+    @torch.no_grad()
+    def _sparse_get_proj_cond_shape(
+        self,
+        image_cond_model,
+        image: list,
+        coords: torch.Tensor,
+        camera_angle_x: float = 0.8575560450553894,
+        distance: float = 2.0,
+        mesh_scale: float = 1.0,
+        grid_resolution_override: int = None,
+    ) -> dict:
+        device = self.device
+        if self.low_vram:
+            image_cond_model.to(device)
+
+        orig_grid_res = image_cond_model.grid_resolution
+        grid_res = grid_resolution_override if grid_resolution_override is not None else orig_grid_res
+
+        cam_angle = torch.tensor([camera_angle_x], device=device)
+        dist_tensor = torch.tensor([distance], device=device)
+        scale_tensor = torch.tensor([mesh_scale], device=device)
+
+        orig_gp = image_cond_model.proj_grid.grid_points
+        pts = (coords[:, 1:4].to(device=device, dtype=torch.float32) / float(grid_res - 1)) * 2.0 - 1.0
+        sparse_gp = torch.stack([pts[:, 0], -pts[:, 2], pts[:, 1]], dim=-1).contiguous()
+        del pts
+        image_cond_model.proj_grid.grid_points = sparse_gp
+        try:
+            z_global, z_proj = image_cond_model(
+                image, camera_angle_x=cam_angle, distance=dist_tensor, mesh_scale=scale_tensor,
+            )
+        finally:
+            image_cond_model.proj_grid.grid_points = orig_gp
+
+        z_proj_sparse = z_proj[0].contiguous()
+        del z_proj, sparse_gp
+        z_proj_st = SparseTensor(feats=z_proj_sparse, coords=coords)
+
+        if self.low_vram:
+            image_cond_model.cpu()
+            _free_ram_and_vram()
+        return {
+            "cond": {"global": z_global, "proj": z_proj_st},
+            "neg_cond": {
+                "global": torch.zeros_like(z_global),
+                "proj": SparseTensor(feats=torch.zeros_like(z_proj_sparse), coords=coords),
+            },
+        }
+
+    pipeline.get_proj_cond_shape = types.MethodType(_sparse_get_proj_cond_shape, pipeline)
+
+    orig_decode_latent = pipeline.decode_latent
+
+    @torch.no_grad()
+    def _low_ram_decode_latent(self, shape_slat, tex_slat, resolution: int):
+        # Free DINOv3 + NAF conditioning models and any active flow model before Stage 5 decoding
+        self.image_cond_model_ss = None
+        self.image_cond_model_shape_512 = None
+        self.image_cond_model_shape_1024 = None
+        self.image_cond_model_tex_1024 = None
+        if hasattr(self.models, "evict_all"):
+            self.models.evict_all()
+        _free_ram_and_vram()
+        out = orig_decode_latent(shape_slat, tex_slat, resolution)
+        if hasattr(self.models, "evict_all"):
+            self.models.evict_all()
+        return out
+
+    pipeline.decode_latent = types.MethodType(_low_ram_decode_latent, pipeline)
+
+
+def extract_glb_4k_safe(
+    vertices: torch.Tensor,
+    faces: torch.Tensor,
+    attr_volume: torch.Tensor,
+    coords: torch.Tensor,
+    attr_layout: dict,
+    grid_size: int,
+    aabb,
+    decimation_target: int = 500000,
+    texture_size: int = 4096,
+    remesh: bool = False,
+    remesh_band: float = 1.0,
+    remesh_project: float = 0.95,
+    mesh_cluster_threshold_cone_half_angle_rad: float = np.radians(85.0),
+    mesh_cluster_refine_iterations: int = 4,
+):
+    """
+    4K-safe GLB extractor with chunked BVH & 3D trilinear sampling and fast GPU UV seam dilation.
+    Prevents GPU kernel hangs, VRAM spikes, and CPU RAM exhaustion at 4096x4096.
+    """
+    import trimesh
+    import trimesh.visual
+    from tqdm import tqdm
+    from flex_gemm.ops.grid_sample import grid_sample_3d
+    import nvdiffrast.torch as dr
+    import cumesh
+
+    aabb_t = torch.tensor(aabb, dtype=torch.float32, device=coords.device)
+    grid_size_t = torch.tensor([grid_size, grid_size, grid_size], dtype=torch.int32, device=coords.device)
+    voxel_size = (aabb_t[1] - aabb_t[0]) / grid_size_t
+
+    pbar = tqdm(total=6, desc="Extracting GLB")
+    vertices = vertices.cuda()
+    faces = faces.cuda()
+
+    mesh = cumesh.CuMesh()
+    mesh.init(vertices, faces)
+    mesh.fill_holes(max_hole_perimeter=3e-2)
+    vertices, faces = mesh.read()
+    pbar.update(1)
+
+    pbar.set_description("Building BVH")
+    bvh = cumesh.cuBVH(vertices, faces)
+    pbar.update(1)
+
+    pbar.set_description("Cleaning mesh")
+    if not remesh:
+        mesh.simplify(decimation_target * 3, verbose=False)
+        mesh.remove_duplicate_faces()
+        mesh.repair_non_manifold_edges()
+        mesh.remove_small_connected_components(1e-5)
+        mesh.fill_holes(max_hole_perimeter=3e-2)
+        mesh.simplify(decimation_target, verbose=False)
+        mesh.remove_duplicate_faces()
+        mesh.repair_non_manifold_edges()
+        mesh.remove_small_connected_components(1e-5)
+        mesh.fill_holes(max_hole_perimeter=3e-2)
+        mesh.unify_face_orientations()
+    else:
+        center = aabb_t.mean(dim=0)
+        scale = (aabb_t[1] - aabb_t[0]).max().item()
+        resolution = grid_size_t.max().item()
+        mesh.init(
+            *cumesh.remeshing.remesh_narrow_band_dc(
+                vertices,
+                faces,
+                center=center,
+                scale=(resolution + 3 * remesh_band) / resolution * scale,
+                resolution=resolution,
+                band=remesh_band,
+                project_back=remesh_project,
+                verbose=False,
+                bvh=bvh,
+            )
+        )
+        mesh.simplify(decimation_target, verbose=False)
+    pbar.update(1)
+
+    pbar.set_description("Parameterizing new mesh")
+    out_vertices, out_faces, out_uvs, out_vmaps = mesh.uv_unwrap(
+        compute_charts_kwargs={
+            "threshold_cone_half_angle_rad": mesh_cluster_threshold_cone_half_angle_rad,
+            "refine_iterations": mesh_cluster_refine_iterations,
+            "global_iterations": 1,
+            "smooth_strength": 1,
+        },
+        return_vmaps=True,
+        verbose=False,
+    )
+    out_vertices = out_vertices.cuda()
+    out_faces = out_faces.cuda()
+    out_uvs = out_uvs.cuda()
+    out_vmaps = out_vmaps.cuda()
+    mesh.compute_vertex_normals()
+    out_normals = mesh.read_vertex_normals()[out_vmaps]
+
+    vertices_np = out_vertices.cpu().numpy()
+    faces_np = out_faces.cpu().numpy()
+    uvs_np = out_uvs.cpu().numpy()
+    normals_np = out_normals.cpu().numpy()
+    del out_vmaps, out_normals, mesh
+    _free_ram_and_vram()
+    pbar.update(1)
+
+    pbar.set_description("Sampling attributes")
+    with torch.no_grad():
+        ctx = dr.RasterizeCudaContext()
+        uvs_rast = torch.cat(
+            [out_uvs * 2 - 1, torch.zeros_like(out_uvs[:, :1]), torch.ones_like(out_uvs[:, :1])],
+            dim=-1,
+        ).unsqueeze(0)
+        del out_uvs
+        rast = torch.zeros((1, texture_size, texture_size, 4), device="cuda", dtype=torch.float32)
+
+        for i in range(0, out_faces.shape[0], 100000):
+            rast_chunk, _ = dr.rasterize(
+                ctx,
+                uvs_rast,
+                out_faces[i : i + 100000],
+                resolution=[texture_size, texture_size],
+            )
+            mask_chunk = rast_chunk[..., 3:4] > 0
+            rast_chunk[..., 3:4] += i
+            rast = torch.where(mask_chunk, rast_chunk, rast)
+            del rast_chunk, mask_chunk
+        del uvs_rast, ctx
+
+        mask = rast[0, ..., 3] > 0
+        pos = dr.interpolate(out_vertices.unsqueeze(0), rast, out_faces)[0][0]
+        valid_pos = pos[mask].contiguous()
+        del pos, rast, out_vertices, out_faces
+        torch.cuda.empty_cache()
+
+        bvh_chunk = 500000
+        for s in range(0, valid_pos.shape[0], bvh_chunk):
+            e = min(valid_pos.shape[0], s + bvh_chunk)
+            _, face_id_c, uvw_c = bvh.unsigned_distance(valid_pos[s:e].contiguous(), return_uvw=True)
+            orig_tri_c = vertices[faces[face_id_c.long()]]
+            valid_pos[s:e] = (orig_tri_c * uvw_c.unsqueeze(-1)).sum(dim=1)
+            del face_id_c, uvw_c, orig_tri_c
+        del bvh, vertices, faces
+        torch.cuda.empty_cache()
+
+        num_channels = attr_volume.shape[1]
+        coords_4d = torch.cat([torch.zeros_like(coords[:, :1]), coords], dim=-1)
+        vol_shape = torch.Size([1, num_channels, *grid_size_t.tolist()])
+        sampled_valid = torch.empty((valid_pos.shape[0], num_channels), device="cuda", dtype=attr_volume.dtype)
+        sample_chunk = 1000000
+        for s in range(0, valid_pos.shape[0], sample_chunk):
+            e = min(valid_pos.shape[0], s + sample_chunk)
+            grid_c = ((valid_pos[s:e] - aabb_t[0]) / voxel_size).reshape(1, -1, 3)
+            sampled_valid[s:e] = grid_sample_3d(
+                attr_volume,
+                coords_4d,
+                shape=vol_shape,
+                grid=grid_c,
+                mode="trilinear",
+            )[0]
+            del grid_c
+        del valid_pos, attr_volume, coords, coords_4d
+        torch.cuda.empty_cache()
+
+        attrs = torch.zeros(texture_size, texture_size, num_channels, device="cuda", dtype=sampled_valid.dtype)
+        attrs[mask] = sampled_valid
+        del sampled_valid
+    pbar.update(1)
+
+    pbar.set_description("Finalizing mesh")
+    with torch.no_grad():
+        x_dil = attrs.permute(2, 0, 1).unsqueeze(0)
+        m_dil = mask.float().unsqueeze(0).unsqueeze(0)
+        for _ in range(6):
+            sum_x = torch.nn.functional.avg_pool2d(x_dil * m_dil, kernel_size=3, stride=1, padding=1, count_include_pad=False)
+            sum_m = torch.nn.functional.avg_pool2d(m_dil, kernel_size=3, stride=1, padding=1, count_include_pad=False)
+            newly_filled = (m_dil == 0) & (sum_m > 0)
+            x_dil = torch.where(newly_filled, sum_x / sum_m.clamp_min(1e-6), x_dil)
+            m_dil = torch.where(newly_filled, torch.ones_like(m_dil), m_dil)
+        attrs = x_dil.squeeze(0).permute(1, 2, 0).contiguous()
+        del x_dil, m_dil, sum_x, sum_m, newly_filled, mask
+
+    attrs_np = np.clip(attrs.cpu().numpy() * 255, 0, 255).astype(np.uint8)
+    del attrs
+    _free_ram_and_vram()
+
+    base_color = attrs_np[..., attr_layout["base_color"]]
+    metallic = attrs_np[..., attr_layout["metallic"]]
+    roughness = attrs_np[..., attr_layout["roughness"]]
+    alpha = attrs_np[..., attr_layout["alpha"]]
+    del attrs_np
+
+    material = trimesh.visual.material.PBRMaterial(
+        baseColorTexture=Image.fromarray(np.concatenate([base_color, alpha], axis=-1)),
+        baseColorFactor=np.array([255, 255, 255, 255], dtype=np.uint8),
+        metallicRoughnessTexture=Image.fromarray(np.concatenate([np.zeros_like(metallic), roughness, metallic], axis=-1)),
+        metallicFactor=1.0,
+        roughnessFactor=1.0,
+        alphaMode="OPAQUE",
+        doubleSided=True if not remesh else False,
+    )
+
+    vertices_np[:, 1], vertices_np[:, 2] = vertices_np[:, 2], -vertices_np[:, 1]
+    normals_np[:, 1], normals_np[:, 2] = normals_np[:, 2], -normals_np[:, 1]
+    uvs_np[:, 1] = 1 - uvs_np[:, 1]
+
+    textured_mesh = trimesh.Trimesh(
+        vertices=vertices_np,
+        faces=faces_np,
+        vertex_normals=normals_np,
+        process=False,
+        visual=trimesh.visual.TextureVisuals(uv=uvs_np, material=material),
+    )
+    pbar.update(1)
+    pbar.close()
+    return textured_mesh
 
 
 def compute_f_pixels(camera_angle_x: float, resolution: int) -> float:
@@ -248,7 +815,6 @@ def render_turntable_frames(
             mesh,
             camera_angle_x=camera_params["camera_angle_x"],
             distance=camera_params["distance"],
-            mesh_scale=camera_params.get("mesh_scale", 1.0),
             num_frames=num_frames,
             resolution=resolution,
             bg_color=bg_color,
@@ -268,7 +834,6 @@ def render_turntable_frames(
                 bg_color=bg_color,
                 r=2.1,
                 fov=40,
-                pitch=15,
                 verbose=True,
             )
             frames = rendered.get("normal", None)
@@ -320,8 +885,12 @@ def main():
 
     raw_image = Image.open(args.image)
     image_preprocessed = pipeline.preprocess_image(raw_image)
+    if args.low_vram and getattr(pipeline, "rembg_model", None) is not None:
+        pipeline.rembg_model = None
+        _free_ram_and_vram()
 
     camera_params = estimate_camera_params(image_preprocessed, manual_fov=args.fov)
+    _free_ram_and_vram()
 
     ss_params = {
         "steps": args.steps,
@@ -362,18 +931,23 @@ def main():
         )
 
     try:
-        mesh_list, (_, _, res) = run_with_tokens(args.max_num_tokens)
+        mesh_list, (shape_slat_tmp, tex_slat_tmp, res) = run_with_tokens(args.max_num_tokens)
+        del shape_slat_tmp, tex_slat_tmp
     except torch.OutOfMemoryError:
         if args.max_num_tokens <= 49152:
             raise
         print(f"[TRELLIS-3D] CUDA OOM at max_num_tokens={args.max_num_tokens}; retrying safely with 49152...", flush=True)
-        gc.collect()
-        torch.cuda.empty_cache()
-        mesh_list, (_, _, res) = run_with_tokens(49152)
+        _free_ram_and_vram()
+        mesh_list, (shape_slat_tmp, tex_slat_tmp, res) = run_with_tokens(49152)
+        del shape_slat_tmp, tex_slat_tmp
 
     print(f"[TRELLIS-3D] Cascade decoded at voxel grid res={res}", flush=True)
     mesh = mesh_list[0]
     pbr_attr_layout = pipeline.pbr_attr_layout
+
+    # Free all diffusion pipeline models from RAM & VRAM immediately after decoding
+    del mesh_list, pipeline
+    _free_ram_and_vram()
 
     # Cap face density before turntable rendering and UV extraction
     mesh.simplify(16777216)
@@ -386,34 +960,47 @@ def main():
         num_frames=args.num_frames,
         resolution=args.render_res,
     )
+    _free_ram_and_vram()
 
-    # Free diffusion pipeline models from RAM & VRAM before UV unwrapping / baking
-    del pipeline
-    gc.collect()
-    torch.cuda.empty_cache()
+    effective_decimation = int(args.decimation_target)
+    if args.low_vram and int(args.texture_size) >= 4096 and effective_decimation > 500000:
+        print(
+            f"[TRELLIS-3D] 4K Texture Low-VRAM guard: capping UV unwrap faces from {effective_decimation} to 500000 "
+            "(4K PBR attributes are still baked from the full-resolution original mesh).",
+            flush=True,
+        )
+        effective_decimation = 500000
 
     print(
-        f"[TRELLIS-3D] Extracting textured PBR GLB (decimation_target={args.decimation_target}, "
+        f"[TRELLIS-3D] Extracting textured PBR GLB (decimation_target={effective_decimation}, "
         f"texture_size={args.texture_size})...",
         flush=True,
     )
-    glb = o_voxel.postprocess.to_glb(
-        vertices=mesh.vertices,
-        faces=mesh.faces,
-        attr_volume=mesh.attrs,
-        coords=mesh.coords,
+    mesh_vertices = mesh.vertices
+    mesh_faces = mesh.faces
+    mesh_attrs = mesh.attrs
+    mesh_coords = mesh.coords
+    del mesh
+    _free_ram_and_vram()
+
+    glb = extract_glb_4k_safe(
+        vertices=mesh_vertices,
+        faces=mesh_faces,
+        attr_volume=mesh_attrs,
+        coords=mesh_coords,
         attr_layout=pbr_attr_layout,
         grid_size=res,
         aabb=[[-0.5, -0.5, -0.5], [0.5, 0.5, 0.5]],
-        decimation_target=args.decimation_target,
+        decimation_target=effective_decimation,
         texture_size=args.texture_size,
         remesh=bool(args.remesh),
         remesh_band=1,
         remesh_project=0.95,
         mesh_cluster_threshold_cone_half_angle_rad=np.radians(85.0),
         mesh_cluster_refine_iterations=int(args.uv_refine_iters),
-        use_tqdm=True,
     )
+    del mesh_vertices, mesh_faces, mesh_attrs, mesh_coords
+    _free_ram_and_vram()
 
     rot = np.array(
         [

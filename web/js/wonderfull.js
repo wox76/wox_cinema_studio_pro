@@ -206,6 +206,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     selectedFaceIdx: null, // null = waiting user pick; -1 = full image; >= 0 = face index
     applyScope: "face",    // "face" | "full"
     faceZoom: false,
+    view: { scale: 1, tx: 0, ty: 0, custom: false },
     activeCat: null,       // null = top category bar, or category id
     footerTab: "editor",   // "editor" | "history" | "compare"
     draftValues: {
@@ -474,6 +475,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     state.appliedLabels = [];
     state.activeCat = null;
     state.faceZoom = false;
+    state.view = { scale: 1, tx: 0, ty: 0, custom: false };
     lastStageTransform = "translate(0px, 0px) scale(1)";
     state.footerTab = "editor";
     state.showLibraryModal = false;
@@ -880,13 +882,33 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     return el("div", { class: "wf-dock-main" }, iconsBar, bottomTabs);
   }
 
-  function computeFaceZoomTransform(stage, frame, faceObj) {
+  function clampView(stage, frame, scale, tx, ty) {
+    const s = Math.max(1, Math.min(6, Number(scale) || 1));
+    if (s <= 1.005) return { scale: 1, tx: 0, ty: 0 };
+    const sw = stage?.clientWidth || 0;
+    const sh = stage?.clientHeight || 0;
+    const fw = frame?.offsetWidth || sw;
+    const fh = frame?.offsetHeight || sh;
+    const maxTx = Math.max((s - 1) * fw * 0.5, (s * fw - sw) * 0.5 + 48);
+    const maxTy = Math.max((s - 1) * fh * 0.5, (s * fh - sh) * 0.5 + 48);
+    return {
+      scale: s,
+      tx: Math.max(-maxTx, Math.min(maxTx, tx)),
+      ty: Math.max(-maxTy, Math.min(maxTy, ty)),
+    };
+  }
+
+  function formatTransform({ scale, tx, ty }) {
+    return `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+  }
+
+  function computeFaceZoomValues(stage, frame, faceObj) {
     const sw = stage.clientWidth;
     const sh = stage.clientHeight;
     const fw = frame.offsetWidth;
     const fh = frame.offsetHeight;
     if (!sw || !sh || !fw || !fh || !faceObj?.bbox) {
-      return "translate(0px, 0px) scale(1)";
+      return { scale: 1, tx: 0, ty: 0 };
     }
     const { x, y, w, h } = faceObj.bbox;
     const pad = 1.85;
@@ -897,15 +919,10 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
 
     const cx = x + w / 2;
     const cy = y + h / 2;
-    let tx = -scale * (cx - 0.5) * fw;
-    let ty = -scale * (cy - 0.5) * fh;
+    const tx = -scale * (cx - 0.5) * fw;
+    const ty = -scale * (cy - 0.5) * fh;
 
-    const maxTx = Math.max(0, (scale * fw - sw) / 2);
-    const maxTy = Math.max(0, (scale * fh - sh) / 2);
-    tx = Math.max(-maxTx, Math.min(maxTx, tx));
-    ty = Math.max(-maxTy, Math.min(maxTy, ty));
-
-    return `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+    return clampView(stage, frame, scale, tx, ty);
   }
 
   function renderEditor() {
@@ -914,9 +931,10 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
     const displayUrl = state.holdingCompare && state.originalUrl ? state.originalUrl : state.currentUrl;
     const face = state.selectedFaceIdx !== null && state.selectedFaceIdx >= 0 ? state.faces[state.selectedFaceIdx] : null;
     const shouldZoomFace = Boolean(face && state.faceZoom && state.applyScope === "face" && activeCat?.scope !== "full");
+    const isZoomed = shouldZoomFace || (state.view.custom && state.view.scale > 1.02);
 
     // Detected face boxes overlay over the photo (hidden once zoomed in or inside a category so the face stays clean)
-    const faceOverlays = (!state.holdingCompare && !activeCat && !shouldZoomFace && state.faces.length > 0)
+    const faceOverlays = (!state.holdingCompare && !activeCat && !isZoomed && state.faces.length > 0)
       ? state.faces.map((f) => {
           const isSel = state.selectedFaceIdx === f.index;
           return el("button", {
@@ -933,6 +951,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
               state.selectedFaceIdx = f.index;
               state.applyScope = "face";
               state.faceZoom = true;
+              state.view.custom = false;
               draw();
             }
           }, el("span", { class: "wf-face-pill" }, isSel ? `✓ Volto ${f.index + 1}` : `Volto ${f.index + 1}`));
@@ -948,6 +967,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
           state.selectedFaceIdx = f.index;
           state.applyScope = "face";
           state.faceZoom = true;
+          state.view.custom = false;
           draw();
         }
       },
@@ -961,6 +981,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
           state.selectedFaceIdx = -1;
           state.applyScope = "full";
           state.faceZoom = false;
+          state.view = { scale: 1, tx: 0, ty: 0, custom: false };
           draw();
         }
       }, el("span", {}, "🌐 Tutta la foto")),
@@ -971,6 +992,7 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
           onchange: (e) => {
             state.applyScope = e.target.checked ? "face" : "full";
             state.faceZoom = e.target.checked;
+            state.view.custom = false;
             draw();
           }
         }),
@@ -978,16 +1000,33 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
       ) : null
     ) : null;
 
-    // Floating zoom toggle pill top-left when a face is selected
-    const zoomFab = (face && state.applyScope === "face" && activeCat?.scope !== "full") ? el("button", {
+    // Floating zoom toggle pill top-left when a face is selected or user zoomed manually
+    const showZoomFab = Boolean((face && state.applyScope === "face" && activeCat?.scope !== "full") || isZoomed);
+    const zoomFabLabel = el("span", {},
+      state.view.custom && state.view.scale > 1.02
+        ? `${state.view.scale.toFixed(1)}x · 1x`
+        : shouldZoomFace && face
+          ? `Volto ${face.index + 1} · 1x`
+          : face
+            ? `Zoom Volto ${face.index + 1}`
+            : "1x"
+    );
+    const zoomFab = el("button", {
       type: "button",
-      class: `wf-zoom-fab${shouldZoomFace ? " active" : ""}`,
-      title: shouldZoomFace ? "Mostra foto intera (1x)" : `Zooma su Volto ${face.index + 1}`,
+      class: `wf-zoom-fab${isZoomed ? " active" : ""}`,
+      style: { display: showZoomFab ? "" : "none" },
+      title: isZoomed ? "Mostra foto intera (1x)" : (face ? `Zooma su Volto ${face.index + 1}` : "Reset zoom"),
       onclick: () => {
-        state.faceZoom = !state.faceZoom;
+        if (state.view.scale > 1.02 || state.faceZoom) {
+          state.faceZoom = false;
+          state.view = { scale: 1, tx: 0, ty: 0, custom: false };
+        } else if (face) {
+          state.faceZoom = true;
+          state.view.custom = false;
+        }
         draw();
       }
-    }, icon("search"), el("span", {}, shouldZoomFace ? `Volto ${face.index + 1} · 1x` : `Zoom Volto ${face.index + 1}`)) : null;
+    }, icon("search"), zoomFabLabel);
 
     // Floating compare button <|> bottom-right (FaceApp style)
     const compareFab = state.stack.length ? el("button", {
@@ -1006,12 +1045,12 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
       )
     ) : null;
 
-    const stageImg = el("img", { class: "wf-stage-img", src: displayUrl, alt: "Anteprima Wonderfull" });
+    const stageImg = el("img", { class: "wf-stage-img", src: displayUrl, alt: "Anteprima Wonderfull", draggable: false });
     const stageFrame = el("div", { class: "wf-stage-frame" },
       stageImg,
       ...faceOverlays
     );
-    const stageEl = el("div", { class: "wf-stage" },
+    const stageEl = el("div", { class: `wf-stage${isZoomed ? " is-zoomed" : ""}` },
       stageFrame,
       zoomFab,
       state.holdingCompare ? el("span", { class: "wf-orig-pill" }, "ORIGINALE") : null,
@@ -1019,14 +1058,177 @@ export function wonderfullView(app, { initialFile, onImageChange, switcherBtn })
       busyOverlay
     );
 
+    const applyDirectTransform = (nextView, animate = false) => {
+      state.view = { ...nextView, custom: state.view.custom };
+      const str = formatTransform(state.view);
+      lastStageTransform = str;
+      stageFrame.style.transition = animate ? "" : "none";
+      stageFrame.style.transform = str;
+      const nowZoomed = state.view.scale > 1.02;
+      stageEl.classList.toggle("is-zoomed", nowZoomed);
+      const visibleFab = Boolean(nowZoomed || (face && state.applyScope === "face" && activeCat?.scope !== "full"));
+      zoomFab.style.display = visibleFab ? "" : "none";
+      zoomFab.classList.toggle("active", nowZoomed);
+      zoomFabLabel.textContent = nowZoomed
+        ? `${state.view.scale.toFixed(1)}x · 1x`
+        : face
+          ? `Zoom Volto ${face.index + 1}`
+          : "1x";
+      // Hide face box overlays while manually zoomed in so the face is unobstructed
+      for (const box of stageFrame.querySelectorAll(".wf-face-box")) {
+        box.style.display = nowZoomed ? "none" : "";
+      }
+    };
+
+    // Mouse wheel & trackpad pinch zoom on the image stage
+    stageEl.addEventListener("wheel", (e) => {
+      if (e.target.closest(".wf-zoom-fab, .wf-compare-fab")) return;
+      e.preventDefault();
+      const rect = stageEl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const mx = e.clientX - cx;
+      const my = e.clientY - cy;
+
+      const curScale = state.view.scale || 1;
+      const curTx = state.view.tx || 0;
+      const curTy = state.view.ty || 0;
+      const speed = e.ctrlKey ? 0.011 : 0.0022;
+      const factor = Math.exp(-e.deltaY * speed);
+      const nextScale = Math.max(1, Math.min(6, curScale * factor));
+      const ratio = nextScale / curScale;
+      const rawTx = mx - (mx - curTx) * ratio;
+      const rawTy = my - (my - curTy) * ratio;
+      const clamped = clampView(stageEl, stageFrame, nextScale, rawTx, rawTy);
+      state.view.custom = clamped.scale > 1.005;
+      if (!state.view.custom) state.faceZoom = false;
+      applyDirectTransform(clamped, false);
+    }, { passive: false });
+
+    // Touch pinch-to-zoom & 1-finger / mouse drag pan when zoomed
+    const activePointers = new Map();
+    let gestureStart = null;
+
+    const refreshGestureBaseline = () => {
+      const pts = [...activePointers.values()];
+      if (pts.length >= 2) {
+        const [p1, p2] = pts;
+        gestureStart = {
+          mode: "pinch",
+          dist: Math.max(10, Math.hypot(p2.x - p1.x, p2.y - p1.y)),
+          midX: (p1.x + p2.x) / 2,
+          midY: (p1.y + p2.y) / 2,
+          scale: state.view.scale || 1,
+          tx: state.view.tx || 0,
+          ty: state.view.ty || 0,
+        };
+      } else if (pts.length === 1) {
+        const [p1] = pts;
+        gestureStart = {
+          mode: "pan",
+          x: p1.x,
+          y: p1.y,
+          scale: state.view.scale || 1,
+          tx: state.view.tx || 0,
+          ty: state.view.ty || 0,
+        };
+      } else {
+        gestureStart = null;
+      }
+    };
+
+    stageEl.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button, label, input")) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try { stageEl.setPointerCapture(e.pointerId); } catch {}
+      refreshGestureBaseline();
+      if (activePointers.size === 1 && state.view.scale > 1.02) {
+        stageEl.classList.add("is-panning");
+      }
+    });
+
+    stageEl.addEventListener("pointermove", (e) => {
+      if (!activePointers.has(e.pointerId) || !gestureStart) return;
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const pts = [...activePointers.values()];
+
+      if (gestureStart.mode === "pinch" && pts.length >= 2) {
+        e.preventDefault();
+        const [p1, p2] = pts;
+        const dist = Math.max(10, Math.hypot(p2.x - p1.x, p2.y - p1.y));
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+        const rect = stageEl.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const startMx = gestureStart.midX - cx;
+        const startMy = gestureStart.midY - cy;
+        const curMx = midX - cx;
+        const curMy = midY - cy;
+
+        const nextScale = Math.max(1, Math.min(6, gestureStart.scale * (dist / gestureStart.dist)));
+        const ratio = nextScale / gestureStart.scale;
+        const rawTx = curMx - (startMx - gestureStart.tx) * ratio;
+        const rawTy = curMy - (startMy - gestureStart.ty) * ratio;
+        const clamped = clampView(stageEl, stageFrame, nextScale, rawTx, rawTy);
+        state.view.custom = clamped.scale > 1.005;
+        if (!state.view.custom) state.faceZoom = false;
+        applyDirectTransform(clamped, false);
+      } else if (gestureStart.mode === "pan" && pts.length === 1 && gestureStart.scale > 1.02) {
+        e.preventDefault();
+        const [p1] = pts;
+        const dx = p1.x - gestureStart.x;
+        const dy = p1.y - gestureStart.y;
+        const clamped = clampView(stageEl, stageFrame, gestureStart.scale, gestureStart.tx + dx, gestureStart.ty + dy);
+        state.view.custom = true;
+        applyDirectTransform(clamped, false);
+      }
+    });
+
+    const endPointer = (e) => {
+      if (!activePointers.has(e.pointerId)) return;
+      activePointers.delete(e.pointerId);
+      try { stageEl.releasePointerCapture(e.pointerId); } catch {}
+      stageEl.classList.remove("is-panning");
+      refreshGestureBaseline();
+    };
+    stageEl.addEventListener("pointerup", endPointer);
+    stageEl.addEventListener("pointercancel", endPointer);
+
+    // Double-click to toggle zoom at cursor or reset to 1x
+    stageEl.addEventListener("dblclick", (e) => {
+      if (e.target.closest("button, label, input")) return;
+      if (state.view.scale > 1.05) {
+        state.faceZoom = false;
+        state.view = { scale: 1, tx: 0, ty: 0, custom: false };
+        applyDirectTransform({ scale: 1, tx: 0, ty: 0 }, true);
+      } else {
+        const rect = stageEl.getBoundingClientRect();
+        const mx = e.clientX - (rect.left + rect.width / 2);
+        const my = e.clientY - (rect.top + rect.height / 2);
+        const nextScale = 2.4;
+        const clamped = clampView(stageEl, stageFrame, nextScale, -mx * (nextScale - 1), -my * (nextScale - 1));
+        state.view.custom = true;
+        applyDirectTransform(clamped, true);
+      }
+    });
+
     // Preserve previous transform briefly then animate smoothly to target zoom (or 1x)
     stageFrame.style.transition = "none";
     stageFrame.style.transform = lastStageTransform;
     const applyZoom = () => {
       if (!stageFrame.isConnected) return;
-      const target = shouldZoomFace
-        ? computeFaceZoomTransform(stageEl, stageFrame, face)
-        : "translate(0px, 0px) scale(1)";
+      let targetView;
+      if (state.view.custom && state.view.scale > 1.005) {
+        targetView = clampView(stageEl, stageFrame, state.view.scale, state.view.tx, state.view.ty);
+      } else if (shouldZoomFace) {
+        targetView = computeFaceZoomValues(stageEl, stageFrame, face);
+      } else {
+        targetView = { scale: 1, tx: 0, ty: 0 };
+      }
+      state.view = { ...targetView, custom: state.view.custom };
+      const target = formatTransform(targetView);
       lastStageTransform = target;
       stageFrame.style.transition = "";
       stageFrame.style.transform = target;

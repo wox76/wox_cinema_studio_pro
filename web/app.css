@@ -3236,6 +3236,14 @@ body.actionforge-open .page {
   justify-content: center;
   overflow: hidden;
   padding: 8px;
+  touch-action: none;
+  user-select: none;
+}
+.wf-stage.is-zoomed {
+  cursor: grab;
+}
+.wf-stage.is-zoomed.is-panning {
+  cursor: grabbing;
 }
 .wf-stage-frame {
   position: relative;

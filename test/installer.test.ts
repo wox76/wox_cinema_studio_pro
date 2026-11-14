@@ -49,10 +49,12 @@ test("comfyDirCandidates covers Linux and Windows install layouts", () => {
   assert.ok(lin.includes(resolve("/opt/freefield", "..", "ComfyUI")));
 
   const win = comfyDirCandidates("C:\\freefield", "win32", "C:\\Users\\Alice", {
+    WOX_COMFY_DIR: "F:\\WoxComfy",
     COMFYUI_DIR: "E:\\AI\\ComfyUI",
     LOCALAPPDATA: "C:\\Users\\Alice\\AppData\\Local",
   });
-  assert.equal(win[0], win32.resolve("E:\\AI\\ComfyUI"));
+  assert.equal(win[0], win32.resolve("F:\\WoxComfy"));
+  assert.equal(win[1], win32.resolve("E:\\AI\\ComfyUI"));
   assert.ok(win.some((c) => c.includes("ComfyUI_windows_portable")));
   assert.ok(win.includes("C:\\ComfyUI"));
   assert.ok(win.includes("D:\\ComfyUI"));
@@ -145,6 +147,11 @@ test("InstallerManager settings persistence, env/token updates, node & model sta
     const mgr2 = new InstallerManager(root);
     assert.equal(mgr2.detectComfyDir(), comfyDir);
     assert.equal(mgr2.detectModelsDir(), modelsDir);
+    const savedJson = JSON.parse(readFileSync(join(root, "out", "settings.json"), "utf-8"));
+    assert.equal(savedJson.comfyDir, comfyDir);
+    assert.equal(savedJson.comfy_dir, comfyDir);
+    assert.equal(savedJson.modelsDir, modelsDir);
+    assert.equal(savedJson.models_dir, modelsDir);
 
     const envText = readFileSync(join(root, ".env"), "utf-8");
     assert.match(envText, /^HF_TOKEN=hf_test_token_12345$/m);

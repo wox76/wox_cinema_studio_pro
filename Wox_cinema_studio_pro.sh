@@ -166,19 +166,24 @@ if [ -n "$FOUND_COMFY" ] && [ -n "$FOUND_PYTHON" ] && [ "$HAS_PROXY" -eq 1 ]; th
     echo -e "${DIM}➜ In attesa che il Gateway sia pronto su porta 8000...${RESET}"
     TRIES=0
     MAX_TRIES=120
+    GATEWAY_OK=1
     while ! node -e "fetch('http://127.0.0.1:8000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; do
         if ! kill -0 $BACKEND_PID 2>/dev/null; then
-            echo -e "\n${RED}[ERRORE] Il backend si è interrotto improvvisamente. Controlla i log sopra.${RESET}"
-            exit 1
+            echo -e "\n${YELLOW}[AVVISO] Il backend si è interrotto. Avvio comunque la Web UI (Auto-Installer)...${RESET}"
+            GATEWAY_OK=0
+            break
         fi
         sleep 1
         TRIES=$((TRIES + 1))
         if [ $TRIES -ge $MAX_TRIES ]; then
-            echo -e "\n${RED}[ERRORE] Timeout in attesa del backend Gateway (:8000).${RESET}"
-            exit 1
+            echo -e "\n${YELLOW}[AVVISO] Timeout in attesa del backend Gateway (:8000). Avvio comunque la Web UI...${RESET}"
+            GATEWAY_OK=0
+            break
         fi
     done
-    echo -e "${GREEN}✔ Gateway attivo su http://127.0.0.1:8000${RESET}"
+    if [ "$GATEWAY_OK" -eq 1 ]; then
+        echo -e "${GREEN}✔ Gateway attivo su http://127.0.0.1:8000${RESET}"
+    fi
 else
     echo -e "${YELLOW}[INFO] ComfyUI o comfy-api-proxy non ancora installati.${RESET}"
     echo -e "${YELLOW}➜ Avvio in modalità Setup / Auto-Installer: apri ⚙️ -> Auto-Installer nell'UI Web!${RESET}"

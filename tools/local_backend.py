@@ -74,7 +74,7 @@ def setup(comfy: Path, models: Path) -> None:
         sh(["git", "checkout", "--quiet", commit], cwd=dst)
         if (dst / "requirements.txt").exists():
             pip("-r", dst / "requirements.txt")
-    pip(COMFY_API_PROXY, "aiohttp", "huggingface_hub[hf-xet]")
+    pip(COMFY_API_PROXY, "aiohttp", "huggingface_hub[hf-xet]", "opencv-python-headless", "pillow", "numpy")
     extra_dirs = list(MODEL_DIRS)
     for d in ("insightface", "facerestore_models"):
         if d not in extra_dirs:
@@ -241,6 +241,13 @@ def serve(comfy: Path, comfy_args: list[str], port: int) -> None:
     def stop(*_):   # a plain kill, a closed terminal tab, a service manager: stop all three, as Ctrl+C does
         raise KeyboardInterrupt
     signal.signal(signal.SIGTERM, stop)
+    if not proxy:
+        print("comfy-api-proxy not found; installing backend dependencies automatically...", flush=True)
+        try:
+            pip(COMFY_API_PROXY, "aiohttp", "huggingface_hub[hf-xet]", "opencv-python-headless", "pillow", "numpy")
+            proxy = find_proxy()
+        except Exception as e:
+            print(f"Warning: auto-install of comfy-api-proxy failed: {e}", flush=True)
     if not proxy:
         sys.exit("comfy-api-proxy is not installed here: run setup first, in this same environment")
     procs = []

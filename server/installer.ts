@@ -299,7 +299,9 @@ export function comfyDirCandidates(
 ): string[] {
   const pathMod = platform === "win32" ? win32 : posix;
   const raw = [
+    env.WOX_COMFY_DIR ? pathMod.resolve(env.WOX_COMFY_DIR) : "",
     env.COMFYUI_DIR ? pathMod.resolve(env.COMFYUI_DIR) : "",
+    env.COMFY_DIR ? pathMod.resolve(env.COMFY_DIR) : "",
     pathMod.join(home, "opt", "ComfyUI"),
     pathMod.join(home, "ComfyUI"),
     pathMod.resolve(root, "..", "ComfyUI"),
@@ -329,6 +331,7 @@ export function pythonCandidates(
   const isWin = platform === "win32";
   const pathMod = isWin ? win32 : posix;
   const raw = [
+    env.WOX_PYTHON || "",
     env.PYTHON_BIN || "",
     env.COMFY_PYTHON || "",
     isWin ? pathMod.join(comfyDir, "venv", "Scripts", "python.exe") : pathMod.join(comfyDir, "venv", "bin", "python"),
@@ -439,11 +442,15 @@ export class InstallerManager {
 
   private loadSavedSettings() {
     try {
-      const f = this.settingsFile();
-      if (existsSync(f)) {
-        const data = JSON.parse(readFileSync(f, "utf-8"));
-        if (typeof data.comfyDir === "string" && data.comfyDir.trim()) this.customComfyDir = resolve(data.comfyDir.trim());
-        if (typeof data.modelsDir === "string" && data.modelsDir.trim()) this.customModelsDir = resolve(data.modelsDir.trim());
+      for (const fname of ["settings.json", "installer-settings.json"]) {
+        const f = join(this.root, "out", fname);
+        if (existsSync(f)) {
+          const data = JSON.parse(readFileSync(f, "utf-8"));
+          const cDir = data.comfyDir || data.comfy_dir;
+          const mDir = data.modelsDir || data.models_dir;
+          if (typeof cDir === "string" && cDir.trim()) this.customComfyDir = resolve(cDir.trim());
+          if (typeof mDir === "string" && mDir.trim()) this.customModelsDir = resolve(mDir.trim());
+        }
       }
     } catch {
       // ignore
@@ -455,7 +462,13 @@ export class InstallerManager {
       const f = this.settingsFile();
       mkdirSync(dirname(f), { recursive: true });
       const prev = existsSync(f) ? JSON.parse(readFileSync(f, "utf-8")) : {};
-      writeFileSync(f, JSON.stringify({ ...prev, ...patch }, null, 2) + "\n", "utf-8");
+      const normalized = {
+        ...prev,
+        ...patch,
+        ...(patch.comfyDir ? { comfy_dir: patch.comfyDir } : {}),
+        ...(patch.modelsDir ? { models_dir: patch.modelsDir } : {}),
+      };
+      writeFileSync(f, JSON.stringify(normalized, null, 2) + "\n", "utf-8");
     } catch {
       // ignore
     }
@@ -475,8 +488,9 @@ export class InstallerManager {
 
   detectModelsDir(comfyDir = this.detectComfyDir()): string {
     if (this.customModelsDir) return this.customModelsDir;
-    if (process.env.COMFYUI_MODELS_DIR && existsSync(process.env.COMFYUI_MODELS_DIR)) {
-      return resolve(process.env.COMFYUI_MODELS_DIR);
+    const envModels = process.env.WOX_MODELS_DIR || process.env.COMFYUI_MODELS_DIR;
+    if (envModels && existsSync(envModels)) {
+      return resolve(envModels);
     }
     return join(comfyDir, "models");
   }
@@ -484,6 +498,16 @@ export class InstallerManager {
   detectPython(comfyDir = this.detectComfyDir()): string {
     for (const py of pythonCandidates(comfyDir, this.root)) {
       if (existsSync(py)) return py;
+    }
+    if (process.platform === "win32") {
+      const localAppData = process.env.LOCALAPPDATA || win32.join(homedir(), "AppData", "Local");
+      const progFiles = process.env.ProgramFiles || "C:\\Program Files";
+      for (const ver of ["Python312", "Python311", "Python310", "Python313"]) {
+        for (const base of [win32.join(localAppData, "Programs", "Python", ver), win32.join(progFiles, ver)]) {
+          const candidate = win32.join(base, "python.exe");
+          if (existsSync(candidate)) return candidate;
+        }
+      }
     }
     const sysFallbacks = process.platform === "win32" ? ["python", "python3"] : ["python3", "python"];
     for (const bin of sysFallbacks) {
@@ -786,16 +810,26 @@ export class InstallerManager {
     return new Promise((resolvePromise, rejectPromise) => {
       if (this.cancelRequested) return rejectPromise(new Error("Operazione annullata dall'utente"));
       this.log(`$ ${cmd} ${args.join(" ")}`);
+      const isWin = process.platform === "win32";
+      const sep = isWin ? ";" : ":";
+      const basePath = process.env.PATH || process.env.Path || "";
+      const cmdDir = (cmd.includes("/") || cmd.includes("\\")) ? dirname(cmd) : "";
+      const mergedPath = cmdDir ? `${cmdDir}${sep}${basePath}` : basePath;
+      const mergedEnv: NodeJS.ProcessEnv = {
+        ...process.env,
+        PATH: mergedPath,
+        ...(isWin ? { Path: mergedPath } : {}),
+        PYTHONUNBUFFERED: "1",
+        PYTHONUTF8: "1",
+        PYTHONIOENCODING: "utf-8",
+        GIT_TERMINAL_PROMPT: "0",
+        PIP_DISABLE_PIP_VERSION_CHECK: "1",
+        HF_HUB_DISABLE_TELEMETRY: "1",
+        ...env,
+      };
       const proc = spawn(cmd, args, {
         cwd: cwd && existsSync(cwd) ? cwd : this.root,
-        env: {
-          ...process.env,
-          PYTHONUNBUFFERED: "1",
-          PYTHONUTF8: "1",
-          PYTHONIOENCODING: "utf-8",
-          HF_HUB_DISABLE_TELEMETRY: "1",
-          ...env,
-        },
+        env: mergedEnv,
       });
       this.activeProc = proc;
 
@@ -847,7 +881,26 @@ export class InstallerManager {
   }
 
   private async pipInstall(pythonBin: string, args: string[], cwd?: string) {
-    await this.runCmd(pythonBin, ["-m", "pip", "install", "--no-warn-script-location", ...args], cwd);
+    await this.runCmd(pythonBin, ["-m", "pip", "install", "--no-warn-script-location", "--prefer-binary", ...args], cwd);
+  }
+
+  private async pipInstallRequirements(pythonBin: string, reqFile: string, cwd: string, nodeName: string) {
+    try {
+      await this.pipInstall(pythonBin, ["-r", reqFile], cwd);
+    } catch {
+      this.log(`! Installazione batch requirements.txt fallita per ${nodeName}, provo pacchetto per pacchetto...`);
+      const lines = readFileSync(reqFile, "utf-8")
+        .split(/[\r\n]+/)
+        .map((l) => l.replace(/#.*$/, "").trim())
+        .filter((l) => l && !l.startsWith("-"));
+      for (const pkg of lines) {
+        try {
+          await this.pipInstall(pythonBin, [pkg], cwd);
+        } catch {
+          this.log(`! Avviso: dipendenza opzionale '${pkg}' non installata per ${nodeName} (continuo)`);
+        }
+      }
+    }
   }
 
   private async ensureHfHub(pythonBin: string) {
@@ -912,7 +965,7 @@ export class InstallerManager {
           const req = join(dst, "requirements.txt");
           if (existsSync(req)) {
             this.log(`Installazione requirements.txt per ${node.name}...`);
-            await this.pipInstall(pythonBin, ["-r", req], dst);
+            await this.pipInstallRequirements(pythonBin, req, dst, node.name);
           }
           this.log(`✓ Nodo ${node.name} pronto.`);
           return;
@@ -936,19 +989,20 @@ export class InstallerManager {
       const req = join(dst, "requirements.txt");
       if (existsSync(req)) {
         this.log(`Installazione requirements.txt per ${node.name}...`);
-        await this.pipInstall(pythonBin, ["-r", req], dst);
+        await this.pipInstallRequirements(pythonBin, req, dst, node.name);
       }
       this.log(`✓ Nodo ${node.name} pronto.`);
       return;
     }
 
     if (node.type === "backend_deps") {
-      this.log("Installazione comfy-api-proxy, aiohttp e huggingface_hub[hf-xet]...");
+      this.log("Installazione comfy-api-proxy, aiohttp, huggingface_hub e dipendenze Wonderfull (opencv, pillow, numpy)...");
+      const baseDeps = ["comfy-api-proxy==0.1.6", "aiohttp", "opencv-python-headless", "pillow", "numpy"];
       try {
-        await this.pipInstall(pythonBin, ["comfy-api-proxy==0.1.6", "aiohttp", "huggingface_hub[hf-xet]"]);
+        await this.pipInstall(pythonBin, [...baseDeps, "huggingface_hub[hf-xet]"]);
       } catch {
         this.log("! Fallback installazione senza hf-xet...");
-        await this.pipInstall(pythonBin, ["comfy-api-proxy==0.1.6", "aiohttp", "huggingface_hub"]);
+        await this.pipInstall(pythonBin, [...baseDeps, "huggingface_hub"]);
       }
       const yamlPath = join(comfyDir, "extra_model_paths.yaml");
       writeFileSync(yamlPath, buildExtraModelPathsYaml(modelsDir), "utf-8");
@@ -1083,7 +1137,16 @@ print(f"✓ Salvato in {dest}", flush=True)
           task.currentStep = "Clonazione ComfyUI base...";
           this.log("ComfyUI non trovato: clonazione repository ufficiale ComfyUI...");
           mkdirSync(dirname(comfyDir), { recursive: true });
-          await this.runCmd("git", ["clone", "https://github.com/Comfy-Org/ComfyUI.git", comfyDir]);
+          if (!existsSync(join(comfyDir, ".git"))) {
+            if (existsSync(comfyDir) && readdirSync(comfyDir).length > 0) {
+              await this.runCmd("git", ["init"], comfyDir);
+              await this.runCmd("git", ["remote", "add", "origin", "https://github.com/Comfy-Org/ComfyUI.git"], comfyDir);
+              await this.runCmd("git", ["fetch", "--depth", "1", "origin", "master"], comfyDir);
+              await this.runCmd("git", ["checkout", "-f", "FETCH_HEAD"], comfyDir);
+            } else {
+              await this.runCmd("git", ["clone", "https://github.com/Comfy-Org/ComfyUI.git", comfyDir]);
+            }
+          }
 
           // Create an isolated ComfyUI venv if no local venv/embedded Python exists
           const hasLocalPy = pythonCandidates(comfyDir, this.root).some((p) => p.startsWith(comfyDir) && existsSync(p));
@@ -1094,8 +1157,27 @@ print(f"✓ Salvato in {dest}", flush=True)
             pythonBin = this.detectPython(comfyDir);
             this.log(`✓ Virtualenv attivo: ${pythonBin}`);
           }
-          await this.pipInstall(pythonBin, ["-r", join(comfyDir, "requirements.txt")], comfyDir);
+          try {
+            await this.pipInstall(pythonBin, ["--upgrade", "pip", "setuptools", "wheel"], comfyDir);
+          } catch {
+            // ignore pip self-upgrade warning on Windows
+          }
+          const torchCheck = spawnSync(pythonBin, ["-c", "import torch; assert torch.cuda.is_available() or hasattr(torch.version, 'cuda')"], { timeout: 15000 });
+          if (torchCheck.status !== 0) {
+            this.log("Installazione PyTorch con supporto GPU CUDA...");
+            try {
+              await this.pipInstall(pythonBin, [
+                "torch", "torchvision", "torchaudio",
+                "--extra-index-url", "https://download.pytorch.org/whl/cu126",
+              ], comfyDir);
+            } catch {
+              this.log("! Fallback installazione PyTorch standard...");
+              await this.pipInstall(pythonBin, ["torch", "torchvision", "torchaudio"], comfyDir);
+            }
+          }
+          await this.pipInstallRequirements(pythonBin, join(comfyDir, "requirements.txt"), comfyDir, "ComfyUI");
         }
+        this.saveSettingsFile({ comfyDir, modelsDir });
 
         // Determine nodes and models to process
         let nodesToInstall: CustomNodeDef[] = [];

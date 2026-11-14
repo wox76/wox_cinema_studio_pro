@@ -156,8 +156,14 @@ class WOXTrellis3DNode:
         tex_size = 4096 if "4096" in str(texture_size) else 2048
         safe_seed = int(seed) % 2147483647
 
-        # Output directory for 3D GLB files in Wox Cinema Studio Pro
-        out_3d_dir = "/home/wox76/opt/freefield/out/3d"
+        # Output directory for 3D GLB files in Wox Cinema Studio Pro (cross-platform Linux & Windows)
+        out_3d_candidates = [
+            os.path.join(os.environ["WOX_OUT"], "3d") if os.environ.get("WOX_OUT") else "",
+            os.path.join(os.path.expanduser("~"), "opt", "freefield", "out", "3d") if os.path.isdir(os.path.join(os.path.expanduser("~"), "opt", "freefield")) else "",
+            "/home/wox76/opt/freefield/out/3d" if os.path.isdir("/home/wox76/opt/freefield") else "",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "out", "3d")),
+        ]
+        out_3d_dir = next((c for c in out_3d_candidates if c), out_3d_candidates[-1])
         os.makedirs(out_3d_dir, exist_ok=True)
         ts = int(time.time())
         glb_filename = f"trellis_{ts}_{safe_seed}.glb"
@@ -165,9 +171,25 @@ class WOXTrellis3DNode:
         latest_glb_path = os.path.join(out_3d_dir, "latest.glb")
 
         worker_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trellis_worker.py")
-        pixi_python = "/home/wox76/Documents/pixar3d/.pixi/envs/default/bin/python"
+        home_dir = os.path.expanduser("~")
+        pixar_roots = [
+            os.environ.get("PIXAR3D_ROOT", ""),
+            os.path.join(home_dir, "Documents", "pixar3d"),
+            os.path.join(home_dir, "pixar3d"),
+            "/home/wox76/Documents/pixar3d",
+        ]
+        py_candidates = [os.environ.get("TRELLIS_PYTHON", "")]
+        for root_cand in pixar_roots:
+            if not root_cand:
+                continue
+            py_candidates.extend([
+                os.path.join(root_cand, ".pixi", "envs", "default", "bin", "python"),
+                os.path.join(root_cand, ".pixi", "envs", "default", "python.exe"),
+                os.path.join(root_cand, ".pixi", "envs", "default", "Scripts", "python.exe"),
+            ])
+        pixi_python = next((p for p in py_candidates if p and os.path.exists(p)), sys.executable)
         if not os.path.exists(pixi_python):
-            raise RuntimeError(f"TRELLIS.2 Pixi environment not found at {pixi_python}")
+            raise RuntimeError(f"TRELLIS.2 Python environment not found (checked {py_candidates})")
 
         with tempfile.TemporaryDirectory(prefix="wox_trellis3d_") as tmp_dir:
             input_img_path = os.path.join(tmp_dir, "input.png")

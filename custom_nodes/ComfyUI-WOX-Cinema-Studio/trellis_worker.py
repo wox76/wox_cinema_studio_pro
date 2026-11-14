@@ -15,11 +15,24 @@ os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 os.environ.setdefault("ATTN_BACKEND", "sdpa")
 
-PIXAR3D_ROOT = "/home/wox76/Documents/pixar3d"
+def _resolve_pixar3d_root() -> str:
+    candidates = [
+        os.environ.get("PIXAR3D_ROOT", ""),
+        os.path.join(os.path.expanduser("~"), "Documents", "pixar3d"),
+        os.path.join(os.path.expanduser("~"), "pixar3d"),
+        "/home/wox76/Documents/pixar3d",
+    ]
+    for c in candidates:
+        if c and os.path.isdir(c):
+            return c
+    return candidates[1]
+
+
+PIXAR3D_ROOT = _resolve_pixar3d_root()
 os.environ["FLEX_GEMM_AUTOTUNE_CACHE_PATH"] = os.path.join(PIXAR3D_ROOT, "autotune_cache.json")
 os.environ["FLEX_GEMM_AUTOTUNER_VERBOSE"] = "1"
 
-if PIXAR3D_ROOT not in sys.path:
+if os.path.isdir(PIXAR3D_ROOT) and PIXAR3D_ROOT not in sys.path:
     sys.path.insert(0, PIXAR3D_ROOT)
 
 import cv2

@@ -1,0 +1,152 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "layers-control",
+  "name": "Layers Control · Guided Split",
+  "section": "image",
+  "pack": "image-qwen-layered",
+  "status": "ready",
+  "modes": [
+    "qwen-layered",
+    "layers-control"
+  ],
+  "mode_label": "Guidato",
+  "higgsfield_feature": "Layers · Prompt-Guided Element Extraction",
+  "summary": "Scompone l'immagine separando con precisione l'elemento descritto nel prompt (es. testo, giacca, prodotto) dagli altri livelli RGBA.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/layers-qwen-image-layered-control.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Immagine da separare",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "74",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Elemento da isolare su livello dedicato",
+      "required": true,
+      "default": "guitar",
+      "help": "Es: the headline text, the jacket, the bottle",
+      "bind": [
+        {
+          "node": "83:6",
+          "field": "text"
+        }
+      ]
+    },
+    {
+      "id": "num_layers",
+      "type": "slider",
+      "label": "Numero Livelli RGBA",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 2,
+      "bind": [
+        {
+          "node": "83:123",
+          "field": "layers"
+        }
+      ]
+    },
+    {
+      "id": "max_size",
+      "type": "select",
+      "label": "Risoluzione Elaborazione",
+      "default": 640,
+      "options": [
+        {
+          "value": 640,
+          "label": "640 px (Standard · Veloce)"
+        },
+        {
+          "value": 1024,
+          "label": "1024 px (Alta Risoluzione)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "82",
+          "field": "largest_size"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 10,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "83:3",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "83:3",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "60",
+      "type": "image",
+      "label": "Livelli Estratti"
+    }
+  ],
+  "models": [
+    {
+      "repo": "DiffSynth-Studio/Qwen-Image-Layered-Control",
+      "file": "diffusion_models/qwen_image_layered_control_bf16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 40.86,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.38,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image-Layered_ComfyUI",
+      "file": "split_files/vae/qwen_image_layered_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Qwen-Image-Layered-Control (DiffSynth-Studio, Apache-2.0)",
+    "Workflow from Fuobe"
+  ]
+}

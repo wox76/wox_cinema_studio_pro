@@ -13,6 +13,8 @@ import { openPainter, maskPreview } from "./paint.js";
 import { sendToVideoEditor } from "./video_editor.js";
 import { resolveGlbUrl, sendToActionForge } from "./actionforge.js";
 import { createCamera3DWidget } from "./camera3d.js";
+import { createMotionPathWidget } from "./motionpath.js";
+import { createFlyPath3DWidget } from "./flypath3d.js";
 import { wonderfullView } from "./wonderfull.js";
 
 // ------------------------------------------------------------------ form state (per app, kept while the page is open)
@@ -460,6 +462,15 @@ function buildForm(app, { randomSeed = false } = {}) {
 
 /** Validate, then submit `count` runs. Returns false when something is missing (and shows what). */
 async function submit(app, ui) {
+  const f = formFor(app);
+  if (app.id === "fly-path" && f.files.image && !f.files.video && typeof ui?._flypathRenderGuide === "function") {
+    try {
+      await ui._flypathRenderGuide();
+    } catch (err) {
+      toast(err.message, { error: true });
+      return false;
+    }
+  }
   const missing = missingInputs(app);
   ui.clearMissing?.();
   if (missing.length) {
@@ -468,7 +479,6 @@ async function submit(app, ui) {
     toast(isMedia(first.type) ? t("ws.need", { label: first.label }) : t("ws.needtext", { label: first.label }), { error: true });
     return false;
   }
-  const f = formFor(app);
   // Check if the prompt references @refN tags whose file is not attached
   if (supportsDynamicRefs(app)) {
     const pi = promptInput(app);
@@ -548,6 +558,14 @@ export async function recreate(item, { run = false } = {}) {
 const NEXT = {
   image: [
     "trellis-3d",
+    "pixal3d",
+    "scene-3d-moge",
+    "idol-3d",
+    "draw-to-video",
+    "fly-path",
+    "orbit-360",
+    "any-angle-3d",
+    "qwen-layered",
     "cinema-studio",
     "music-video",
     "remove-bg",
@@ -735,11 +753,18 @@ export function quickHandoffBar(item, done) {
     ...(glbUrl ? [{ id: "actionforge", icon: "🦴", name: "Rigga in ActionForge", sub: "Scheletro .GLB 3D", tone: "lime", span2: true, isActionForge: true }] : []),
     { id: "wonderfull", icon: "✨", name: "Wonderfull Beauty", sub: "Volto, Sorriso, Contour & Colori", tone: "edit", span2: true },
     { id: "qwen-multiangle", icon: "📐", name: "Angolo Camera", sub: "Qwen 3D Orbit", tone: "cam" },
+    { id: "any-angle-3d", icon: "🎥", name: "Any Angle 3D", sub: "360° & Focali Cine", tone: "cam" },
+    { id: "draw-to-video", icon: "✍️", name: "Draw to Video", sub: "Traiettorie Wan-Move", tone: "vid" },
+    { id: "fly-path", icon: "🛸", name: "Fly Path 3D", sub: "Volo Camera Uni3C", tone: "vid" },
+    { id: "orbit-360", icon: "🔄", name: "Orbit 360° + Audio", sub: "MiniMax H3", tone: "vid" },
     { id: "trellis-3d", icon: "🧊", name: "Crea Oggetto 3D", sub: "TRELLIS.2 PBR", tone: "3d" },
+    { id: "pixal3d", icon: "💎", name: "Pixal3D Mesh", sub: "3D PBR Alta Def", tone: "3d" },
+    { id: "scene-3d-moge", icon: "🌄", name: "Scena 3D MoGe-2", sub: "Mesh 3D Istantanea", tone: "3d" },
     { id: "video", icon: "🎬", name: "Anima in Video", sub: "MiniMax H3", tone: "vid" },
     { id: "director", icon: "🎥", name: "AI Director", sub: "Multi-Ref @ref2..5", tone: "vid" },
     { id: "editor", icon: "🎞️", name: "Editor Video", sub: "Timeline Studio", tone: "vid", isEditor: true },
     { id: "edit", icon: "✏️", name: "Modifica Foto", sub: "Qwen Edit Pro", tone: "edit" },
+    { id: "qwen-layered", icon: "🗂️", name: "Livelli RGBA", sub: "Qwen Layered", tone: "edit" },
     { id: "inpaint", icon: "🎨", name: "Inpaint", sub: "Pennello & Maschera", tone: "edit" },
     { id: "remove-bg", icon: "✂️", name: "Rimuovi Sfondo", sub: "BiRefNet Alpha", tone: "edit" },
     { id: "face-swap", icon: "👤", name: "Face Swap", sub: "ReActor Volto", tone: "cam" },
@@ -972,7 +997,10 @@ function modeSwitch(app) {
   if (!app.modes) return null;
   return el("div", { class: "seg modes", role: "group", "aria-label": app.name }, ...app.modes.map((id) => byId.get(id)).filter(Boolean).map((a) =>
     el("button", { type: "button", "aria-pressed": String(a.id === app.id), onclick: () => { if (a.id !== app.id) location.hash = `#/app/${a.id}`; } },
-      icon(a.mode_label ? (a.inputs.some((i) => i.type === "image") ? "user" : "spark") : a.section === "video" ? "video" : "image"),
+      icon(a.section === "3d"
+        ? (a.id === "text-to-3d" ? "spark" : a.id === "multi-to-3d" ? "layers" : a.id === "object-to-3d" ? "scissors" : "box")
+        : a.mode_label ? (a.inputs.some((i) => i.type === "image") ? "user" : "spark")
+        : a.section === "video" ? "video" : "image"),
       a.mode_label || t(`nav.${a.section}`))));
 }
 
@@ -1308,26 +1336,27 @@ function composerBar(app, rerenderBar) {
     requestAnimationFrame(grow);
   }
 
-  const attachChildren = [];
-  // Render static media inputs if present
+  const frameChildren = [];
+  // Render static media inputs if present (e.g. First frame, Last frame on top)
   for (const inp of mediaInputs) {
     const x = f.files[inp.id];
     const isTag = inp.label.includes("(@");
     const tagText = isTag ? `@${inp.id}` : inp.label;
     if (!x) {
-      attachChildren.push(el("button", { class: "att need", type: "button", title: `${t("ws.add", { what: inp.label })}${inp.required ? "" : ` (${t("ws.optional")})`}`,
+      frameChildren.push(el("button", { class: "att need att-labeled", type: "button", title: `${t("ws.add", { what: inp.label })}${inp.required ? "" : ` (${t("ws.optional")})`}`,
         "aria-label": t("ws.add", { what: inp.label }), dataset: { slot: inp.id }, onclick: () => pick(inp) },
         icon(inp.type === "image" ? "image" : inp.type),
-        isTag ? el("span", { style: { fontSize: "10.5px", fontWeight: "700", color: "var(--accent, #e5ff54)", marginTop: "2px" } }, tagText) : null
+        el("span", { class: isTag ? "att-need-lbl accent" : "att-need-lbl" }, tagText)
       ));
     } else {
       const m = inp.type === "image" ? el("img", { src: x.url, alt: "" }) : inp.type === "video" ? el("video", { src: `${x.url}#t=0.1`, muted: true, preload: "metadata" }) : el("span", { style: { display: "grid", placeItems: "center", height: "100%" } }, icon("audio"));
-      attachChildren.push(el("div", { class: "att", title: x.file.name },
+      frameChildren.push(el("div", { class: "att", title: x.file.name },
         m, el("span", { class: "lbl" }, isTag ? tagText : inp.label),
         el("button", { class: "x", type: "button", "aria-label": t("ws.remove"), onclick: () => { clearFile(app, inp.id); rerenderBar(); } }, icon("x"))));
     }
   }
 
+  const refChildren = [];
   // Render dynamic references if app supports them
   if (isDynRefApp) {
     for (const ref of f.dynamicRefs) {
@@ -1353,11 +1382,11 @@ function composerBar(app, rerenderBar) {
           onclick: (e) => { e.stopPropagation(); removeDynamicRef(app, ref.id); rerenderBar(); }
         }, icon("x"))
       );
-      attachChildren.push(attCard);
+      refChildren.push(attCard);
     }
 
     // Always append the + Reference button to allow infinite references
-    attachChildren.push(el("button", {
+    refChildren.push(el("button", {
       class: "att need add-ref-card",
       type: "button",
       dataset: { slot: "add-ref" },
@@ -1366,7 +1395,12 @@ function composerBar(app, rerenderBar) {
     }, icon("plus"), el("span", { class: "add-ref-lbl" }, "+ Ref")));
   }
 
-  const attach = el("div", { class: "cmp-attach" }, ...attachChildren);
+  const attach = (mediaInputs.length && isDynRefApp)
+    ? el("div", { class: "cmp-attach cmp-attach-stacked" },
+        el("div", { class: "cmp-attach-frames" }, ...frameChildren),
+        el("div", { class: "cmp-attach-sep-h", "aria-hidden": "true" }),
+        el("div", { class: "cmp-attach-refs" }, ...refChildren))
+    : el("div", { class: "cmp-attach" }, ...frameChildren, ...refChildren);
 
   let promptWrap;
   if (isDynRefApp && pi) {
@@ -1871,18 +1905,20 @@ function sidebarPanel(app, rerenderSide) {
 
   const main = [], adv = [];
   let cam3dWidget = null;
+  let motionWidget = null;
+  let flyWidget = null;
+  const imgUrlOf = (slotId) => {
+    const entry = f.files[slotId];
+    return entry ? (entry.url || (entry.file instanceof Blob ? URL.createObjectURL(entry.file) : null)) : null;
+  };
   if (app.id === "qwen-multiangle") {
     const imgInp = app.inputs.find((x) => isMedia(x.type));
-    const initImgUrl = imgInp && f.files[imgInp.id]
-      ? (f.files[imgInp.id].url || (f.files[imgInp.id].file instanceof Blob ? URL.createObjectURL(f.files[imgInp.id].file) : null))
-      : null;
-
     cam3dWidget = createCamera3DWidget({
       f,
       inpHz: "horizontal_angle",
       inpVt: "vertical_angle",
       inpZoom: "zoom",
-      initialImageUrl: initImgUrl,
+      initialImageUrl: imgInp ? imgUrlOf(imgInp.id) : null,
     });
 
     cam3dWidget.addEventListener("camchange", () => {
@@ -1893,19 +1929,45 @@ function sidebarPanel(app, rerenderSide) {
         if (id && f.values[id] !== undefined) ri.value = f.values[id];
       });
     });
+  } else if (app.id === "draw-to-video") {
+    const tracksInp = app.inputs.find((x) => x.id === "tracks");
+    if (tracksInp) {
+      motionWidget = createMotionPathWidget({
+        f,
+        inpTracks: tracksInp,
+        initialImageUrl: imgUrlOf("image"),
+        onChange: (payload) => {
+          persistSoon();
+          const ta = ui.refs[tracksInp.id]?.querySelector("textarea") || scroll.querySelector(`[data-slot="${tracksInp.id}"] textarea`);
+          if (ta) ta.value = payload;
+        },
+      });
+    }
+  } else if (app.id === "fly-path") {
+    const videoInp = app.inputs.find((x) => x.id === "video");
+    flyWidget = createFlyPath3DWidget({
+      f,
+      initialImageUrl: imgUrlOf("image"),
+      onVideoRendered: (file) => {
+        if (videoInp && setFile(app, videoInp, file)) rerenderSide();
+      },
+    });
+    ui._flypathRenderGuide = flyWidget._renderGuideVideo;
   }
 
   for (const inp of app.inputs) {
     if (isMedia(inp.type)) {
       const dz = dropzone(app, inp, () => {
         rerenderSide();
-        if (cam3dWidget && f.files[inp.id]) {
-          const u = f.files[inp.id].url || (f.files[inp.id].file instanceof Blob ? URL.createObjectURL(f.files[inp.id].file) : null);
-          if (u) cam3dWidget._setImage(u);
-        }
+        const u = imgUrlOf(inp.id);
+        if (cam3dWidget && u) cam3dWidget._setImage(u);
+        if (motionWidget && inp.id === "image") motionWidget._setImage(u);
+        if (flyWidget && inp.id === "image") flyWidget._setImage(u);
       });
       main.push(dz);
       if (cam3dWidget) main.push(cam3dWidget);
+      if (motionWidget && inp.id === "image") main.push(motionWidget);
+      if (flyWidget && inp.id === "image") main.push(flyWidget);
     } else {
       (isAdvanced(inp) ? adv : main).push(sideField(app, inp, f, ui));
     }

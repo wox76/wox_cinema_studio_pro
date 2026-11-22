@@ -28,6 +28,25 @@ import { homedir, tmpdir } from "node:os";
 import { loadRegistry, repoRoot, isFileInput, type App } from "./registry.ts";
 import { explainSubmitError, InputError, resolveValues, Runner, type Values } from "./runner.ts";
 import { History } from "./history.ts";
+import { GAMES_DIR, getStudioStatus, startBonsaiServer, listGames, getGame, deleteGame, startGameGeneration, resumeGameGeneration, stopGameGeneration, startGameModification } from "./game_studio.ts";
+import {
+  getWoxCodeStatus,
+  listProjects as listCodeProjects,
+  getProject as getCodeProject,
+  createProject as createCodeProject,
+  deleteProject as deleteCodeProject,
+  listProjectFiles as listCodeProjectFiles,
+  readProjectFile as readCodeProjectFile,
+  uploadProjectFiles as uploadCodeProjectFiles,
+  openProjectFolder as openCodeProjectFolder,
+  listChats as listCodeChats,
+  getChat as getCodeChat,
+  createChat as createCodeChat,
+  deleteChat as deleteCodeChat,
+  sendChatMessage as sendCodeChatMessage,
+  stopChatTurn as stopCodeChatTurn,
+} from "./wox_code.ts";
+import { OPEN_3D_DATASET, getDatasetFilePath, listDatasetAssets, downloadDatasetAsset } from "./asset_dataset.ts";
 import { Flags } from "./flags.ts";
 import { DOOR_HTML, Guard } from "./guard.ts";
 import { thermalGuard } from "./thermal.ts";
@@ -116,9 +135,15 @@ const history = new History(join(outDir, "history"), {
     const app = apps.find((a) => a.id === id);
     if (!app) return undefined;
     const graph = app.graph ?? {};
-    return { outputs: app.outputs.map((o) => o.node), nodes: Object.keys(graph).length, classOf: (n) => graph[n]?.class_type ?? null };
+    return {
+      outputs: app.outputs.map((o) => o.node),
+      nodes: Object.keys(graph).length,
+      classOf: (n) => graph[n]?.class_type ?? null,
+      has3d: app.section === "3d" || app.outputs.some((o) => o.type === "3d"),
+    };
   },
   frames: (jobId, signal) => getRunner().frames(jobId, signal),
+  fetch3d: (jobId) => getRunner().fetch3dOutputs(jobId),
   transformOutput: async ({ entry, folder, bytes, index }) => {
     if (entry.app !== "wonderfull" || index !== 1) return;
     const wfMetaPath = join(folder, "wonderfull.json");
@@ -160,9 +185,9 @@ const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
   ".json": "application/json", ".webmanifest": "application/manifest+json", ".txt": "text/plain; charset=utf-8", ".woff2": "font/woff2", ".woff": "font/woff",
   ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
-  ".gif": "image/gif", ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime",
+  ".gif": "image/gif", ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime", ".mkv": "video/x-matroska",
   ".mp3": "audio/mpeg", ".wav": "audio/wav", ".flac": "audio/flac", ".ogg": "audio/ogg", ".m4a": "audio/mp4",
-  ".glb": "model/gltf-binary", ".gltf": "model/gltf+json", ".fbx": "application/octet-stream", ".bin": "application/octet-stream",
+  ".glb": "model/gltf-binary", ".gltf": "model/gltf+json", ".ply": "application/octet-stream", ".spz": "model/x-spz", ".obj": "text/plain", ".fbx": "application/octet-stream", ".bin": "application/octet-stream",
   ".wasm": "application/wasm", ".tflite": "application/octet-stream", ".task": "application/octet-stream",
 };
 
@@ -751,6 +776,155 @@ const server = createServer(async (req, res) => {
           } catch (e) {
             throw new InputError((e as Error).message);
           }
+        }
+      }
+      if (area === "games") {
+        if (req.method === "GET" && !id) {
+          return send(res, 200, { games: listGames() });
+        }
+        if (req.method === "GET" && id === "status") {
+          return send(res, 200, await getStudioStatus());
+        }
+        if (req.method === "GET" && id === "dataset" && !sub) {
+          return send(res, 200, { assets: listDatasetAssets() });
+        }
+        if (req.method === "POST" && id === "dataset" && sub && arg === "download") {
+          const item = await downloadDatasetAsset(sub);
+          return send(res, 200, item);
+        }
+        if ((req.method === "GET" || req.method === "HEAD") && id === "dataset" && sub && arg === "file") {
+          const asset = OPEN_3D_DATASET.find((a) => a.id === sub);
+          if (!asset) return send(res, 404, { error: "asset not found" });
+          const fp = getDatasetFilePath(asset);
+          return existsSync(fp) ? sendFile(req, res, fp, "public, max-age=86400") : send(res, 404, { error: "not downloaded yet" });
+        }
+        if (req.method === "POST" && id === "bonsai" && sub === "start") {
+          return send(res, 200, await startBonsaiServer());
+        }
+        if (req.method === "POST" && id === "generate") {
+          const body = await (await toRequest(req)).json().catch(() => null) as Record<string, any> | null;
+          const job = startGameGeneration((body || {}) as any);
+          return send(res, 202, job);
+        }
+        if (req.method === "POST" && id && sub === "resume") {
+          const job = resumeGameGeneration(id);
+          return send(res, 202, job);
+        }
+        if (req.method === "POST" && id && sub === "stop") {
+          const job = stopGameGeneration(id);
+          return send(res, 200, job);
+        }
+        if (req.method === "POST" && id && sub === "modify") {
+          const body = await (await toRequest(req)).json().catch(() => null) as { instruction?: string } | null;
+          const job = startGameModification(id, String(body?.instruction || ""));
+          return send(res, 202, job);
+        }
+        if (req.method === "GET" && id && !sub) {
+          const g = getGame(id);
+          return g ? send(res, 200, g) : send(res, 404, { error: "game not found" });
+        }
+        if (req.method === "DELETE" && id && !sub) {
+          const keepParam = url.searchParams.get("keepAssets");
+          const keepAssets = keepParam === "1" || keepParam === "true";
+          const result = deleteGame(id, keepAssets);
+          return result.deleted
+            ? send(res, 200, { ok: true, savedAssets: result.savedAssets })
+            : send(res, 404, { error: "game not found" });
+        }
+        if ((req.method === "GET" || req.method === "HEAD") && id && sub === "play") {
+          const safeId = id.replace(/[^a-zA-Z0-9_-]/g, "");
+          const gameRoot = join(GAMES_DIR, safeId);
+          const relParts = parts.slice(4);
+          const relPath = normalize(relParts.length ? relParts.join("/") : "index.html").replace(/^(\.\.[/\\])+/, "");
+          const filePath = join(gameRoot, relPath);
+          if (filePath.startsWith(gameRoot) && existsSync(filePath) && statSync(filePath).isFile()) {
+            return sendFile(req, res, filePath, "no-cache");
+          }
+          return send(res, 404, { error: "game file not found" });
+        }
+      }
+      if (area === "code") {
+        if (req.method === "GET" && id === "status") {
+          return send(res, 200, await getWoxCodeStatus());
+        }
+        if (req.method === "POST" && id === "bonsai" && sub === "start") {
+          return send(res, 200, await startBonsaiServer());
+        }
+        // Projects
+        if (req.method === "GET" && id === "projects" && !sub) {
+          return send(res, 200, { projects: listCodeProjects() });
+        }
+        if (req.method === "POST" && id === "projects" && !sub) {
+          const body = await (await toRequest(req)).json().catch(() => null) as { name?: string; path?: string; template?: string } | null;
+          return send(res, 201, createCodeProject({ name: String(body?.name || ""), path: body?.path, template: body?.template }));
+        }
+        if (req.method === "DELETE" && id === "projects" && sub && !arg) {
+          const removeFolder = url.searchParams.get("removeFolder") === "1";
+          return deleteCodeProject(sub, removeFolder) ? send(res, 200, { ok: true }) : send(res, 404, { error: "project not found" });
+        }
+        if (req.method === "GET" && id === "projects" && sub && arg === "files") {
+          const subPath = url.searchParams.get("path") || "";
+          return send(res, 200, { files: listCodeProjectFiles(sub, subPath) });
+        }
+        if (req.method === "GET" && id === "projects" && sub && arg === "file") {
+          const filePath = url.searchParams.get("path") || "";
+          return send(res, 200, readCodeProjectFile(sub, filePath));
+        }
+        if (req.method === "POST" && id === "projects" && sub && arg === "upload") {
+          const body = await (await toRequest(req)).json().catch(() => null) as {
+            files?: { name: string; mime?: string; dataBase64: string }[];
+          } | null;
+          if (!body?.files?.length) return send(res, 400, { error: "Nessun file ricevuto." });
+          return send(res, 201, uploadCodeProjectFiles(sub, body.files));
+        }
+        if (req.method === "POST" && id === "projects" && sub && arg === "open-folder") {
+          return send(res, 200, openCodeProjectFolder(sub));
+        }
+        if ((req.method === "GET" || req.method === "HEAD") && id === "projects" && sub && arg === "preview") {
+          const proj = getCodeProject(sub);
+          if (!proj) return send(res, 404, { error: "project not found" });
+          const relParts = parts.slice(5);
+          const relPath = normalize(relParts.length ? relParts.join("/") : "index.html").replace(/^(\.\.[/\\])+/, "");
+          const filePath = join(proj.path, relPath);
+          if (filePath.startsWith(proj.path) && existsSync(filePath) && statSync(filePath).isFile()) {
+            return sendFile(req, res, filePath, "no-cache");
+          }
+          return send(res, 404, { error: "preview file not found" });
+        }
+        // Chats
+        if (req.method === "GET" && id === "chats" && !sub) {
+          const projectId = url.searchParams.get("projectId") || undefined;
+          return send(res, 200, { chats: listCodeChats(projectId) });
+        }
+        if (req.method === "POST" && id === "chats" && !sub) {
+          const body = await (await toRequest(req)).json().catch(() => null) as { projectId?: string; title?: string; mode?: "agent" | "chat" } | null;
+          return send(res, 201, createCodeChat(body || {}));
+        }
+        if (req.method === "GET" && id === "chats" && sub && !arg) {
+          const c = getCodeChat(sub);
+          return c ? send(res, 200, c) : send(res, 404, { error: "chat not found" });
+        }
+        if (req.method === "DELETE" && id === "chats" && sub && !arg) {
+          return deleteCodeChat(sub) ? send(res, 200, { ok: true }) : send(res, 404, { error: "chat not found" });
+        }
+        if (req.method === "POST" && id === "chats" && sub && arg === "message") {
+          const body = await (await toRequest(req)).json().catch(() => null) as {
+            text?: string;
+            mode?: "agent" | "chat";
+            reasoningEffort?: "low" | "medium" | "high";
+            attachedFiles?: string[];
+          } | null;
+          const updated = sendCodeChatMessage(sub, {
+            text: String(body?.text || ""),
+            mode: body?.mode,
+            reasoningEffort: body?.reasoningEffort,
+            attachedFiles: body?.attachedFiles,
+          });
+          return send(res, 202, updated);
+        }
+        if (req.method === "POST" && id === "chats" && sub && arg === "stop") {
+          const stopped = stopCodeChatTurn(sub);
+          return stopped ? send(res, 200, stopped) : send(res, 404, { error: "chat not found" });
         }
       }
       if (req.method === "GET" && area === "jobs" && parts.length === 3) {

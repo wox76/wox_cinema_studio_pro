@@ -1,0 +1,120 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "hunyuan3d-21",
+  "name": "Hunyuan3D 2.1 Sculpt",
+  "section": "3d",
+  "pack": "3d-hunyuan",
+  "status": "ready",
+  "higgsfield_feature": "Fast 3D Shape Mesh",
+  "summary": "Scultura 3D ad alta definizione da immagine con Hunyuan3D 2.1 (solo 10GB VRAM, esporta .GLB pronto per ActionForge/Blender).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/image-to-3d-hunyuan3d-21.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Immagine Oggetto (meglio su sfondo neutro)",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "2",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "octree_resolution",
+      "type": "select",
+      "label": "Risoluzione Octree Mesh",
+      "default": 256,
+      "options": [
+        {
+          "value": 128,
+          "label": "128 (Veloce)"
+        },
+        {
+          "value": 256,
+          "label": "256 (Bilanciato)"
+        },
+        {
+          "value": 384,
+          "label": "384 (Alta Definizione)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "8",
+          "field": "octree_resolution"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "default": 30,
+      "bind": [
+        {
+          "node": "7",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "cfg",
+      "type": "slider",
+      "label": "CFG",
+      "min": 2.0,
+      "max": 8.0,
+      "step": 0.5,
+      "default": 5.0,
+      "bind": [
+        {
+          "node": "7",
+          "field": "cfg"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "7",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "10",
+      "type": "3d",
+      "label": "Mesh 3D .GLB"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/hunyuan3D_2.1_repackaged",
+      "file": "hunyuan_3d_v2.1.safetensors",
+      "dir": "checkpoints",
+      "gb": 7.37,
+      "phase": "all"
+    }
+  ],
+  "credits": [
+    "Hunyuan3D 2.1 (Tencent)",
+    "Workflow from Fuobe"
+  ]
+}

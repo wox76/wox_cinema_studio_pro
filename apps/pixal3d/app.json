@@ -1,0 +1,146 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "pixal3d",
+  "name": "Pixal3D PBR Studio",
+  "section": "3d",
+  "pack": "3d-studio",
+  "status": "ready",
+  "higgsfield_feature": "Image to 3D PBR (Pixal3D)",
+  "summary": "Il motore 3D principale di Fuobe: stima FOV con MoGe-2 + Pixal3D + TRELLIS.2 PBR con UV Unwrap, AO & Normal Map (.GLB, 16GB).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/image-to-3d-pixal3d.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Immagine Oggetto / Personaggio",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "122",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "texture_size",
+      "type": "select",
+      "label": "Risoluzione Texture PBR",
+      "default": 2048,
+      "options": [
+        {
+          "value": 1024,
+          "label": "1024×1024 (Veloce)"
+        },
+        {
+          "value": 2048,
+          "label": "2048×2048 (HD · Consigliato 16GB)"
+        },
+        {
+          "value": 4096,
+          "label": "4096×4096 (4K Ultra)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "288",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "3",
+          "field": "seed"
+        },
+        {
+          "node": "12",
+          "field": "seed"
+        },
+        {
+          "node": "18",
+          "field": "seed"
+        },
+        {
+          "node": "23",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "322",
+      "type": "3d",
+      "label": "Modello 3D .GLB"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "diffusion_models/pixal3d_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.58,
+      "phase": "denoise"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "clip_vision/dino_v3_L_naf_fp32.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.22,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_shape_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 1.1,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_texture_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 0.95,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/MoGe",
+      "file": "geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 0.66,
+      "phase": "aux"
+    },
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "phase": "aux"
+    }
+  ],
+  "credits": [
+    "Pixal3D & TRELLIS.2",
+    "MoGe-2 FOV Estimator",
+    "Workflow from Fuobe"
+  ],
+  "modes": [
+    "pixal3d",
+    "multi-to-3d",
+    "text-to-3d",
+    "object-to-3d",
+    "triposplat-3d"
+  ],
+  "mode_label": "Da Foto"
+}

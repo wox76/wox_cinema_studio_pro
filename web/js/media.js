@@ -27,17 +27,21 @@ export function exampleItem(app) {
 export function entryItem(e) {
   const app = byId.get(e.app);
   const labels = Object.fromEntries((app?.inputs || []).map((i) => [i.id, i]));
-  const first = e.outputs[0];
+  const visualOut = e.outputs.find((o) => o.type === "video" || o.type === "image");
+  const first = visualOut || e.outputs[0];
   const imageName = first?.name || first?.file || (first?.url ? first.url.split("/").pop() : null);
-  const is3d = e.app === "trellis-3d" || Boolean(e.glbUrl);
-  const glbUrl = e.glbUrl || (e.app === "trellis-3d" && e.status === "succeeded" ? `/api/history/${e.id}/files/out-model.glb` : null);
+  const glbOut = e.outputs.find((o) => /\.(glb|gltf)$/i.test(o.file || o.name || ""));
+  const is3d = e.app === "trellis-3d" || Boolean(e.glbUrl) || Boolean(glbOut) || app?.section === "3d";
+  const glbUrl = e.glbUrl || glbOut?.url || (e.app === "trellis-3d" && e.status === "succeeded" ? `/api/history/${e.id}/files/out-model.glb` : null);
+  const fallbackInputThumb = e.inputs?.find((i) => i.type === "image")?.url || null;
+  const cardUrl = visualOut?.url || fallbackInputThumb || first?.url || null;
   return {
     kind: "history", key: e.id, id: e.id, app: e.app, status: e.status,
     fileName: imageName,
     name: imageName || app?.name || e.app,
     type: is3d ? "3d" : (first?.type || app?.outputs?.[0]?.type || "image"),
     is3d,
-    card: first?.url || null, poster: null, full: first?.url || null,
+    card: cardUrl, poster: null, full: first?.url || cardUrl,
     glbUrl,
     outputs: e.outputs.map((o) => ({ type: o.type, url: o.url, name: o.name, file: o.file })),
     inputs: e.inputs.map((i) => ({ id: i.id, label: labels[i.id]?.label || i.id, type: i.type, thumb: i.type === "image" ? i.url : null, file: i.url,
@@ -85,17 +89,20 @@ export function thumb(item, { play = "visible", useFull = false, cls = "" } = {}
     box.append(v);
     box._video = v;
     if (play === "visible") playWhenVisible(v);
-  } else if (item.type === "3d" && src) {
+  } else if (item.type === "3d") {
     const isHistory = item.kind === "history";
-    const ext = extOf(src);
+    const ext = src ? extOf(src) : "";
     const isVid = ext === "mp4" || ext === "webm";
-    if (isVid) {
+    const isModelFile = ext === "glb" || ext === "gltf" || ext === "ply" || ext === "spz";
+    if (isVid && src) {
       const v = loopVideo(isHistory ? `${src}#t=0.1` : src, item.poster, isHistory ? "metadata" : "none");
       box.append(v);
       box._video = v;
       if (play === "visible") playWhenVisible(v);
-    } else {
+    } else if (src && !isModelFile) {
       box.append(el("img", { src, alt: "", loading: "lazy", decoding: "async" }));
+    } else {
+      box.append(el("span", { class: "placeholder" }, icon("cube")));
     }
     box.append(el("span", { class: "typeicon badge-3d", title: "Asset 3D GLB" }, icon("cube")));
   } else if (item.type === "audio") {

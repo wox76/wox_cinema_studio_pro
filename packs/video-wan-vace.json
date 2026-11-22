@@ -1,0 +1,161 @@
+{
+  "pack": "video-wan-vace",
+  "apps": [
+    "video-blockout",
+    "video-evolution",
+    "video-insert",
+    "video-remove-object",
+    "video-restyle",
+    "video-swap"
+  ],
+  "download_gb": 72.62,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/sam3.1",
+      "file": "checkpoints/sam3.1_multiplex_fp16.safetensors",
+      "dir": "checkpoints",
+      "gb": 1.75,
+      "name": "sam3.1_multiplex_fp16.safetensors",
+      "gated": false,
+      "license": "SAM-License",
+      "used_by": [
+        "video-insert",
+        "video-remove-object",
+        "video-swap"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "file": "split_files/diffusion_models/wan2.1_vace_14B_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 28.0,
+      "name": "wan2.1_vace_14B_fp16.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-insert",
+        "video-remove-object",
+        "video-swap"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+      "file": "split_files/diffusion_models/wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "gb": 15.3,
+      "name": "wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-blockout",
+        "video-evolution",
+        "video-restyle"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+      "file": "split_files/diffusion_models/wan2.2_fun_vace_low_noise_14B_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "gb": 15.3,
+      "name": "wan2.2_fun_vace_low_noise_14B_fp8_scaled.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-blockout",
+        "video-evolution",
+        "video-restyle"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Depth-Anything-3",
+      "file": "geometry_estimation/depth_anything_3_mono_large.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 1.38,
+      "name": "depth_anything_3_mono_large.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-evolution",
+        "video-restyle"
+      ]
+    },
+    {
+      "repo": "Kijai/WanVideo_comfy",
+      "file": "Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+      "dir": "loras",
+      "gb": 1.44,
+      "name": "lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-insert",
+        "video-remove-object",
+        "video-swap"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+      "file": "split_files/loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors",
+      "dir": "loras",
+      "gb": 1.23,
+      "name": "wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-blockout",
+        "video-evolution",
+        "video-restyle"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+      "file": "split_files/loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors",
+      "dir": "loras",
+      "gb": 1.23,
+      "name": "wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-blockout",
+        "video-evolution",
+        "video-restyle"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "file": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 6.74,
+      "name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-blockout",
+        "video-evolution",
+        "video-insert",
+        "video-remove-object",
+        "video-restyle",
+        "video-swap"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "file": "split_files/vae/wan_2.1_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "name": "wan_2.1_vae.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-blockout",
+        "video-evolution",
+        "video-insert",
+        "video-remove-object",
+        "video-restyle",
+        "video-swap"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "colorize",
+  "name": "Photo Colorize",
+  "section": "image",
+  "pack": "image-qwen-edit",
+  "status": "ready",
+  "higgsfield_feature": "Colorize B&W Archive Photo",
+  "summary": "Dà colore naturale e storicamente accurato alle foto in bianco e nero preservando grana e tratti originali.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/app-colorize",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "11",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "type": "textarea",
+      "label": "Note colore (opzionale)",
+      "required": true,
+      "default": "natural skin tones, warm period-accurate wardrobe and authentic film tones",
+      "bind": [
+        {
+          "node": "4",
+          "field": "prompt",
+          "template": "Colorize this black-and-white photograph realistically with {target}. Keep every detail, face identity, texture and composition completely identical."
+        },
+        {
+          "node": "14",
+          "field": "prompt",
+          "template": "Colorize this black-and-white photograph realistically with {target}. Keep every detail, face identity, texture and composition completely identical."
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "16",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "9",
+      "type": "image",
+      "label": "Foto colorizzata"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+      "file": "split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.43,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.38,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "lightx2v/Qwen-Image-Lightning",
+      "file": "Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors",
+      "dir": "loras",
+      "gb": 0.85,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Qwen-Image-Edit 2509 by Alibaba"
+  ]
+}

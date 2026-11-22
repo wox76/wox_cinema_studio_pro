@@ -1,0 +1,59 @@
+{
+  "pack": "image-flux1-krea",
+  "apps": [
+    "flux1-krea"
+  ],
+  "download_gb": 22.28,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/FLUX.1-Krea-dev_ComfyUI",
+      "file": "split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "gb": 11.9,
+      "name": "flux1-krea-dev_fp8_scaled.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "flux1-krea"
+      ]
+    },
+    {
+      "repo": "comfyanonymous/flux_text_encoders",
+      "file": "clip_l.safetensors",
+      "dir": "text_encoders",
+      "gb": 0.25,
+      "name": "clip_l.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "flux1-krea"
+      ]
+    },
+    {
+      "repo": "comfyanonymous/flux_text_encoders",
+      "file": "t5xxl_fp16.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.79,
+      "name": "t5xxl_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "flux1-krea"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Lumina_Image_2.0_Repackaged",
+      "file": "split_files/vae/ae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "name": "ae.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "flux1-krea"
+      ]
+    }
+  ]
+}

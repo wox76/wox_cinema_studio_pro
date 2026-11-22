@@ -1,0 +1,179 @@
+{
+  "pack": "3d-studio",
+  "apps": [
+    "multi-to-3d",
+    "object-to-3d",
+    "pixal3d",
+    "text-to-3d",
+    "trellis2-native"
+  ],
+  "download_gb": 33.17,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "name": "birefnet.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "multi-to-3d",
+        "pixal3d",
+        "text-to-3d",
+        "trellis2-native"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/sam3.1",
+      "file": "checkpoints/sam3.1_multiplex_fp16.safetensors",
+      "dir": "checkpoints",
+      "gb": 1.75,
+      "name": "sam3.1_multiplex_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "object-to-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "clip_vision/dino_v3_L_naf_fp32.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.22,
+      "name": "dino_v3_L_naf_fp32.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "multi-to-3d",
+        "object-to-3d",
+        "pixal3d",
+        "text-to-3d",
+        "trellis2-native"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "diffusion_models/pixal3d_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.58,
+      "name": "pixal3d_int8_convrot.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "object-to-3d",
+        "pixal3d",
+        "text-to-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "diffusion_models/pixal3d_multiview_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.58,
+      "name": "pixal3d_multiview_int8_convrot.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "multi-to-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/TRELLIS.2",
+      "file": "diffusion_models/trellis_2_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.25,
+      "name": "trellis_2_int8_convrot.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "trellis2-native"
+      ]
+    },
+    {
+      "repo": "Tongyi-MAI/Z-Image-Turbo",
+      "file": "diffusion_models/z_image_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 6.1,
+      "name": "z_image_turbo_int8_convrot.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "text-to-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/MoGe",
+      "file": "geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 0.66,
+      "name": "moge_2_vitl_normal_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "multi-to-3d",
+        "object-to-3d",
+        "pixal3d",
+        "text-to-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
+      "dir": "text_encoders",
+      "gb": 4.2,
+      "name": "qwen_3_4b_fp8_mixed.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "text-to-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/FLUX.1-dev",
+      "file": "vae/ae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "name": "ae.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "text-to-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_shape_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 1.1,
+      "name": "trellis_2_shape_vae_bf16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "multi-to-3d",
+        "object-to-3d",
+        "pixal3d",
+        "text-to-3d",
+        "trellis2-native"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_texture_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 0.95,
+      "name": "trellis_2_texture_vae_bf16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "multi-to-3d",
+        "object-to-3d",
+        "pixal3d",
+        "text-to-3d",
+        "trellis2-native"
+      ]
+    }
+  ]
+}

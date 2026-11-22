@@ -1,0 +1,144 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "body-double-3d",
+  "name": "Body Double 3D · Human Rig",
+  "section": "3d",
+  "pack": "3d-body-double",
+  "status": "ready",
+  "higgsfield_feature": "3D Human Body Capture",
+  "summary": "Estrae un corpo umano 3D con scheletro (.GLB) da ogni persona nella foto + render di posa e look Holo/Clay/Thermal/X-Ray.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/body-double-photo-instanthmr.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto con Persone",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "look",
+      "type": "select",
+      "label": "Stile Render Body Double",
+      "default": "holo",
+      "options": [
+        {
+          "value": "holo",
+          "label": "Holo (Normali Iridescenti)"
+        },
+        {
+          "value": "clay",
+          "label": "Clay (Scultura Opaca)"
+        },
+        {
+          "value": "thermal",
+          "label": "Thermal (Mappa Termica)"
+        },
+        {
+          "value": "ghost",
+          "label": "Ghost (Holo Semitrasparente)"
+        },
+        {
+          "value": "xray",
+          "label": "X-Ray (Contorno Ciano)"
+        },
+        {
+          "value": "skeleton",
+          "label": "Skeleton (Scheletro SCAIL)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "40",
+          "field": "look"
+        }
+      ]
+    },
+    {
+      "id": "max_people",
+      "type": "slider",
+      "label": "Max Persone Rilevate",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 8,
+      "bind": [
+        {
+          "node": "3",
+          "field": "max_detections"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "7",
+      "type": "image",
+      "label": "Body Double Render"
+    },
+    {
+      "node": "12",
+      "type": "3d",
+      "label": "Corpo 3D Skinned .GLB"
+    },
+    {
+      "node": "9",
+      "type": "image",
+      "label": "Mappa Posa"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/RT-DETR",
+      "file": "diffusion_models/rt_detr_v4-x-hgnet_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 0.12,
+      "phase": "aux"
+    },
+    {
+      "repo": "jtydhr88/ComfyUI-InstantHMR",
+      "file": "instanthmr_medium.safetensors",
+      "dir": "detection",
+      "gb": 0.18,
+      "phase": "aux"
+    },
+    {
+      "repo": "Comfy-Org/sam-3d-body",
+      "file": "detection/sam_3d_body_dinov3_int8_convrot.safetensors",
+      "dir": "detection",
+      "gb": 1.99,
+      "phase": "all"
+    },
+    {
+      "repo": "Comfy-Org/sam3.1",
+      "file": "checkpoints/sam3.1_multiplex_fp16.safetensors",
+      "dir": "checkpoints",
+      "gb": 1.75,
+      "phase": "aux"
+    },
+    {
+      "repo": "Comfy-Org/MoGe",
+      "file": "geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 0.66,
+      "phase": "aux"
+    }
+  ],
+  "credits": [
+    "ComfyUI-BodyDouble (Fuobe, MIT)",
+    "ComfyUI-InstantHMR (Apache-2.0)",
+    "SAM 3D Body & MoGe-2"
+  ]
+}

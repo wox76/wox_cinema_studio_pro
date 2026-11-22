@@ -1,0 +1,211 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "z-image-palette",
+  "name": "Soul HEX Palette",
+  "section": "image",
+  "pack": "image",
+  "status": "ready",
+  "higgsfield_feature": "Color Palette Lock",
+  "summary": "Genera immagini vincolate a una palette cromatica HEX precisa con ColorTransfer LAB automatico.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/palette-zimage-hex.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Scena / Prompt",
+      "required": true,
+      "default": "A fashion editorial photo on a rooftop at dusk, dramatic silhouette",
+      "bind": [
+        {
+          "node": "20",
+          "field": "string_a"
+        }
+      ]
+    },
+    {
+      "id": "palette_preset",
+      "type": "select",
+      "label": "Palette Predefinita",
+      "default": "Color palette: #0F0C0B, #65370D, #916D4C, #C6BE94, #F2F1C4",
+      "options": [
+        {
+          "value": "Color palette: #0F0C0B, #65370D, #916D4C, #C6BE94, #F2F1C4",
+          "label": "🏜️ Dune Amber & Sand"
+        },
+        {
+          "value": "Color palette: #07141E, #0E4D64, #14B8A6, #F97316, #FDE68A",
+          "label": "🎬 Teal & Orange Cinema"
+        },
+        {
+          "value": "Color palette: #090814, #4C1D95, #EC4899, #22D3EE, #F8FAFC",
+          "label": "🌃 Cyberpunk Neon"
+        },
+        {
+          "value": "Color palette: #1A0B0E, #7F1D1D, #DC2626, #FCA5A5, #FEF2F2",
+          "label": "🌹 Giallo Crimson"
+        },
+        {
+          "value": "Color palette: #0D1B1E, #2D4739, #6B8E78, #D9C5A0, #F4EFE6",
+          "label": "🌲 Nordic Sage Film"
+        },
+        {
+          "value": "Color palette: #000000, #262626, #737373, #D4D4D4, #FFFFFF",
+          "label": "🎞️ Noir Monochrome"
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "palette_text",
+      "type": "text",
+      "label": "Colori HEX personalizzati (opzionale)",
+      "default": "",
+      "help": "Es: #0F0C0B, #D97706, #FEF3C7 (se lasciato vuoto usa la palette predefinita)",
+      "bind": [
+        {
+          "node": "20",
+          "field": "string_b",
+          "template": "{palette_preset} {palette_text}"
+        }
+      ]
+    },
+    {
+      "id": "palette_image",
+      "type": "image",
+      "label": "Immagine Swatch Riferimento (Opzionale)",
+      "required": false,
+      "help": "Se non carichi un'immagine, generiamo automaticamente lo swatch dai codici HEX!",
+      "bind": [
+        {
+          "node": "1",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "strength",
+      "type": "slider",
+      "label": "Intensità Lock Colore",
+      "min": 0.0,
+      "max": 1.0,
+      "step": 0.05,
+      "default": 0.7,
+      "bind": [
+        {
+          "node": "26",
+          "field": "strength"
+        }
+      ]
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Formato & Risoluzione",
+      "default": "1024x1024",
+      "options": [
+        {
+          "value": "1024x1024",
+          "label": "1:1 Quadrato (1024×1024)",
+          "sets": [
+            {
+              "node": "23",
+              "field": "width",
+              "value": 1024
+            },
+            {
+              "node": "23",
+              "field": "height",
+              "value": 1024
+            }
+          ]
+        },
+        {
+          "value": "1344x768",
+          "label": "16:9 Cinema (1344×768)",
+          "sets": [
+            {
+              "node": "23",
+              "field": "width",
+              "value": 1344
+            },
+            {
+              "node": "23",
+              "field": "height",
+              "value": 768
+            }
+          ]
+        },
+        {
+          "value": "768x1344",
+          "label": "9:16 Verticale (768×1344)",
+          "sets": [
+            {
+              "node": "23",
+              "field": "width",
+              "value": 768
+            },
+            {
+              "node": "23",
+              "field": "height",
+              "value": 1344
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "24",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "27",
+      "type": "image",
+      "label": "Immagine"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/diffusion_models/z_image_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 6.2,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
+      "dir": "text_encoders",
+      "gb": 4.2,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/vae/ae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Z-Image Turbo",
+    "Workflow from Fuobe"
+  ]
+}

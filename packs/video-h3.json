@@ -1,12 +1,19 @@
 {
   "pack": "video-h3",
   "apps": [
+    "cinema-video",
+    "director",
     "extend-video",
     "h3-photo",
     "h3-video",
-    "reshoot"
+    "marketing-video",
+    "music-video",
+    "orbit-360",
+    "reshoot",
+    "speak",
+    "video"
   ],
-  "download_gb": 75.72,
+  "download_gb": 91.57,
   "needs_hf_token": false,
   "custom_nodes": [
     {
@@ -24,9 +31,16 @@
       "gated": false,
       "license": "MiniMax H3 Community License",
       "used_by": [
+        "cinema-video",
+        "director",
         "extend-video",
         "h3-photo",
-        "h3-video"
+        "h3-video",
+        "marketing-video",
+        "music-video",
+        "orbit-360",
+        "speak",
+        "video"
       ]
     },
     {
@@ -66,6 +80,18 @@
       ]
     },
     {
+      "repo": "pablodawson/MiniMax-H3-360-Orbit-LoRA",
+      "file": "minimax_h3_flf2v_lora_v1.safetensors",
+      "dir": "loras",
+      "gb": 0.16,
+      "name": "minimax_h3_flf2v_lora_v1.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "orbit-360"
+      ]
+    },
+    {
       "repo": "lightx2v/Minimax-h3-Turbo",
       "file": "minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors",
       "dir": "loras",
@@ -86,10 +112,28 @@
       "gated": false,
       "license": "MiniMax H3 Community License",
       "used_by": [
+        "cinema-video",
+        "director",
         "extend-video",
         "h3-photo",
         "h3-video",
-        "reshoot"
+        "marketing-video",
+        "music-video",
+        "reshoot",
+        "speak",
+        "video"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "dir": "text_encoders",
+      "gb": 15.69,
+      "name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "orbit-360"
       ]
     },
     {
@@ -101,10 +145,17 @@
       "gated": false,
       "license": "MiniMax H3 Community License",
       "used_by": [
+        "cinema-video",
+        "director",
         "extend-video",
         "h3-photo",
         "h3-video",
-        "reshoot"
+        "marketing-video",
+        "music-video",
+        "orbit-360",
+        "reshoot",
+        "speak",
+        "video"
       ]
     },
     {
@@ -116,10 +167,17 @@
       "gated": false,
       "license": "MiniMax H3 Community License",
       "used_by": [
+        "cinema-video",
+        "director",
         "extend-video",
         "h3-photo",
         "h3-video",
-        "reshoot"
+        "marketing-video",
+        "music-video",
+        "orbit-360",
+        "reshoot",
+        "speak",
+        "video"
       ]
     }
   ]

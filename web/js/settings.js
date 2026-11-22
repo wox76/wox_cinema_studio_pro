@@ -237,7 +237,17 @@ export function openSettingsModal({ onLang, tab } = {}) {
             { action: "install_all_everything" },
             "Avviata installazione completa di tutti i Nodi e di tutti i Pack Modelli!"
           )
-        }, icon("download"), `Installa Tutto il Catalogo (${s.all_missing_gb} GB mancanti)`)
+        }, icon("download"), `Installa Tutto il Catalogo (${s.all_missing_gb} GB mancanti)`),
+        el("button", {
+          class: "btn ghost",
+          type: "button",
+          disabled: isRunning,
+          title: "Aggiorna ComfyUI Core all'ultima versione (sblocca MOSS-Image CLIPLoader e nuovi nodi nativi)",
+          onclick: () => startInstallerAction(
+            { action: "update_comfyui" },
+            "Avviato aggiornamento ComfyUI Core & Nodi Nativi!"
+          )
+        }, icon("swap"), "Aggiorna ComfyUI Core")
       )
     );
 

@@ -3,10 +3,10 @@
   "id": "style-reference",
   "name": "Style Reference",
   "section": "image",
-  "pack": "image-krea2",
+  "pack": "image-qwen-edit",
   "status": "ready",
   "higgsfield_feature": "Style transfer",
-  "summary": "Paints anything you describe in the style of a reference image (Krea 2 Turbo with a style-reference LoRA).",
+  "summary": "Paints anything you describe in the exact visual style of a reference image (Qwen-Image-Edit 2509 for crisp, clean artwork).",
   "workflow": "workflow.api.json",
   "source": {
     "template": "image_krea2_turbo_int8_image_style_reference.json",
@@ -43,15 +43,34 @@
       ]
     },
     {
-      "id": "enhance",
-      "type": "toggle",
-      "label": "Enhance prompt",
-      "default": false,
-      "help": "Rewrites your prompt with the Qwen3-VL text encoder first",
+      "id": "style_strength",
+      "type": "slider",
+      "label": "Style strength",
+      "min": 0.3,
+      "max": 1.2,
+      "step": 0.05,
+      "default": 0.75,
+      "help": "How strongly to copy the reference art style, coloring, and linework (0.7–0.85 is the sweet spot).",
       "bind": [
         {
-          "node": "30:24",
-          "field": "value"
+          "node": "ipa_apply",
+          "field": "weight"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 6,
+      "max": 16,
+      "step": 1,
+      "default": 8,
+      "help": "8–10 steps is optimal for DreamShaper XL Turbo.",
+      "bind": [
+        {
+          "node": "sampler",
+          "field": "steps"
         }
       ]
     },
@@ -124,8 +143,8 @@
       "help": "-1 picks a random seed",
       "bind": [
         {
-          "node": "30:63",
-          "field": "noise_seed"
+          "node": "sampler",
+          "field": "seed"
         }
       ]
     }
@@ -139,36 +158,28 @@
   ],
   "models": [
     {
-      "repo": "Comfy-Org/Krea-2",
-      "file": "diffusion_models/krea2_turbo_int8_convrot.safetensors",
-      "dir": "diffusion_models",
-      "gb": 13.49,
+      "repo": "stabilityai/stable-diffusion-xl-base-1.0",
+      "file": "checkpoints/sd_xl_base_1.0.safetensors",
+      "dir": "checkpoints",
+      "gb": 6.94,
       "phase": "denoise",
-      "license": "Krea 2 Community License"
+      "license": "CreativeML Open RAIL++-M"
     },
     {
-      "repo": "Comfy-Org/Krea-2",
-      "file": "text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
-      "dir": "text_encoders",
-      "gb": 5.24,
+      "repo": "h94/IP-Adapter",
+      "file": "ipadapter/ip-adapter-plus_sdxl_vit-h.safetensors",
+      "dir": "ipadapter",
+      "gb": 0.85,
       "phase": "encode",
-      "license": "Krea 2 Community License"
+      "license": "Apache-2.0"
     },
     {
-      "repo": "Comfy-Org/Krea-2",
-      "file": "vae/qwen_image_vae.safetensors",
-      "dir": "vae",
-      "gb": 0.25,
-      "phase": "decode",
-      "license": "Krea 2 Community License"
-    },
-    {
-      "repo": "Comfy-Org/Krea-2",
-      "file": "loras/krea2_style_reference.safetensors",
-      "dir": "loras",
-      "gb": 0.46,
-      "phase": "denoise",
-      "license": "Krea 2 Community License"
+      "repo": "h94/IP-Adapter",
+      "file": "clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors",
+      "dir": "clip_vision",
+      "gb": 2.53,
+      "phase": "encode",
+      "license": "MIT"
     }
   ],
   "credits": [

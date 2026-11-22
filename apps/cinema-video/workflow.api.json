@@ -399,5 +399,29 @@
     "_meta": {
       "title": "Scale First Frame"
     }
+  },
+  "last_frame": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "asset.png"
+    },
+    "_meta": {
+      "title": "Last Frame"
+    }
+  },
+  "last_frame_scale": {
+    "class_type": "ImageScaleToTotalPixels",
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 0.6,
+      "resolution_steps": 32,
+      "image": [
+        "last_frame",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Scale Last Frame"
+    }
   }
 }

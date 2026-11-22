@@ -1,0 +1,23 @@
+{
+  "pack": "3d-hunyuan",
+  "apps": [
+    "hunyuan3d-21"
+  ],
+  "download_gb": 7.37,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/hunyuan3D_2.1_repackaged",
+      "file": "hunyuan_3d_v2.1.safetensors",
+      "dir": "checkpoints",
+      "gb": 7.37,
+      "name": "hunyuan_3d_v2.1.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "hunyuan3d-21"
+      ]
+    }
+  ]
+}

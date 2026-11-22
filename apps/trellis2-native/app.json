@@ -1,0 +1,130 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "trellis2-native",
+  "name": "TRELLIS.2 Native PBR",
+  "section": "3d",
+  "pack": "3d-studio",
+  "status": "ready",
+  "higgsfield_feature": "TRELLIS.2 Native ComfyUI",
+  "summary": "Grafo nativo ComfyUI TRELLIS.2 di Fuobe: Shape/Texture Stage + Remesh + UV Unwrap + AO/Normal Bake (.GLB, 16GB).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/image-to-3d-trellis2.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Immagine Oggetto / Personaggio",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "122",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "texture_size",
+      "type": "select",
+      "label": "Risoluzione Texture PBR",
+      "default": 2048,
+      "options": [
+        {
+          "value": 1024,
+          "label": "1024×1024 (Veloce)"
+        },
+        {
+          "value": 2048,
+          "label": "2048×2048 (HD · Consigliato 16GB)"
+        },
+        {
+          "value": 4096,
+          "label": "4096×4096 (4K Ultra)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "288",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "3",
+          "field": "seed"
+        },
+        {
+          "node": "12",
+          "field": "seed"
+        },
+        {
+          "node": "18",
+          "field": "seed"
+        },
+        {
+          "node": "23",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "322",
+      "type": "3d",
+      "label": "Modello 3D .GLB"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/TRELLIS.2",
+      "file": "diffusion_models/trellis_2_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.25,
+      "phase": "denoise"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "clip_vision/dino_v3_L_naf_fp32.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.22,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_shape_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 1.1,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_texture_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 0.95,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "phase": "aux"
+    }
+  ],
+  "credits": [
+    "TRELLIS.2 (Microsoft)",
+    "Workflow from Fuobe"
+  ]
+}

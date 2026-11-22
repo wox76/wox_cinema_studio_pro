@@ -3,7 +3,7 @@
   "apps": [
     "moss-image"
   ],
-  "download_gb": 13.0,
+  "download_gb": 15.41,
   "needs_hf_token": false,
   "custom_nodes": [],
   "models": [
@@ -21,10 +21,10 @@
     },
     {
       "repo": "Comfy-Org/MOSS-Image",
-      "file": "text_encoders/qwen3.5_9b_w4a8_gptq.safetensors",
+      "file": "text_encoders/qwen3.5_9b_int8_convrot.safetensors",
       "dir": "text_encoders",
-      "gb": 7.34,
-      "name": "qwen3.5_9b_w4a8_gptq.safetensors",
+      "gb": 9.75,
+      "name": "qwen3.5_9b_int8_convrot.safetensors",
       "gated": false,
       "license": "Apache-2.0",
       "used_by": [

@@ -186,6 +186,10 @@ export function topbar({ onLang }) {
   const items = [
     ["home", "#/app/cinema-video", "home"], ["image", "#/image", "image"], ["video", "#/video", "video"], ["audio", "#/audio", "audio"],
     ["3d", "#/3d", "cube"],
+    ["game", "#/game", "cube"],
+    ["code", "#/code", "spark"],
+    ["fx", "#/fx", "spark"],
+    ["marketing", "#/marketing", "bolt"],
     ["apps", "#/apps", "layers"], ["library", "#/library", "film"],
   ];
   const links = new Map();
@@ -214,10 +218,20 @@ export function topbar({ onLang }) {
     ...FEATURED.filter((f) => byId.has(f.id)).map((f) => [byId.get(f.id).name, `#/app/${f.id}`, "spark"]), [t("nav.vram"), "#/vram", "chip"]]
     .map(([label, hash, ic]) => el("a", { class: "opt", href: hash, onclick: closePopover }, icon(ic), label))));
   const bar = el("header", { class: "topbar" },
-    menuBtn,
-    el("a", { class: "logo", href: "#/app/cinema-video", "aria-label": "Wox Cinema Studio Pro" }, logoMark(), el("span", { class: "word" }, "Wox Cinema Studio Pro")),
-    nav,
-    el("div", { class: "nav-right" }, vram, langBtn, gpuPill(), createShellBtn(), createEditorToggleBtn(), createSettingsBtn({ onLang }), el("a", { class: "btn lime small cta", href: "#/image" }, icon("spark"), t("nav.create"))));
+    el("div", { class: "topbar-row topbar-row-1" },
+      menuBtn,
+      el("a", { class: "logo", href: "#/app/cinema-video", "aria-label": "Wox Cinema Studio Pro" }, logoMark(), el("span", { class: "word" }, "Wox Cinema Studio Pro")),
+      nav,
+      el("div", { class: "nav-right" }, vram, langBtn)
+    ),
+    el("div", { class: "topbar-row topbar-row-2", role: "toolbar", "aria-label": "Strumenti e azioni" },
+      gpuPill(),
+      createShellBtn(),
+      createEditorToggleBtn(),
+      createSettingsBtn({ onLang }),
+      el("a", { class: "btn lime small cta", href: "#/image" }, icon("spark"), t("nav.create"))
+    )
+  );
   attachMenus(bar, links);
   if (!pollTimer) pollGpu();
   return {

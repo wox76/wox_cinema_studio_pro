@@ -1,0 +1,229 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "z-image-grid",
+  "name": "Contact Sheet Grid",
+  "section": "image",
+  "pack": "image",
+  "status": "ready",
+  "higgsfield_feature": "Storyboard Contact Sheet",
+  "summary": "Genera un contact sheet cinematografico 2×2, 3×3 o 4×4 coerente ed estrae ogni riquadro separatamente (Z-Image Turbo).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/grid-zimage-contact-sheet.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Scena / Soggetto",
+      "required": true,
+      "default": "A detective in a rain-soaked neon alley at night, cinematic film stills, varied camera angles",
+      "bind": [
+        {
+          "node": "20",
+          "field": "string_b"
+        }
+      ]
+    },
+    {
+      "id": "grid_layout",
+      "type": "select",
+      "label": "Griglia Riquadri",
+      "default": "3x3",
+      "options": [
+        {
+          "value": "2x2",
+          "label": "2×2 (4 Inquadrature)",
+          "sets": [
+            {
+              "node": "27",
+              "field": "columns",
+              "value": 2
+            },
+            {
+              "node": "27",
+              "field": "rows",
+              "value": 2
+            },
+            {
+              "node": "20",
+              "field": "string_a",
+              "value": "A 2x2 grid contact sheet of 4 film stills from the same scene, edge to edge with thin black gutters, consistent character, wardrobe, lighting and colour grade in every panel, varied shot sizes and angles:"
+            }
+          ]
+        },
+        {
+          "value": "3x3",
+          "label": "3×3 (9 Inquadrature)",
+          "sets": [
+            {
+              "node": "27",
+              "field": "columns",
+              "value": 3
+            },
+            {
+              "node": "27",
+              "field": "rows",
+              "value": 3
+            },
+            {
+              "node": "20",
+              "field": "string_a",
+              "value": "A 3x3 grid contact sheet of 9 film stills from the same scene, edge to edge with thin black gutters, consistent character, wardrobe, lighting and colour grade in every panel, varied shot sizes and angles:"
+            }
+          ]
+        },
+        {
+          "value": "4x4",
+          "label": "4×4 (16 Inquadrature)",
+          "sets": [
+            {
+              "node": "27",
+              "field": "columns",
+              "value": 4
+            },
+            {
+              "node": "27",
+              "field": "rows",
+              "value": 4
+            },
+            {
+              "node": "20",
+              "field": "string_a",
+              "value": "A 4x4 grid contact sheet of 16 film stills from the same scene, edge to edge with thin black gutters, consistent character, wardrobe, lighting and colour grade in every panel, varied shot sizes and angles:"
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Formato & Risoluzione",
+      "default": "2048x1152",
+      "options": [
+        {
+          "value": "2048x1152",
+          "label": "16:9 Widescreen (2048×1152)",
+          "sets": [
+            {
+              "node": "23",
+              "field": "width",
+              "value": 2048
+            },
+            {
+              "node": "23",
+              "field": "height",
+              "value": 1152
+            }
+          ]
+        },
+        {
+          "value": "1536x1536",
+          "label": "1:1 Quadrato (1536×1536)",
+          "sets": [
+            {
+              "node": "23",
+              "field": "width",
+              "value": 1536
+            },
+            {
+              "node": "23",
+              "field": "height",
+              "value": 1536
+            }
+          ]
+        },
+        {
+          "value": "1152x2048",
+          "label": "9:16 Verticale (1152×2048)",
+          "sets": [
+            {
+              "node": "23",
+              "field": "width",
+              "value": 1152
+            },
+            {
+              "node": "23",
+              "field": "height",
+              "value": 2048
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 16,
+      "step": 1,
+      "default": 8,
+      "bind": [
+        {
+          "node": "24",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "24",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "26",
+      "type": "image",
+      "label": "Contact Sheet"
+    },
+    {
+      "node": "28",
+      "type": "image",
+      "label": "Singoli Riquadri"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/diffusion_models/z_image_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 6.2,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
+      "dir": "text_encoders",
+      "gb": 4.2,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "file": "split_files/vae/ae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Z-Image Turbo",
+    "ComfyUI-KJNodes",
+    "Workflow from Fuobe"
+  ]
+}

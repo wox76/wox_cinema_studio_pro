@@ -96,6 +96,83 @@ async def status(request: web.Request) -> web.Response:
     return web.json_response({"app": pantry.app, "models": pantry.models, "frees": pantry.frees, "comfyui": stats})
 
 
+_EXT_3D = (".glb", ".gltf", ".ply", ".spz", ".obj")
+
+
+def _extract_3d_refs(history_entry: dict) -> list[dict]:
+    """Collect 3D model outputs from ComfyUI /history/{job_id} (SaveGLB '3d' & Save3DAdvanced 'result')."""
+    found: list[dict] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    outputs = history_entry.get("outputs") or {}
+    for node_id, node_out in outputs.items():
+        if not isinstance(node_out, dict):
+            continue
+        for key in ("3d", "files", "mesh"):
+            items = node_out.get(key)
+            if not isinstance(items, list):
+                continue
+            for it in items:
+                if isinstance(it, dict) and isinstance(it.get("filename"), str):
+                    fn = it["filename"]
+                    if fn.lower().endswith(_EXT_3D):
+                        sub = str(it.get("subfolder") or "")
+                        tp = str(it.get("type") or "output")
+                        sig = (str(node_id), fn, sub, tp)
+                        if sig not in seen:
+                            seen.add(sig)
+                            found.append({"node_id": str(node_id), "filename": fn, "subfolder": sub, "type": tp})
+        res = node_out.get("result")
+        if isinstance(res, list) and res and isinstance(res[0], str):
+            raw = res[0].strip().replace("\\", "/")
+            if raw.lower().endswith(_EXT_3D):
+                if "/" in raw:
+                    sub, fn = raw.rsplit("/", 1)
+                else:
+                    sub, fn = "", raw
+                sig = (str(node_id), fn, sub, "output")
+                if sig not in seen:
+                    seen.add(sig)
+                    found.append({"node_id": str(node_id), "filename": fn, "subfolder": sub, "type": "output"})
+    return found
+
+
+async def job_3d_outputs(request: web.Request) -> web.Response:
+    job_id = request.match_info["job_id"]
+    session: ClientSession = request.app["session"]
+    try:
+        async with session.get(f"{COMFYUI_URL}/history/{job_id}") as r:
+            if r.status != 200:
+                return web.json_response({"files": []})
+            data = await r.json()
+    except Exception:
+        return web.json_response({"files": []})
+    entry = data.get(job_id) if isinstance(data, dict) else None
+    if not isinstance(entry, dict):
+        return web.json_response({"files": []})
+    base = external_base(request)
+    refs = _extract_3d_refs(entry)
+    files = []
+    for ref in refs:
+        from urllib.parse import urlencode
+        qs = urlencode({"filename": ref["filename"], "subfolder": ref["subfolder"], "type": ref["type"]})
+        files.append({**ref, "url": f"{base}/wox/view?{qs}"})
+    return web.json_response({"files": files})
+
+
+async def wox_view(request: web.Request) -> web.StreamResponse:
+    session: ClientSession = request.app["session"]
+    qs = request.query_string
+    target = f"{COMFYUI_URL}/view" + (f"?{qs}" if qs else "")
+    async with session.get(target) as upstream:
+        headers = {k: v for k, v in upstream.headers.items() if k.lower() not in HOP_HEADERS | {"content-encoding"}}
+        resp = web.StreamResponse(status=upstream.status, headers=headers)
+        await resp.prepare(request)
+        async for chunk in upstream.content.iter_any():
+            await resp.write(chunk)
+        await resp.write_eof()
+        return resp
+
+
 LOCAL_HOSTS = ("127.0.0.1", "localhost", "0.0.0.0", "[::1]")
 
 
@@ -137,9 +214,12 @@ async def forward(request: web.Request) -> web.StreamResponse:
         for k, v in passthrough.items():
             resp.headers[k] = v
         await resp.prepare(request)
-        async for chunk in upstream.content.iter_any():   # streams SSE events and big files as they come
-            await resp.write(chunk)
-        await resp.write_eof()
+        try:
+            async for chunk in upstream.content.iter_any():   # streams SSE events and big files as they come
+                await resp.write(chunk)
+            await resp.write_eof()
+        except (ConnectionResetError, BrokenPipeError):
+            pass
         return resp
 
 
@@ -159,6 +239,8 @@ def make_app() -> web.Application:
     app.router.add_get("/health", health)
     app.router.add_post("/wox/prepare", prepare)
     app.router.add_get("/wox/status", status)
+    app.router.add_get("/wox/jobs/{job_id}/3d", job_3d_outputs)
+    app.router.add_get("/wox/view", wox_view)
     # backward compatibility routes
     app.router.add_post("/freefield/prepare", prepare)
     app.router.add_get("/freefield/status", status)

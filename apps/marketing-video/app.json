@@ -1,0 +1,445 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "marketing-video",
+  "name": "Marketing Video · UGC, Hypermotion & Ads",
+  "section": "video",
+  "pack": "video-h3",
+  "status": "ready",
+  "modes": [
+    "marketing-studio",
+    "marketing-video"
+  ],
+  "mode_label": "Video & UGC",
+  "higgsfield_feature": "Click to Ad · Hypermotion · UGC Hooks & Settings",
+  "summary": "32 template video Fuobe (Hypermotion, Mixed Media, UGC, TikTok) + 9 UGC Hooks, 14 Ambientazioni e 10 Ad Styles con audio MiniMax H3.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/marketing-templates-video",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Primo Fotogramma (Prodotto / Creator)",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "114",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "template",
+      "type": "select",
+      "label": "Template Video Marketing",
+      "default": "Flat 2D animation: the product pops in as a die-cut sticker, bouncy squash and stretch, doodled stars and sparkles burst around it on a flat colour background",
+      "options": [
+        {
+          "value": "Flat 2D animation: the product pops in as a die-cut sticker, bouncy squash and stretch, doodled stars and sparkles burst around it on a flat colour background",
+          "label": "[Motion 2D] Sticker Pop"
+        },
+        {
+          "value": "Paper cut-out animation: layered paper shapes slide in like a theatre set and the product rises from behind them, gentle stop-motion jitter",
+          "label": "[Motion 2D] Paper Parade"
+        },
+        {
+          "value": "Pop-art comic panels flip one after another, each showing the product from a new angle with halftone dots and bold outlines",
+          "label": "[Motion 2D] Comic Panels"
+        },
+        {
+          "value": "A Swiss-style grid of colour tiles shuffles and slides; one tile opens to reveal the product, crisp geometric transitions",
+          "label": "[Motion 2D] Grid Shuffle"
+        },
+        {
+          "value": "Pure CGI commercial: the camera orbits the product on a dark stage as a sweeping light reveals its edges, then settles on a hero angle",
+          "label": "[Hypermotion] Orbit Hero"
+        },
+        {
+          "value": "Ribbons of glossy liquid swirl around the product and wrap it, then fall away to reveal it spotless, macro slow motion",
+          "label": "[Hypermotion] Liquid Wrap"
+        },
+        {
+          "value": "The product splits into an exploded view with its parts floating apart, then snaps back together, technical and precise",
+          "label": "[Hypermotion] Exploded View"
+        },
+        {
+          "value": "The product's ingredients rain down from above in slow motion and bounce around it, bright studio light, fresh and vivid",
+          "label": "[Hypermotion] Ingredient Rain"
+        },
+        {
+          "value": "A single spotlight snaps on and the product rotates on a turntable, dust motes in the beam, dramatic theatre mood",
+          "label": "[Hypermotion] Spotlight Spin"
+        },
+        {
+          "value": "The product drops into frame, bounces once on a coloured floor with a satisfying squash, and lands on its hero angle",
+          "label": "[Hypermotion] Drop & Bounce"
+        },
+        {
+          "value": "The product plunges into clear water in extreme slow motion, bubbles trail upward and light caustics dance across it",
+          "label": "[Hypermotion] Slow Splash"
+        },
+        {
+          "value": "Neon light bars sweep across the product in sync with a beat, reflections streak over its surface, night-club energy",
+          "label": "[Hypermotion] Neon Sweep"
+        },
+        {
+          "value": "Mixed-media scrapbook: torn paper, tape and doodles animate around a real photo of the product as pages flip",
+          "label": "[Mixed Media] Scrapbook Flip"
+        },
+        {
+          "value": "Risograph-print look with grain and slight misregistration; the product cycles through two-colour duotone frames",
+          "label": "[Mixed Media] Riso Loop"
+        },
+        {
+          "value": "A Y2K computer desktop: pop-up windows, chrome icons and a cursor open a window that shows the product",
+          "label": "[Mixed Media] Y2K Desktop"
+        },
+        {
+          "value": "Claymation diorama: tiny clay props and a little set animate in stop motion around the real product",
+          "label": "[Mixed Media] Clay Diorama"
+        },
+        {
+          "value": "Halftone street-poster collage: cut-out shapes and the product slide in with punchy, rhythmic cuts",
+          "label": "[Mixed Media] Halftone Collage"
+        },
+        {
+          "value": "A laptop and a phone float in a soft gradient space showing the app's interface, the camera drifts slowly between them",
+          "label": "[SaaS] Device Float"
+        },
+        {
+          "value": "A relaxed, honest review straight to the phone camera: what they liked, one small catch and why they'd still buy it again",
+          "label": "[UGC Talking] Honest Review"
+        },
+        {
+          "value": "They open the package at the kitchen table, pull the product out and react to it for the first time",
+          "label": "[UGC Talking] Unboxing at Home"
+        },
+        {
+          "value": "A get-ready-with-me morning routine where the product is the step they never skip",
+          "label": "[UGC Talking] Morning Routine"
+        },
+        {
+          "value": "They describe the problem they had before, show the product, and talk through the difference it made",
+          "label": "[UGC Talking] Before & After"
+        },
+        {
+          "value": "A 3-step how-to: they talk and demonstrate how they use the product at the same time",
+          "label": "[UGC Talking] Quick Tutorial"
+        },
+        {
+          "value": "A try-on haul: they show the product on, turn around for the camera and say how it fits and feels",
+          "label": "[UGC Talking] Try-On Haul"
+        },
+        {
+          "value": "Doorstep delivery: they pick up the parcel, open it right there and share their first impression",
+          "label": "[UGC Talking] Delivery Day"
+        },
+        {
+          "value": "A completely calm product review in an absurd place, played straight for laughs",
+          "label": "[UGC Talking] Sky-High Review"
+        },
+        {
+          "value": "Creator-led recommendation: “this little thing saved my week” — the problem, the product, the payoff",
+          "label": "[TikTok] This Saved My Week"
+        },
+        {
+          "value": "They lean in to share a clever hack with the product that most people don't know about",
+          "label": "[TikTok] Secret Hack"
+        },
+        {
+          "value": "First-person POV: we see their hands use the product in an everyday moment while they narrate",
+          "label": "[TikTok] POV Camera"
+        },
+        {
+          "value": "A messy situation turns fresh and tidy thanks to the product, with a satisfying reveal",
+          "label": "[TikTok] Mess to Fresh"
+        },
+        {
+          "value": "A couple at home tries the product together and banters about it",
+          "label": "[TikTok] Couple Test"
+        },
+        {
+          "value": "Fast, punchy talking-to-camera with jump cuts: three reasons to get the product",
+          "label": "[TikTok] Direct to Camera"
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "hook",
+      "type": "select",
+      "label": "UGC Opening Hook (9 opzioni)",
+      "default": "",
+      "options": [
+        {
+          "value": "",
+          "label": "Nessun Hook (Normale)"
+        },
+        {
+          "value": "Opening hook: Something flies into frame and bonks the creator; a beat of surprise, then they laugh it off and pivot straight to the product.",
+          "label": "⚡ Product Hit"
+        },
+        {
+          "value": "Opening hook: Opens on an extreme close-up of the collarbone, tilts slowly up to a flawless face, pulls back to selfie framing and holds a silent beat before the pitch.",
+          "label": "🎯 Spicy"
+        },
+        {
+          "value": "Opening hook: A street interviewer asks a stranger an odd follow-up question; confusion builds until the stranger spots the product and starts a casual review.",
+          "label": "🎯 Interview"
+        },
+        {
+          "value": "Opening hook: Mid-vlog, an absurd object drops into the creator's hand from above and they use it as a microphone to deliver a dead-serious review.",
+          "label": "⚡ Random Object Mic"
+        },
+        {
+          "value": "Opening hook: The product tumbles from above and the scene glitches into chaos, then snaps back clean and calm as the creator begins reviewing it.",
+          "label": "🎯 Product Crash"
+        },
+        {
+          "value": "Opening hook: A cozy room is hit by an impossible indoor blizzard; everything is covered in snow except the product, which keeps working perfectly.",
+          "label": "⚡ Blizzard"
+        },
+        {
+          "value": "Opening hook: The camera bumps the creator's forehead by accident; they flinch, laugh, recover and naturally reveal the product while explaining it.",
+          "label": "🎯 Camera Bump"
+        },
+        {
+          "value": "Opening hook: The product flies at the creator's face; they duck just in time, then pop back up already holding it and start the review as if nothing happened.",
+          "label": "⚡ Product Dodge"
+        },
+        {
+          "value": "Opening hook: The creator attempts a backflip, lands badly, and without missing a beat pulls out the product and starts an unbothered review.",
+          "label": "🎯 Epic Fail"
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "setting",
+      "type": "select",
+      "label": "Ambientazione UGC (14 realistiche/virali)",
+      "default": "",
+      "options": [
+        {
+          "value": "",
+          "label": "Sfondo dal Template"
+        },
+        {
+          "value": "Setting: sitting up in bed against pillows, soft window light, rumpled sheets, a relaxed morning feel.",
+          "label": "🌍 Bedroom"
+        },
+        {
+          "value": "Setting: outdoors on a trail, in a park or at the beach depending on the product, natural light, open sky.",
+          "label": "🌍 Nature"
+        },
+        {
+          "value": "Setting: on a gym bench after a workout, bright overhead lights, equipment behind, freshly-finished energy.",
+          "label": "🌍 Gym"
+        },
+        {
+          "value": "Setting: front-camera selfie in a bathroom, vanity lights, tiles behind, getting-ready energy.",
+          "label": "🌍 Bathroom"
+        },
+        {
+          "value": "Setting: leaning on a kitchen counter in daylight, a mug and fruit in the background, casual midday vibe.",
+          "label": "🌍 Kitchen"
+        },
+        {
+          "value": "Setting: selfie from the driver's or passenger seat of a parked car, window light on the face, between errands.",
+          "label": "🌍 In Car"
+        },
+        {
+          "value": "Setting: walking down a city sidewalk, handheld selfie, storefronts and traffic behind, talking while moving.",
+          "label": "🌍 Street"
+        },
+        {
+          "value": "Setting: at a desk with a laptop open and coffee nearby, soft overhead light, a quick mention between tasks.",
+          "label": "🌍 Office"
+        },
+        {
+          "value": "Setting: sitting on the wing of a plane in flight above the clouds, wind whipping, completely unbothered.",
+          "label": "🌋 Airplane Wing"
+        },
+        {
+          "value": "Setting: perched on the edge of a skyscraper rooftop at golden hour, the whole city below, totally relaxed.",
+          "label": "🌋 Rooftop Edge"
+        },
+        {
+          "value": "Setting: sitting on the rim of an active volcano, lava bubbling below and smoke drifting past, zero reaction.",
+          "label": "🌋 Volcano Rim"
+        },
+        {
+          "value": "Setting: shrunk to 15 cm tall and leaning on a giant version of the product, a normal selfie review at an impossible scale.",
+          "label": "🌋 Tiny Reviewer"
+        },
+        {
+          "value": "Setting: sitting on the roof of a moving car on a desert highway at golden hour, swaying calmly as a truck passes.",
+          "label": "🌋 Car Roof"
+        },
+        {
+          "value": "Setting: hanging out of the door of a moving train filming a selfie, wind pressing against them as the live demo.",
+          "label": "🌋 Train Surf"
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "ad_style",
+      "type": "select",
+      "label": "Click-to-Ad Visual Style (10 stili)",
+      "default": "",
+      "options": [
+        {
+          "value": "",
+          "label": "Regia Standard"
+        },
+        {
+          "value": "Commercial direction: authentic phone-camera UGC look, natural light, handheld. Tone: casual, first person, like telling a friend.",
+          "label": "Ad Style · Simple UGC"
+        },
+        {
+          "value": "Commercial direction: minimal studio shots on a soft seamless backdrop, slow controlled camera moves. Tone: calm, confident, few words.",
+          "label": "Ad Style · Clean Minimal"
+        },
+        {
+          "value": "Commercial direction: close-up hands unboxing the product on a clean desk, satisfying reveal. Tone: excited first impressions.",
+          "label": "Ad Style · Unboxing"
+        },
+        {
+          "value": "Commercial direction: testimonial selfie video at home, warm natural light. Tone: a genuine customer review with one specific detail.",
+          "label": "Ad Style · Customer Reviews"
+        },
+        {
+          "value": "Commercial direction: fast whip pans, punchy zooms and bold colour, maximum energy. Tone: fast, punchy, meme-aware.",
+          "label": "Ad Style · Viral Chaos"
+        },
+        {
+          "value": "Commercial direction: luxurious dark set, glossy reflections, slow elegant camera moves, gold accents. Tone: unhurried, refined, aspirational.",
+          "label": "Ad Style · Luxury"
+        },
+        {
+          "value": "Commercial direction: cinematic product story: materials, making-of details and the finished product. Tone: storytelling, warm narrator.",
+          "label": "Ad Style · Product Story"
+        },
+        {
+          "value": "Commercial direction: soft morning light, steam, blankets, the product in a slow morning ritual. Tone: gentle and warm.",
+          "label": "Ad Style · Cozy Morning"
+        },
+        {
+          "value": "Commercial direction: red-carpet glamour with camera flashes and a confident presenter. Tone: glamorous, playful hype.",
+          "label": "Ad Style · Red Carpet"
+        },
+        {
+          "value": "Commercial direction: soft neutral palette, linen and stone textures, graceful slow motion. Tone: soft-spoken and elegant.",
+          "label": "Ad Style · Elegant Minimal"
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "details",
+      "type": "textarea",
+      "label": "Testo parlato o dettagli scena (tra virgolette per dialoghi)",
+      "default": "",
+      "bind": [
+        {
+          "node": "105:104",
+          "field": "prompt",
+          "template": "{template} {hook} {setting} {ad_style} {details}"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Durata (secondi)",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "bind": [
+        {
+          "node": "105:111",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 8,
+      "max": 30,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "105:124",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "105:15",
+          "field": "noise_seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "92",
+      "type": "video",
+      "label": "Spot / Reel Marketing"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 27.14,
+      "phase": "encode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 2.81,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    }
+  ],
+  "credits": [
+    "MiniMax H3",
+    "Fuobe Marketing Studio"
+  ]
+}

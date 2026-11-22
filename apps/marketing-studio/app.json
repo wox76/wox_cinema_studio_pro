@@ -1,0 +1,386 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "marketing-studio",
+  "name": "Marketing Studio · Ad & Print Templates",
+  "section": "image",
+  "pack": "image-qwen-edit",
+  "status": "ready",
+  "modes": [
+    "marketing-studio",
+    "marketing-video"
+  ],
+  "mode_label": "Foto & Ads",
+  "higgsfield_feature": "Marketing Studio · Product Shots, Ads, Posters & Marketplace",
+  "summary": "46 template professionali Fuobe (Product Shot, Con Modello, Ads, Posters, Marketplace) + 10 Ad Styles su Qwen-Image-Edit 2509.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/marketing-templates-image",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto Prodotto o Modello",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "11",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "template",
+      "type": "select",
+      "label": "Marketing Template",
+      "default": "The product stands on a travertine plinth against a warm plaster wall; low morning sun rakes across from the left and throws a long, crisp shadow; quiet, premium, lots of negative space",
+      "options": [
+        {
+          "value": "The product stands on a travertine plinth against a warm plaster wall; low morning sun rakes across from the left and throws a long, crisp shadow; quiet, premium, lots of negative space",
+          "label": "[Product Shot] Sunlit Plinth"
+        },
+        {
+          "value": "The product is half buried in crushed ice with frost and cold droplets on its surface, cool blue rim light, shallow depth of field, refreshing and crisp",
+          "label": "[Product Shot] Ice Bath"
+        },
+        {
+          "value": "The product surrounded by halved lemons, oranges and grapefruit on a saturated yellow backdrop, hard on-camera flash, bold summer energy",
+          "label": "[Product Shot] Citrus Burst"
+        },
+        {
+          "value": "Three copies of the product float at different angles in a soft pastel void, each with its own gentle shadow below, playful and weightless",
+          "label": "[Product Shot] Floating Trio"
+        },
+        {
+          "value": "Overhead flat lay of the product on wrinkled oatmeal linen with dried flowers, a ceramic dish and a sprig of eucalyptus, soft diffused daylight",
+          "label": "[Product Shot] Linen Flat Lay"
+        },
+        {
+          "value": "A crown of clear liquid splashes up around the product, frozen at 1/8000 s, droplets glinting against a deep backdrop, high-speed studio flash",
+          "label": "[Product Shot] Splash Crown"
+        },
+        {
+          "value": "The product sits on a sunlit ledge while palm-leaf shadows fall across it and the warm wall behind, holiday afternoon light",
+          "label": "[Product Shot] Palm Shadow"
+        },
+        {
+          "value": "The product balanced on stacked geometric blocks in two bold complementary colours, clean studio light, graphic and modern",
+          "label": "[Product Shot] Color Block"
+        },
+        {
+          "value": "The product nestled on moss and smooth river stones, soft forest light filtering through mist, earthy and natural",
+          "label": "[Product Shot] Moss & Stone"
+        },
+        {
+          "value": "Clean e-commerce packshot on a seamless white sweep, large soft boxes, a subtle floor reflection, true-to-life colour",
+          "label": "[Product Shot] Studio White"
+        },
+        {
+          "value": "The product stands in a shallow pool of still water with soft ripples and a mirror reflection, golden-hour backlight",
+          "label": "[Product Shot] Golden Ripple"
+        },
+        {
+          "value": "The product on a tiled bathroom shelf next to everyday items, soft window light, real and lived-in, slightly from below",
+          "label": "[Product Shot] Bathroom Shelf"
+        },
+        {
+          "value": "The product on glossy black acrylic with a sharp rim light and a long reflection, deep shadows, luxurious and moody",
+          "label": "[Product Shot] Midnight Gloss"
+        },
+        {
+          "value": "The product on a red gingham picnic blanket with fresh strawberries and a glass bottle, bright sunny park light, cheerful",
+          "label": "[Product Shot] Gingham Picnic"
+        },
+        {
+          "value": "A mirror selfie: the person holds their phone in one hand and shows the product in the other, bedroom mirror, natural morning light, candid",
+          "label": "[Con Modello] Mirror Selfie"
+        },
+        {
+          "value": "Close-up portrait, the person holds the product near their face and smiles softly, golden-hour sun, warm skin tones, shallow depth of field",
+          "label": "[Con Modello] Golden Close-up"
+        },
+        {
+          "value": "Full-body street-style shot of the person walking across a city crosswalk with the product clearly visible, editorial fashion photography",
+          "label": "[Con Modello] Street Style"
+        },
+        {
+          "value": "The person lounges on a velvet vintage sofa with the product, magazine editorial lighting, rich colours, confident pose",
+          "label": "[Con Modello] Editorial Lounge"
+        },
+        {
+          "value": "The person uses the product at a bright bathroom sink during their morning routine, fresh and relaxed, soft window light",
+          "label": "[Con Modello] Morning Routine"
+        },
+        {
+          "value": "The person in sporty clothes on a clay tennis court holds the product, harsh midday sun, athletic and upbeat",
+          "label": "[Con Modello] Courtside"
+        },
+        {
+          "value": "Candid shot of the person leaning on a kitchen counter with the product, mug and fruit in the background, natural daylight",
+          "label": "[Con Modello] Kitchen Candid"
+        },
+        {
+          "value": "Clean studio portrait, the person holds the product toward the camera and smiles, solid colour backdrop, soft beauty lighting",
+          "label": "[Con Modello] Studio Smile"
+        },
+        {
+          "value": "A bold hero ad: the product large in the centre on a rich colour field, dramatic light, space at the top for a big headline",
+          "label": "[Ad Creativo] Hero Headline"
+        },
+        {
+          "value": "Split composition: the left side shows the everyday problem in muted tones, the right side shows the product solving it in bright colour",
+          "label": "[Ad Creativo] Problem → Solution"
+        },
+        {
+          "value": "Clean before-and-after diptych with a thin divider, the product shown on the after side, honest natural light",
+          "label": "[Ad Creativo] Before / After"
+        },
+        {
+          "value": "Social-proof ad: the product on a soft backdrop with room for a short customer quote and a five-star row",
+          "label": "[Ad Creativo] Five Stars"
+        },
+        {
+          "value": "Side-by-side comparison: a generic alternative in grey on one side, the product glowing on the other",
+          "label": "[Ad Creativo] Compare & Switch"
+        },
+        {
+          "value": "The product on the right with three short benefit callouts stacked on the left, tidy and clear",
+          "label": "[Ad Creativo] Benefit Ladder"
+        },
+        {
+          "value": "The product in the centre ringed by its key ingredients or materials arranged in a neat halo",
+          "label": "[Ad Creativo] Ingredient Halo"
+        },
+        {
+          "value": "Promotional ad: the product with a bright starburst badge for the offer, energetic colour",
+          "label": "[Ad Creativo] Offer Burst"
+        },
+        {
+          "value": "A huge stat set in type behind the product, minimal layout, confident and modern",
+          "label": "[Ad Creativo] Big Number"
+        },
+        {
+          "value": "Luxurious dark ad: the product lit like jewellery on black, thin gold accents, elegant serif headline",
+          "label": "[Ad Creativo] Dark Premium"
+        },
+        {
+          "value": "International Typographic Style poster: strict grid, oversized grotesk type, one bold accent colour, the product or subject cropped tight",
+          "label": "[Poster] Swiss Grid"
+        },
+        {
+          "value": "Two-colour risograph poster with grain, overprint and blooming botanical shapes",
+          "label": "[Poster] Riso Bloom"
+        },
+        {
+          "value": "Poster where one giant word fills the frame edge to edge and the subject peeks through the letters",
+          "label": "[Poster] Giant Type"
+        },
+        {
+          "value": "1970s travel-poster sunburst with layered warm stripes and rounded retro type",
+          "label": "[Poster] Retro Sunburst"
+        },
+        {
+          "value": "Neo-brutalist poster: stacked heavy type, hard black borders, raw layout, one acid accent colour",
+          "label": "[Poster] Brutalist Stack"
+        },
+        {
+          "value": "Museum exhibition poster: a botanical illustration plate, cream paper, elegant serif headline and small caption",
+          "label": "[Poster] Botanical Gallery"
+        },
+        {
+          "value": "Y2K poster with liquid chrome lettering, lens flares and an iridescent gradient",
+          "label": "[Poster] Chrome Y2K"
+        },
+        {
+          "value": "Photocopied punk zine poster: ransom-note letters, staples, tape and xerox grain",
+          "label": "[Poster] Zine Riot"
+        },
+        {
+          "value": "Marketplace main image: the product centred on pure white, fills 85% of the frame, soft shadow, true colour",
+          "label": "[Marketplace] Clean Listing"
+        },
+        {
+          "value": "Listing infographic: the product with thin leader lines pointing to three key features, clean sans-serif labels",
+          "label": "[Marketplace] Feature Callouts"
+        },
+        {
+          "value": "Product dimensions image: the product on light grey with neat measurement lines for height and width",
+          "label": "[Marketplace] Dimensions Card"
+        },
+        {
+          "value": "Knolling layout of everything in the box laid out at right angles around the product on a light surface",
+          "label": "[Marketplace] What's in the Box"
+        },
+        {
+          "value": "The product in a bright lifestyle setting with a round quality badge in one corner",
+          "label": "[Marketplace] Lifestyle + Badge"
+        },
+        {
+          "value": "Premium listing image: the product on charcoal with warm gold rim light and a slim feature strip",
+          "label": "[Marketplace] Dark Premium Listing"
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "ad_style",
+      "type": "select",
+      "label": "Stile Campagna (Opzionale)",
+      "default": "",
+      "options": [
+        {
+          "value": "",
+          "label": "Stile dal Template"
+        },
+        {
+          "value": "Art direction style: authentic phone-camera UGC look, natural light, handheld.",
+          "label": "Ad Style · Simple UGC"
+        },
+        {
+          "value": "Art direction style: minimal studio shots on a soft seamless backdrop, slow controlled camera moves.",
+          "label": "Ad Style · Clean Minimal"
+        },
+        {
+          "value": "Art direction style: close-up hands unboxing the product on a clean desk, satisfying reveal.",
+          "label": "Ad Style · Unboxing"
+        },
+        {
+          "value": "Art direction style: testimonial selfie video at home, warm natural light.",
+          "label": "Ad Style · Customer Reviews"
+        },
+        {
+          "value": "Art direction style: fast whip pans, punchy zooms and bold colour, maximum energy.",
+          "label": "Ad Style · Viral Chaos"
+        },
+        {
+          "value": "Art direction style: luxurious dark set, glossy reflections, slow elegant camera moves, gold accents.",
+          "label": "Ad Style · Luxury"
+        },
+        {
+          "value": "Art direction style: cinematic product story: materials, making-of details and the finished product.",
+          "label": "Ad Style · Product Story"
+        },
+        {
+          "value": "Art direction style: soft morning light, steam, blankets, the product in a slow morning ritual.",
+          "label": "Ad Style · Cozy Morning"
+        },
+        {
+          "value": "Art direction style: red-carpet glamour with camera flashes and a confident presenter.",
+          "label": "Ad Style · Red Carpet"
+        },
+        {
+          "value": "Art direction style: soft neutral palette, linen and stone textures, graceful slow motion.",
+          "label": "Ad Style · Elegant Minimal"
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "product",
+      "type": "text",
+      "label": "Nome Prodotto",
+      "default": "the artisan bottle",
+      "bind": []
+    },
+    {
+      "id": "brand",
+      "type": "text",
+      "label": "Brand (Opzionale)",
+      "default": "",
+      "bind": []
+    },
+    {
+      "id": "headline",
+      "type": "text",
+      "label": "Headline / Testo Poster (Opzionale)",
+      "default": "",
+      "bind": []
+    },
+    {
+      "id": "cta",
+      "type": "text",
+      "label": "Call To Action (Opzionale)",
+      "default": "",
+      "bind": []
+    },
+    {
+      "id": "details",
+      "type": "textarea",
+      "label": "Dettagli creativi extra (Opzionale)",
+      "default": "",
+      "bind": [
+        {
+          "node": "4",
+          "field": "prompt",
+          "template": "{template} Brand aesthetic: {brand}. Subject/product: {product}. Visible headline typography: {headline}. Call-to-action pill: {cta}. {ad_style} {details} Keep exact product design, shape and label fidelity."
+        },
+        {
+          "node": "14",
+          "field": "prompt",
+          "template": "{template} Brand aesthetic: {brand}. Subject/product: {product}. Visible headline typography: {headline}. Call-to-action pill: {cta}. {ad_style} {details} Keep exact product design, shape and label fidelity."
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "16",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "9",
+      "type": "image",
+      "label": "Creativa Marketing"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+      "file": "split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.43,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.38,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "lightx2v/Qwen-Image-Lightning",
+      "file": "Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors",
+      "dir": "loras",
+      "gb": 0.85,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Qwen-Image-Edit 2509",
+    "Fuobe Marketing Catalog"
+  ]
+}

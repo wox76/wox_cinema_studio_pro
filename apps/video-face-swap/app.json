@@ -1,0 +1,92 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-face-swap",
+  "name": "Video Face Swap",
+  "section": "video",
+  "pack": "core",
+  "status": "ready",
+  "higgsfield_feature": "Video Face Swap · ReActor",
+  "summary": "Sostituisce il volto in tutti i fotogrammi di un video mantenendo espressioni, luci e traccia audio originale.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/video-face-swap",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "video",
+      "type": "video",
+      "label": "Video Target",
+      "required": true,
+      "limits": {
+        "max_mb": 200,
+        "seconds": [
+          1,
+          20
+        ]
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "face",
+      "type": "image",
+      "label": "Foto Volto da Inserire",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "4",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "number",
+      "label": "Durata massima (s)",
+      "default": 10,
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "bind": [
+        {
+          "node": "2",
+          "field": "duration"
+        }
+      ]
+    },
+    {
+      "id": "restore",
+      "type": "slider",
+      "label": "Nitidezza Restauro GFPGAN",
+      "min": 0.0,
+      "max": 1.0,
+      "step": 0.05,
+      "default": 0.85,
+      "bind": [
+        {
+          "node": "5",
+          "field": "face_restore_visibility"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "7",
+      "type": "video",
+      "label": "Video con volto sostituito"
+    }
+  ],
+  "models": [],
+  "credits": [
+    "ReActor Face Swap + GFPGAN"
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "1": {
+    "class_type": "LoadVideo",
+    "inputs": {
+      "file": "clip.mp4"
+    },
+    "_meta": {
+      "title": "Load Video"
+    }
+  },
+  "2": {
+    "class_type": "Video Slice",
+    "inputs": {
+      "video": [
+        "1",
+        0
+      ],
+      "start_time": 0.0,
+      "duration": 10.0,
+      "strict_duration": false
+    },
+    "_meta": {
+      "title": "Slice 10s"
+    }
+  },
+  "3": {
+    "class_type": "GetVideoComponents",
+    "inputs": {
+      "video": [
+        "2",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Frames & FPS"
+    }
+  },
+  "4": {
+    "class_type": "ImageScaleToTotalPixels",
+    "inputs": {
+      "image": [
+        "3",
+        0
+      ],
+      "upscale_method": "area",
+      "megapixels": 0.6,
+      "resolution_steps": 2
+    },
+    "_meta": {
+      "title": "Scale Frames"
+    }
+  },
+  "5": {
+    "class_type": "LoadMoGeModel",
+    "inputs": {
+      "model_name": "moge_2_vitl_normal_fp16.safetensors"
+    },
+    "_meta": {
+      "title": "Load MoGe-2"
+    }
+  },
+  "6": {
+    "class_type": "MoGeInference",
+    "inputs": {
+      "moge_model": [
+        "5",
+        0
+      ],
+      "image": [
+        "4",
+        0
+      ],
+      "resolution_level": 2,
+      "fov_x_degrees": 0,
+      "batch_size": 4,
+      "force_projection": true,
+      "apply_mask": true
+    },
+    "_meta": {
+      "title": "MoGe Inference"
+    }
+  },
+  "7": {
+    "class_type": "MoGeRender",
+    "inputs": {
+      "moge_geometry": [
+        "6",
+        0
+      ],
+      "output": "depth_colored"
+    },
+    "_meta": {
+      "title": "Render Depth/Normal"
+    }
+  },
+  "8": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "7",
+        0
+      ],
+      "fps": [
+        "3",
+        2
+      ]
+    },
+    "_meta": {
+      "title": "Create Depth Video"
+    }
+  },
+  "9": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "8",
+        0
+      ],
+      "filename_prefix": "wox-cinema-studio-pro/video-depth",
+      "format": "auto",
+      "format.codec": "auto"
+    },
+    "_meta": {
+      "title": "Save Video"
+    }
+  }
+}

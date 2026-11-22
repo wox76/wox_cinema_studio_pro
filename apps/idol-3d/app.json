@@ -1,0 +1,208 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "idol-3d",
+  "name": "Idol 3D · Personaggi & Prodotti",
+  "section": "3d",
+  "pack": "3d-splat",
+  "status": "ready",
+  "higgsfield_feature": "Photo to 3D Person & Orbit",
+  "summary": "Da una singola foto di persona o prodotto crea Mesh .GLB con vertex color + Gaussian Splat + video orbitale 360° (10GB VRAM).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/image-to-3d-idol.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto Persona o Oggetto",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "99",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "cutout",
+      "type": "toggle",
+      "label": "Rimuovi sfondo (BiRefNet)",
+      "default": true,
+      "bind": [
+        {
+          "node": "88:35",
+          "field": "switch"
+        }
+      ]
+    },
+    {
+      "id": "photo_crop",
+      "type": "toggle",
+      "label": "Modalità Foto Reale (Crop Morbido)",
+      "default": true,
+      "bind": [
+        {
+          "node": "88:104",
+          "field": "switch"
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "type": "select",
+      "label": "Qualità Ricostruzione",
+      "default": "best",
+      "options": [
+        {
+          "value": "best",
+          "label": "Best (50 step · 262k Gaussiane)",
+          "sets": [
+            {
+              "node": "88:6",
+              "field": "steps",
+              "value": 50
+            },
+            {
+              "node": "88:6",
+              "field": "sampler_name",
+              "value": "euler"
+            },
+            {
+              "node": "88:55",
+              "field": "num_gaussians",
+              "value": 262144
+            }
+          ]
+        },
+        {
+          "value": "quick",
+          "label": "Quick Look (20 step · 65k Gaussiane)",
+          "sets": [
+            {
+              "node": "88:6",
+              "field": "steps",
+              "value": 20
+            },
+            {
+              "node": "88:6",
+              "field": "sampler_name",
+              "value": "dpmpp_2m"
+            },
+            {
+              "node": "88:55",
+              "field": "num_gaussians",
+              "value": 65536
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "mesh_detail",
+      "type": "select",
+      "label": "Dettaglio Mesh .GLB",
+      "default": 384,
+      "options": [
+        {
+          "value": 256,
+          "label": "256 (Leggero)"
+        },
+        {
+          "value": 384,
+          "label": "384 (Standard HD)"
+        },
+        {
+          "value": 512,
+          "label": "512 (Massimo Dettaglio)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "60",
+          "field": "resolution"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "88:6",
+          "field": "seed"
+        },
+        {
+          "node": "88:55",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "42",
+      "type": "video",
+      "label": "Video 360° Orbit"
+    },
+    {
+      "node": "61",
+      "type": "3d",
+      "label": "Modello 3D .GLB"
+    },
+    {
+      "node": "77",
+      "type": "image",
+      "label": "Vista Frontale"
+    }
+  ],
+  "models": [
+    {
+      "repo": "nynxz/Idol",
+      "file": "diffusion_models/idol_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 0.74,
+      "phase": "denoise"
+    },
+    {
+      "repo": "nynxz/Idol",
+      "file": "vae/idol_decoder_fp16.safetensors",
+      "dir": "vae",
+      "gb": 0.58,
+      "phase": "decode"
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "clip_vision/dino_v3_vit_h.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.68,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/flux2-dev",
+      "file": "split_files/vae/flux2-vae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "phase": "aux"
+    }
+  ],
+  "credits": [
+    "Idol 3D (nynxz)",
+    "TripoSplat Core Nodes",
+    "Workflow from Fuobe"
+  ]
+}

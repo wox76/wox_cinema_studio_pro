@@ -1,0 +1,101 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-depth",
+  "name": "Video Depth & Normals",
+  "section": "video",
+  "pack": "upscale",
+  "status": "ready",
+  "higgsfield_feature": "Video Depth Pass (Z-Depth / Normal)",
+  "summary": "Estrae mappe Z-depth o normal map coerenti su ogni fotogramma del video per compositing e relighting (MoGe-2 locale).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/video-tools-depth",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "video",
+      "type": "video",
+      "label": "Clip Video",
+      "required": true,
+      "limits": {
+        "max_mb": 200,
+        "seconds": [
+          1,
+          15
+        ]
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "type": "select",
+      "label": "Pass Output",
+      "default": "depth_colored",
+      "options": [
+        {
+          "value": "depth_colored",
+          "label": "Depth Colorata (Turbo)"
+        },
+        {
+          "value": "depth",
+          "label": "Z-Depth Scala di Grigi"
+        },
+        {
+          "value": "normal_opengl",
+          "label": "Normal Map (OpenGL)"
+        },
+        {
+          "value": "normal_directx",
+          "label": "Normal Map (DirectX)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "7",
+          "field": "output"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "number",
+      "label": "Durata massima (s)",
+      "default": 10,
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "bind": [
+        {
+          "node": "2",
+          "field": "duration"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "9",
+      "type": "video",
+      "label": "Pass Z-Depth Video"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MoGe",
+      "file": "geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 1.31,
+      "phase": "denoise",
+      "license": "MIT"
+    }
+  ],
+  "credits": [
+    "MoGe-2 by Microsoft Research (MIT)"
+  ]
+}

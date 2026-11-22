@@ -1,0 +1,76 @@
+{
+  "1": {
+    "class_type": "LoadVideo",
+    "inputs": {
+      "file": "clip.mp4"
+    },
+    "_meta": {
+      "title": "Load Video"
+    }
+  },
+  "2": {
+    "class_type": "GetVideoComponents",
+    "inputs": {
+      "video": [
+        "1",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Get Video Components"
+    }
+  },
+  "3": {
+    "class_type": "TextOverlay",
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ],
+      "text": "CINEMA STUDIO PRO",
+      "font_size": 5.5,
+      "color": "#ffffff",
+      "position": "bottom",
+      "align": "center",
+      "outline": true
+    },
+    "_meta": {
+      "title": "Text Overlay"
+    }
+  },
+  "4": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "3",
+        0
+      ],
+      "fps": [
+        "2",
+        2
+      ],
+      "audio": [
+        "2",
+        1
+      ]
+    },
+    "_meta": {
+      "title": "Create Video"
+    }
+  },
+  "5": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "4",
+        0
+      ],
+      "filename_prefix": "wox-cinema-studio-pro/video-captions",
+      "format": "auto",
+      "format.codec": "auto"
+    },
+    "_meta": {
+      "title": "Save Video"
+    }
+  }
+}

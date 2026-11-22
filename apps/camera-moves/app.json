@@ -1,12 +1,12 @@
 {
   "$schema": "../../schema/app.schema.json",
   "id": "camera-moves",
-  "name": "Camera Moves",
+  "name": "Camera Moves Pro (108+)",
   "section": "video",
-  "pack": "video-wan-camera",
+  "pack": "video-h3",
   "status": "ready",
   "higgsfield_feature": "Camera Controls",
-  "summary": "Animates your image with a precise camera move: pans, zooms and rolls at the speed you pick (Wan 2.2 Fun Camera).",
+  "summary": "Anima qualsiasi immagine con i movimenti coreografati Fuobe (fino a 2 in sequenza) + controllo ottico Wan 2.2 Fun Camera.",
   "workflow": "workflow.api.json",
   "source": {
     "template": "video_wan2_2_14B_fun_camera.json",
@@ -24,7 +24,7 @@
       },
       "bind": [
         {
-          "node": "97",
+          "node": "first_frame",
           "field": "image"
         }
       ]
@@ -37,10 +37,456 @@
       "default": "A quiet harbor at dawn, fishing boats rocking gently, gulls flying over the water, soft golden light",
       "bind": [
         {
-          "node": "107",
-          "field": "text"
+          "node": "prompt",
+          "field": "value",
+          "template": "Camera movement: {motions} {camera}. {prompt}"
         }
       ]
+    },
+    {
+      "id": "motions",
+      "type": "select",
+      "label": "Coreografia Camera (Mix fino a 2)",
+      "default": [],
+      "multiple": {
+        "max": 2,
+        "join": ", then ",
+        "prefix": "",
+        "suffix": ". ",
+        "ordered": true
+      },
+      "help": "Scegli 1 o 2 movimenti di camera Fuobe da eseguire in sequenza nella stessa clip.",
+      "options": [
+        {
+          "value": "The camera slowly and steadily zooms in on the subject, gradually building focus and tension",
+          "label": "Push & Pull · Zoom In"
+        },
+        {
+          "value": "The camera slowly zooms out from the subject, gradually revealing more of the scene and a growing sense of distance",
+          "label": "Push & Pull · Zoom Out"
+        },
+        {
+          "value": "A smooth optical zoom toward the subject with the camera position fixed, perspective compressing as the framing tightens",
+          "label": "Push & Pull · Zoom"
+        },
+        {
+          "value": "The camera performs a smooth, steady dolly in toward the subject, gradually tightening the framing",
+          "label": "Push & Pull · Dolly In"
+        },
+        {
+          "value": "The camera smoothly dollies backward away from the subject, revealing more of the surroundings",
+          "label": "Push & Pull · Dolly Out"
+        },
+        {
+          "value": "A fast, dramatic dolly push from a wide shot all the way into an extreme close-up of the subject",
+          "label": "Push & Pull · Super Dolly In"
+        },
+        {
+          "value": "A fast, continuous dolly pull from a close-up back to a very wide establishing shot",
+          "label": "Push & Pull · Super Dolly Out"
+        },
+        {
+          "value": "A sudden, violent crash zoom snaps into the subject's face in a fraction of a second, with slight motion blur",
+          "label": "Push & Pull · Crash Zoom In"
+        },
+        {
+          "value": "A sudden crash zoom snaps out from the subject to a wide shot with motion blur",
+          "label": "Push & Pull · Crash Zoom Out"
+        },
+        {
+          "value": "A rapid optical zoom in toward the subject, fast but controlled",
+          "label": "Push & Pull · Rapid Zoom In"
+        },
+        {
+          "value": "A rapid optical zoom out away from the subject, fast but controlled",
+          "label": "Push & Pull · Rapid Zoom Out"
+        },
+        {
+          "value": "Vertigo dolly zoom: the camera dollies forward while zooming out, the background stretches away while the subject stays the same size",
+          "label": "Push & Pull · Dolly Zoom In"
+        },
+        {
+          "value": "Reverse vertigo dolly zoom: the camera pulls back while zooming in, the background compresses toward the subject",
+          "label": "Push & Pull · Dolly Zoom Out"
+        },
+        {
+          "value": "The camera zooms quickly in on the subject and then immediately back out, a playful yo-yo zoom",
+          "label": "Push & Pull · YoYo Zoom"
+        },
+        {
+          "value": "The camera pushes in rapidly toward the subject's eyes, ending on an extreme close-up of one eye",
+          "label": "Push & Pull · Eyes In"
+        },
+        {
+          "value": "The camera pushes in rapidly toward the subject's mouth, ending on an extreme close-up",
+          "label": "Push & Pull · Mouth In"
+        },
+        {
+          "value": "The subject takes a big bite of food as the camera punches in fast to a tight close-up of their mouth and the food, then eases back out as they chew happily",
+          "label": "Push & Pull · Eating Zoom"
+        },
+        {
+          "value": "The camera flies forward through a foreground object or opening and continues toward the subject",
+          "label": "Push & Pull · Through Object In"
+        },
+        {
+          "value": "The camera pulls backward through a foreground object or opening, revealing the scene",
+          "label": "Push & Pull · Through Object Out"
+        },
+        {
+          "value": "The camera pulls back rapidly and continuously from the subject, rising above the street, then the city, the continent and finally the whole Earth seen from space",
+          "label": "Push & Pull · Earth Zoom Out"
+        },
+        {
+          "value": "The camera orbits a full 360 degrees around the subject at a constant height, keeping them centered",
+          "label": "Orbit · 360 Orbit"
+        },
+        {
+          "value": "The camera arcs smoothly to the left around the subject, keeping them centered in frame",
+          "label": "Orbit · Arc Left"
+        },
+        {
+          "value": "The camera arcs smoothly to the right around the subject, keeping them centered in frame",
+          "label": "Orbit · Arc Right"
+        },
+        {
+          "value": "The subject slowly rotates in place as if on a turntable while the camera stays still",
+          "label": "Orbit · Lazy Susan"
+        },
+        {
+          "value": "The subject spins smoothly 360 degrees in place, centered on a clean background, revealing every side like a product on a turntable",
+          "label": "Orbit · 3D Rotation"
+        },
+        {
+          "value": "Bullet time: the action freezes in mid-air while the camera sweeps around the subject in a fast arc",
+          "label": "Orbit · Bullet Time"
+        },
+        {
+          "value": "A slow, graceful partial orbit around the subject with gentle parallax",
+          "label": "Orbit · Lazy Orbit"
+        },
+        {
+          "value": "High-speed camera glides in a smooth arc around the subject in glamorous slow motion, hair and fabric flowing, light glinting, fashion-commercial polish",
+          "label": "Orbit · Glam"
+        },
+        {
+          "value": "The camera cranes up smoothly, rising above the subject to reveal the scene from above",
+          "label": "Vertical · Crane Up"
+        },
+        {
+          "value": "The camera cranes down smoothly from a high angle to the subject's eye level",
+          "label": "Vertical · Crane Down"
+        },
+        {
+          "value": "The camera rises and travels over the subject's head, ending looking down from behind",
+          "label": "Vertical · Crane Over The Head"
+        },
+        {
+          "value": "A short jib move upward that reveals the background behind the subject",
+          "label": "Vertical · Jib Up"
+        },
+        {
+          "value": "A short jib move downward settling on the subject",
+          "label": "Vertical · Jib Down"
+        },
+        {
+          "value": "The camera lowers straight down on a pedestal, its angle held perfectly level, sliding from above the subject's head to their eye level",
+          "label": "Vertical · Pedestal Down"
+        },
+        {
+          "value": "The camera tilts up slowly from the subject's feet to their face",
+          "label": "Vertical · Tilt Up"
+        },
+        {
+          "value": "The camera tilts down slowly from the sky to the subject",
+          "label": "Vertical · Tilt Down"
+        },
+        {
+          "value": "A top-down overhead shot that slowly rotates and descends toward the subject",
+          "label": "Vertical · Overhead"
+        },
+        {
+          "value": "Extreme low angle from directly beneath the subject, as if filmed through a transparent glass floor, looking up at the soles of their shoes and their towering figure as they move",
+          "label": "Vertical · Buckle Up"
+        },
+        {
+          "value": "The camera pans slowly and smoothly across the scene from a fixed position, settling on the subject",
+          "label": "Lateral · Pan"
+        },
+        {
+          "value": "The camera pans smoothly to the left across the scene",
+          "label": "Lateral · Pan Left"
+        },
+        {
+          "value": "The camera pans smoothly to the right across the scene",
+          "label": "Lateral · Pan Right"
+        },
+        {
+          "value": "The camera dollies smoothly to the left on a track, parallel to the subject, revealing the scene with gentle parallax",
+          "label": "Lateral · Dolly Left"
+        },
+        {
+          "value": "The camera dollies smoothly to the right on a track, parallel to the subject, revealing the scene with gentle parallax",
+          "label": "Lateral · Dolly Right"
+        },
+        {
+          "value": "The camera trucks sideways to the left, parallel to the subject, with strong parallax",
+          "label": "Lateral · Truck Left"
+        },
+        {
+          "value": "The camera trucks sideways to the right, parallel to the subject, with strong parallax",
+          "label": "Lateral · Truck Right"
+        },
+        {
+          "value": "A smooth tracking shot travels alongside the moving subject at their pace, keeping them framed while the background slides past",
+          "label": "Lateral · Tracking"
+        },
+        {
+          "value": "The subject and the camera glide forward together, the subject stays perfectly still in frame as if floating while the background drifts past, dreamlike music-video look",
+          "label": "Lateral · Double Dolly"
+        },
+        {
+          "value": "A fast whip pan with heavy motion blur that snaps to the subject",
+          "label": "Lateral · Whip Pan"
+        },
+        {
+          "value": "The camera rolls into a tilted Dutch angle, creating tension",
+          "label": "Lateral · Dutch Angle"
+        },
+        {
+          "value": "The whole frame is steeply tilted as if the world itself is on a slope; the subject stands and moves at an impossible angle, gravity-defying and surreal",
+          "label": "Lateral · Incline"
+        },
+        {
+          "value": "Handheld documentary camera with natural shake and small reframing movements",
+          "label": "Handheld & POV · Handheld"
+        },
+        {
+          "value": "Casual behind-the-scenes handheld footage: the camera wanders around the subject between takes, catching candid moments, quick reframes and slight shake",
+          "label": "Handheld & POV · BTS"
+        },
+        {
+          "value": "First-person point-of-view shot through the eyes of a character, hands occasionally entering the frame, natural head movement",
+          "label": "Handheld & POV · POV"
+        },
+        {
+          "value": "Snorricam: the camera is rigged to the subject's body, their face stays locked in frame while the world moves around them",
+          "label": "Handheld & POV · Snorricam"
+        },
+        {
+          "value": "The camera tracks the subject's head closely from the front as they move",
+          "label": "Handheld & POV · Head Tracking"
+        },
+        {
+          "value": "First-person point of view from an object moving through the scene",
+          "label": "Handheld & POV · Object POV"
+        },
+        {
+          "value": "Low-angle hero shot that slowly rises and pushes in, the subject looks powerful",
+          "label": "Handheld & POV · Hero Cam"
+        },
+        {
+          "value": "The subject sprints at full speed toward the camera as a shaky handheld camera runs backward in front of them, dynamic angles and motion blur",
+          "label": "Handheld & POV · Action Run"
+        },
+        {
+          "value": "The subject struts down a runway with a confident model walk while the camera tracks backward in front of them, smooth and fashion-forward",
+          "label": "Handheld & POV · Catwalk"
+        },
+        {
+          "value": "Rap music video camera: low angle with a fisheye-like wide lens, smooth slides and slow push-ins as the subject flexes confidently toward the lens",
+          "label": "Handheld & POV · Rap Flex"
+        },
+        {
+          "value": "Fast first-person ride down a steep slope, the camera bouncing over bumps and swerving through tight turns, adrenaline rush",
+          "label": "Handheld & POV · Downhill POV"
+        },
+        {
+          "value": "Playful wiggle camera with quick small shakes",
+          "label": "Handheld & POV · Wiggle"
+        },
+        {
+          "value": "Ultra-wide fisheye lens close to the subject with exaggerated distortion and fast movement",
+          "label": "Handheld & POV · Fisheye"
+        },
+        {
+          "value": "Fast FPV drone flight diving and banking through the scene, then racing past the subject",
+          "label": "Drone & Vehicle · FPV Drone"
+        },
+        {
+          "value": "An aerial drone rises and pulls back to reveal a vast landscape around the subject",
+          "label": "Drone & Vehicle · Drone Reveal"
+        },
+        {
+          "value": "The camera starts close on the subject and pulls back and up in one continuous aerial move, ending on a high wide shot of the whole location",
+          "label": "Drone & Vehicle · Aerial Pullback"
+        },
+        {
+          "value": "Sweeping helicopter shot high above the landscape, slowly circling and descending toward the subject, epic scale",
+          "label": "Drone & Vehicle · Helicopter Shot"
+        },
+        {
+          "value": "Low camera skimming just above the road at high speed, lane markings streaking past, rushing toward the subject",
+          "label": "Drone & Vehicle · Road Rush"
+        },
+        {
+          "value": "Camera mounted on the side of a moving car, the background streaks past",
+          "label": "Drone & Vehicle · Car Grip"
+        },
+        {
+          "value": "A pursuit camera chasing the subject at speed from behind and slightly above",
+          "label": "Drone & Vehicle · Car Chasing"
+        },
+        {
+          "value": "Precise motion-control robotic arm move: a fast swooping arc that stops perfectly on the subject",
+          "label": "Drone & Vehicle · Robo Arm"
+        },
+        {
+          "value": "High-speed robotic camera arm whips from a wide angle into a tight close-up and freezes precisely, then swings smoothly around the subject",
+          "label": "Drone & Vehicle · Robot Arm"
+        },
+        {
+          "value": "The camera flies smoothly through the air alongside the subject",
+          "label": "Drone & Vehicle · Flying"
+        },
+        {
+          "value": "Natural, balanced cinematic camera work with gentle movement and clean framing",
+          "label": "Time & Focus · General"
+        },
+        {
+          "value": "Locked-off static tripod shot; only the subject moves",
+          "label": "Time & Focus · Static"
+        },
+        {
+          "value": "Hyperlapse: the camera moves forward while time is sped up, people and clouds streak by",
+          "label": "Time & Focus · Hyperlapse"
+        },
+        {
+          "value": "Static timelapse: clouds race, light changes quickly, the subject stays still",
+          "label": "Time & Focus · Timelapse"
+        },
+        {
+          "value": "Timelapse of the subject: their movements are sped up into quick bursts of activity while the surrounding environment and light change naturally",
+          "label": "Time & Focus · Timelapse Human"
+        },
+        {
+          "value": "Landscape timelapse: clouds stream across the sky, shadows sweep over the land and light shifts from day toward dusk while the camera stays fixed",
+          "label": "Time & Focus · Timelapse Landscape"
+        },
+        {
+          "value": "Glamorous timelapse: the subject holds a pose as hair, makeup, outfit and lighting shift rapidly around them, the camera slowly pushing in",
+          "label": "Time & Focus · Timelapse Glam"
+        },
+        {
+          "value": "Dramatic high-frame-rate slow motion of every detail",
+          "label": "Time & Focus · Slow Motion"
+        },
+        {
+          "value": "Low shutter speed look with dreamy motion trails and light streaks",
+          "label": "Time & Focus · Low Shutter"
+        },
+        {
+          "value": "Rack focus from the foreground to the subject in the background",
+          "label": "Time & Focus · Focus Change"
+        },
+        {
+          "value": "The camera lifts off and flies rapidly out of the scene, soaring through the air and swooping down into a new location to land on the subject",
+          "label": "Transitions · Flying Cam Transition"
+        },
+        {
+          "value": "The subject winds up and delivers a powerful high kick, leg snapping through the frame with dramatic impact and a slight camera shake",
+          "label": "Action & Sports · Baseball Kick"
+        },
+        {
+          "value": "The subject sprints, leaps high and slams a basketball through the hoop, hanging on the rim as the camera follows from a low angle",
+          "label": "Action & Sports · Basketball Dunks"
+        },
+        {
+          "value": "The subject throws quick jabs and hooks with fast head movement while the camera stays up close, rhythmic and intense",
+          "label": "Action & Sports · Boxing"
+        },
+        {
+          "value": "A fist flies into frame and lands on the subject's face, their head snapping sideways in slow motion with sweat droplets and raw impact",
+          "label": "Action & Sports · Face Punch"
+        },
+        {
+          "value": "The two people lean in slowly and share a tender kiss in soft focus, the camera gently circling them",
+          "label": "Action & Sports · Kiss"
+        },
+        {
+          "value": "The subject performs a smooth moonwalk, gliding backward to the left while facing forward, retro dance style",
+          "label": "Action & Sports · Moonwalk Left"
+        },
+        {
+          "value": "The subject performs a smooth moonwalk, gliding backward to the right while facing forward, retro dance style",
+          "label": "Action & Sports · Moonwalk Right"
+        },
+        {
+          "value": "The subject cruises relaxed on a skateboard down a sunny street, simply pushing and gliding with all four wheels on the ground, the camera tracking alongside",
+          "label": "Action & Sports · Skate Cruise"
+        },
+        {
+          "value": "The subject glides smoothly on a skateboard, board rolling effortlessly, flowing and stylish",
+          "label": "Action & Sports · Skateboard Glide"
+        },
+        {
+          "value": "The subject pops a clean ollie, rider and board lifting off the ground together and landing smoothly",
+          "label": "Action & Sports · Skateboard Ollie"
+        },
+        {
+          "value": "A skier carves fast, clean turns down the slope, edges biting into the snow, the camera following",
+          "label": "Action & Sports · Ski Carving"
+        },
+        {
+          "value": "A skier floats through deep fresh powder, soft explosive sprays of snow bursting with every turn",
+          "label": "Action & Sports · Ski Powder"
+        },
+        {
+          "value": "A snowboarder lays deep controlled carves into the slope, a curtain of snow spraying from the board's edge",
+          "label": "Action & Sports · Snowboard Carving"
+        },
+        {
+          "value": "A snowboarder surfs through fresh powder with wide flowing turns and big sprays of snow",
+          "label": "Action & Sports · Snowboard Powder"
+        },
+        {
+          "value": "Classic locked-off cinema framing with perfectly composed static shots and minimal, deliberate movement",
+          "label": "Camera Styles · Classic Static"
+        },
+        {
+          "value": "Documentary style: handheld camera reacting to the action with quick snap zooms and reframes, observational and raw",
+          "label": "Camera Styles · Documentary Snap"
+        },
+        {
+          "value": "Dreamy floating camera that drifts slowly and weightlessly around the subject with soft focus and gentle slow motion",
+          "label": "Camera Styles · Dreamy Flow"
+        },
+        {
+          "value": "Epic large-scale camera work: sweeping crane and aerial moves that emphasize the vastness of the world around the subject",
+          "label": "Camera Styles · Epic Scale"
+        },
+        {
+          "value": "Impossible camera move that flies through tiny gaps, passes through glass and objects and swoops around the subject in one continuous path",
+          "label": "Camera Styles · Impossible Camera"
+        },
+        {
+          "value": "Intimate close camera that quietly observes the subject from near their shoulder, subtle breathing movement and shallow depth of field",
+          "label": "Camera Styles · Intimate Observer"
+        },
+        {
+          "value": "Single continuous oner: a fluid Steadicam move follows the subject through the space in one unbroken take",
+          "label": "Camera Styles · One Take"
+        },
+        {
+          "value": "Chaotic, aggressive handheld camera with violent shakes, whip pans and crash zooms, raw and frantic",
+          "label": "Camera Styles · Raw Chaos"
+        },
+        {
+          "value": "Precise, mechanical camera motion: perfectly linear slow slides and pushes with symmetrical framing, cold and controlled",
+          "label": "Camera Styles · Silent Machine"
+        }
+      ],
+      "bind": []
     },
     {
       "id": "camera",
@@ -85,115 +531,20 @@
           "label": "Rotate clockwise"
         }
       ],
-      "bind": [
-        {
-          "node": "108",
-          "field": "camera_pose"
-        }
-      ]
+      "bind": []
     },
     {
-      "id": "speed",
+      "id": "duration",
       "type": "slider",
-      "label": "Move speed",
-      "min": 0.2,
-      "max": 3.0,
-      "step": 0.1,
-      "default": 1.0,
+      "label": "Seconds",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
       "bind": [
         {
-          "node": "108",
-          "field": "speed"
-        }
-      ]
-    },
-    {
-      "id": "width",
-      "type": "select",
-      "label": "Width",
-      "default": 640,
-      "options": [
-        {
-          "value": 480,
-          "label": "480 px"
-        },
-        {
-          "value": 640,
-          "label": "640 px"
-        },
-        {
-          "value": 720,
-          "label": "720 px"
-        },
-        {
-          "value": 832,
-          "label": "832 px"
-        },
-        {
-          "value": 960,
-          "label": "960 px"
-        }
-      ],
-      "bind": [
-        {
-          "node": "108",
-          "field": "width"
-        }
-      ]
-    },
-    {
-      "id": "height",
-      "type": "select",
-      "label": "Height",
-      "default": 640,
-      "options": [
-        {
-          "value": 480,
-          "label": "480 px"
-        },
-        {
-          "value": 640,
-          "label": "640 px"
-        },
-        {
-          "value": 720,
-          "label": "720 px"
-        },
-        {
-          "value": 832,
-          "label": "832 px"
-        },
-        {
-          "value": 960,
-          "label": "960 px"
-        }
-      ],
-      "bind": [
-        {
-          "node": "108",
-          "field": "height"
-        }
-      ]
-    },
-    {
-      "id": "frames",
-      "type": "select",
-      "label": "Length",
-      "default": 81,
-      "options": [
-        {
-          "value": 49,
-          "label": "3 s"
-        },
-        {
-          "value": 81,
-          "label": "5 s"
-        }
-      ],
-      "bind": [
-        {
-          "node": "108",
-          "field": "length"
+          "node": "duration",
+          "field": "value"
         }
       ]
     },
@@ -205,8 +556,23 @@
       "help": "-1 picks a random seed",
       "bind": [
         {
-          "node": "102",
+          "node": "seed",
           "field": "noise_seed"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "steps",
+          "field": "value"
         }
       ]
     }
@@ -219,12 +585,12 @@
         {
           "node": "ff_lora_high",
           "field": "strength_model",
-          "value": 1.0
+          "value": 1
         },
         {
           "node": "ff_lora_low",
           "field": "strength_model",
-          "value": 1.0
+          "value": 1
         },
         {
           "node": "102",
@@ -234,7 +600,7 @@
         {
           "node": "102",
           "field": "cfg",
-          "value": 1.0
+          "value": 1
         },
         {
           "node": "102",
@@ -249,7 +615,7 @@
         {
           "node": "103",
           "field": "cfg",
-          "value": 1.0
+          "value": 1
         },
         {
           "node": "103",
@@ -261,61 +627,43 @@
   ],
   "outputs": [
     {
-      "node": "106",
+      "node": "75",
       "type": "video",
       "label": "Video"
     }
   ],
   "models": [
     {
-      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
-      "file": "split_files/diffusion_models/wan2.2_fun_camera_high_noise_14B_fp8_scaled.safetensors",
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
       "dir": "diffusion_models",
-      "gb": 15.3,
+      "gb": 20.97,
       "phase": "denoise",
-      "license": "Apache-2.0"
+      "license": "MiniMax H3 Community License"
     },
     {
-      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
-      "file": "split_files/diffusion_models/wan2.2_fun_camera_low_noise_14B_fp8_scaled.safetensors",
-      "dir": "diffusion_models",
-      "gb": 15.3,
-      "phase": "denoise2",
-      "license": "Apache-2.0"
-    },
-    {
-      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
-      "file": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
       "dir": "text_encoders",
-      "gb": 6.74,
+      "gb": 27.14,
       "phase": "encode",
-      "license": "Apache-2.0"
+      "license": "MiniMax H3 Community License"
     },
     {
-      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
-      "file": "split_files/vae/wan_2.1_vae.safetensors",
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
       "dir": "vae",
-      "gb": 0.25,
+      "gb": 2.81,
       "phase": "decode",
-      "license": "Apache-2.0"
+      "license": "MiniMax H3 Community License"
     },
     {
-      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
-      "file": "split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
-      "dir": "loras",
-      "gb": 1.23,
-      "phase": "denoise",
-      "license": "Apache-2.0",
-      "optional": true
-    },
-    {
-      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
-      "file": "split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
-      "dir": "loras",
-      "gb": 1.23,
-      "phase": "denoise2",
-      "license": "Apache-2.0",
-      "optional": true
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
     }
   ],
   "credits": [

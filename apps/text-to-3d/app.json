@@ -1,0 +1,173 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "text-to-3d",
+  "name": "Text to 3D · Z-Image + Pixal3D",
+  "section": "3d",
+  "pack": "3d-studio",
+  "status": "ready",
+  "modes": [
+    "pixal3d",
+    "multi-to-3d",
+    "text-to-3d",
+    "object-to-3d",
+    "triposplat-3d"
+  ],
+  "mode_label": "Da Testo",
+  "higgsfield_feature": "Image to 3D · From Text",
+  "summary": "Descrivi un oggetto o personaggio a parole: genera prima il concept in studio con Z-Image Turbo e lo trasforma subito in mesh 3D PBR (.GLB).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/image-to-3d-text",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Descrivi l'oggetto o personaggio 3D",
+      "required": true,
+      "default": "a vintage brass astrolabe with intricate engraved rings",
+      "bind": [
+        {
+          "node": "57:27",
+          "field": "text",
+          "template": "{prompt}, isolated single 3D hero asset centered cleanly on a solid neutral light gray studio background, full object visible, crisp PBR materials, zero shadows on floor, product turntable photography"
+        }
+      ]
+    },
+    {
+      "id": "texture_size",
+      "type": "select",
+      "label": "Risoluzione Texture PBR",
+      "default": 2048,
+      "options": [
+        {
+          "value": 1024,
+          "label": "1024×1024 (Veloce)"
+        },
+        {
+          "value": 2048,
+          "label": "2048×2048 (HD Consigliato)"
+        },
+        {
+          "value": 4096,
+          "label": "4096×4096 (4K Ultra)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "288",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "57:3",
+          "field": "seed"
+        },
+        {
+          "node": "3",
+          "field": "seed"
+        },
+        {
+          "node": "12",
+          "field": "seed"
+        },
+        {
+          "node": "18",
+          "field": "seed"
+        },
+        {
+          "node": "23",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "322",
+      "type": "3d",
+      "label": "Modello 3D .GLB"
+    },
+    {
+      "node": "405",
+      "type": "image",
+      "label": "Render Concept"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "diffusion_models/pixal3d_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.58,
+      "phase": "denoise"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "clip_vision/dino_v3_L_naf_fp32.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.22,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_shape_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 1.1,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_texture_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 0.95,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/MoGe",
+      "file": "geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 0.66,
+      "phase": "aux"
+    },
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "phase": "aux"
+    },
+    {
+      "repo": "Tongyi-MAI/Z-Image-Turbo",
+      "file": "diffusion_models/z_image_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 6.1,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
+      "dir": "text_encoders",
+      "gb": 4.2,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/FLUX.1-dev",
+      "file": "vae/ae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "encode"
+    }
+  ],
+  "credits": [
+    "Z-Image Turbo + Pixal3D + TRELLIS.2"
+  ]
+}

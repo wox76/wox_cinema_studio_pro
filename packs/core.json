@@ -1,11 +1,23 @@
 {
   "pack": "core",
   "apps": [
+    "face-swap",
     "smoke",
-    "smoke-invert"
+    "smoke-invert",
+    "video-captions",
+    "video-export",
+    "video-face-swap",
+    "video-join",
+    "video-remove-dialogue",
+    "video-trim"
   ],
   "download_gb": 0,
   "needs_hf_token": false,
-  "custom_nodes": [],
+  "custom_nodes": [
+    {
+      "repo": "https://github.com/Gourieff/comfyui-reactor-node",
+      "commit": "0763f707e3f791323f2e7450d100a25860df546c"
+    }
+  ],
   "models": []
 }

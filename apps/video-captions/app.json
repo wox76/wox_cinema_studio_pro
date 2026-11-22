@@ -1,0 +1,165 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-captions",
+  "name": "Video Captions",
+  "section": "video",
+  "pack": "core",
+  "status": "ready",
+  "higgsfield_feature": "Burned-In Captions & Titles",
+  "summary": "Imprime titoli, sottotitoli o didascalie ad alto contrasto direttamente sui frame del video mantenendo l'audio.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/captions-burnin.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "video",
+      "type": "video",
+      "label": "Clip Video",
+      "required": true,
+      "limits": {
+        "max_mb": 200
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "type": "textarea",
+      "label": "Testo / Didascalia",
+      "required": true,
+      "default": "CINEMA STUDIO PRO",
+      "bind": [
+        {
+          "node": "3",
+          "field": "text"
+        }
+      ]
+    },
+    {
+      "id": "font_size",
+      "type": "slider",
+      "label": "Dimensione Testo (% altezza)",
+      "min": 1.0,
+      "max": 20.0,
+      "step": 0.5,
+      "default": 5.5,
+      "bind": [
+        {
+          "node": "3",
+          "field": "font_size"
+        }
+      ]
+    },
+    {
+      "id": "position",
+      "type": "select",
+      "label": "Posizione",
+      "default": "bottom",
+      "options": [
+        {
+          "value": "bottom",
+          "label": "In basso"
+        },
+        {
+          "value": "top",
+          "label": "In alto"
+        }
+      ],
+      "bind": [
+        {
+          "node": "3",
+          "field": "position"
+        }
+      ]
+    },
+    {
+      "id": "align",
+      "type": "select",
+      "label": "Allineamento",
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centrato"
+        },
+        {
+          "value": "left",
+          "label": "Sinistra"
+        },
+        {
+          "value": "right",
+          "label": "Destra"
+        }
+      ],
+      "bind": [
+        {
+          "node": "3",
+          "field": "align"
+        }
+      ]
+    },
+    {
+      "id": "color",
+      "type": "select",
+      "label": "Colore Testo",
+      "default": "#ffffff",
+      "options": [
+        {
+          "value": "#ffffff",
+          "label": "Bianco"
+        },
+        {
+          "value": "#facc15",
+          "label": "Giallo Cinema"
+        },
+        {
+          "value": "#e8ff5a",
+          "label": "Lime Wox"
+        },
+        {
+          "value": "#38bdf8",
+          "label": "Ciano"
+        },
+        {
+          "value": "#000000",
+          "label": "Nero"
+        }
+      ],
+      "bind": [
+        {
+          "node": "3",
+          "field": "color"
+        }
+      ]
+    },
+    {
+      "id": "outline",
+      "type": "toggle",
+      "label": "Contorno nero (leggibilità)",
+      "default": true,
+      "bind": [
+        {
+          "node": "3",
+          "field": "outline"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "5",
+      "type": "video",
+      "label": "Video con titoli"
+    }
+  ],
+  "models": [],
+  "credits": [
+    "ComfyUI Core TextOverlay"
+  ]
+}

@@ -14,7 +14,7 @@ import type { FileValue, Frame, Values } from "./runner.ts";
 
 export type Status = "starting" | "queued" | "running" | "succeeded" | "failed" | "canceled" | "expired" | "lost";
 const TERMINAL = new Set<Status>(["succeeded", "failed", "canceled", "expired", "lost"]);
-const MEDIA = new Set(["image", "video", "audio"]);
+const MEDIA = new Set(["image", "video", "audio", "3d"]);
 
 export type Entry = {
   id: string;
@@ -53,7 +53,7 @@ export type JobLike = {
 
 /** What the history needs to know about an app: its declared output nodes, how many nodes its workflow
  * has (for the progress bar) and the class of a node id (for the "KSampler 4/8" label). */
-export type AppInfo = { outputs: string[]; nodes: number; classOf: (id: string) => string | null };
+export type AppInfo = { outputs: string[]; nodes: number; classOf: (id: string) => string | null; has3d?: boolean };
 
 export type HistoryOptions = {
   onContact?: () => void;
@@ -68,6 +68,8 @@ export type HistoryOptions = {
     index: number;
     contentType: string;
   }) => Promise<Uint8Array | void> | Uint8Array | void;
+  /** Fetch 3D files (.glb/.ply/.spz) produced by ComfyUI SaveGLB / Save3DAdvanced nodes. */
+  fetch3d?: (jobId: string) => Promise<{ nodeId: string; name: string; ext: string; bytes: Uint8Array }[]>;
 };
 
 type Live = {
@@ -142,14 +144,16 @@ function safeExt(name: string | undefined, type: string | undefined): string {
 
 const VIDEO_EXT = new Set([".mp4", ".webm", ".mov", ".mkv", ".gif"]);
 const AUDIO_EXT = new Set([".mp3", ".wav", ".flac", ".ogg", ".m4a", ".opus"]);
+const MODEL3D_EXT = new Set([".glb", ".gltf", ".ply", ".spz", ".obj"]);
 
 /** What the file is, by its extension first: core SaveVideo and CreateVideo report their mp4 under
  * `images` (with `animated: true`), so the SDK calls it an image and the web would draw it in an <img>.
  * (First web run of morph, 23 oct: a blank card for a good video.) */
-function mediaKind(ext: string, sdkType: string): "image" | "video" | "audio" {
+function mediaKind(ext: string, sdkType: string): "image" | "video" | "audio" | "3d" {
   if (VIDEO_EXT.has(ext)) return "video";
   if (AUDIO_EXT.has(ext)) return "audio";
-  return sdkType === "video" || sdkType === "audio" ? sdkType : "image";
+  if (MODEL3D_EXT.has(ext)) return "3d";
+  return sdkType === "video" || sdkType === "audio" || sdkType === "3d" ? sdkType : "image";
 }
 
 function normStatus(s: string): Status {
@@ -215,6 +219,7 @@ export class History {
   private appInfo: (appId: string) => AppInfo | undefined;
   private frames?: (jobId: string, signal: AbortSignal) => AsyncIterable<Frame>;
   private transformOutput?: HistoryOptions["transformOutput"];
+  private fetch3d?: HistoryOptions["fetch3d"];
 
   constructor(dir: string, opts: HistoryOptions = {}) {
     this.dir = dir;
@@ -222,6 +227,7 @@ export class History {
     this.appInfo = opts.appInfo ?? (() => undefined);
     this.frames = opts.frames;
     this.transformOutput = opts.transformOutput;
+    this.fetch3d = opts.fetch3d;
     mkdirSync(dir, { recursive: true });
   }
 
@@ -425,7 +431,7 @@ export class History {
             entry.error = { message: `could not download ${out.name}: ${(e as Error).message}` };
           }
         }
-        // If this was a 3D generation (e.g. trellis-3d), copy the generated .glb into the history entry folder
+        // If this was a 3D generation (e.g. trellis-3d or native SaveGLB/Save3DAdvanced), store the 3D assets
         if (entry.app === "trellis-3d") {
           const latestGlb = join(this.dir, "..", "3d", "latest.glb");
           if (existsSync(latestGlb)) {
@@ -435,8 +441,23 @@ export class History {
               console.warn(`[history] failed to copy out-model.glb: ${(e as Error).message}`);
             }
           }
+        } else if ((info?.has3d || !entry.outputs.length) && this.fetch3d) {
+          const files3d = await this.fetch3d(job.id);
+          let glbSaved = false;
+          for (const f3d of files3d) {
+            try {
+              const outIndex = ++n;
+              const isGlb = f3d.ext === ".glb" || f3d.ext === ".gltf";
+              const file = isGlb && !glbSaved ? "out-model.glb" : `out-${String(outIndex).padStart(2, "0")}${f3d.ext}`;
+              if (isGlb) glbSaved = true;
+              writeFileSync(join(folder, file), f3d.bytes);
+              entry.outputs.push({ file, type: "3d", name: f3d.name, node: f3d.nodeId });
+            } catch (e) {
+              console.warn(`[history] failed to save 3D file ${f3d.name}: ${(e as Error).message}`);
+            }
+          }
         }
-        if (!entry.outputs.length && !entry.error) entry.error = { message: "the job finished without an image, video or audio output" };
+        if (!entry.outputs.length && !entry.error) entry.error = { message: "the job finished without an image, video, audio or 3d output" };
       } else {
         const err = job.error;
         entry.error = {

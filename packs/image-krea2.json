@@ -1,10 +1,12 @@
 {
   "pack": "image-krea2",
   "apps": [
+    "cinema-studio",
+    "krea2-realism",
     "style-reference",
     "styles"
   ],
-  "download_gb": 23.67,
+  "download_gb": 25.23,
   "needs_hf_token": false,
   "custom_nodes": [],
   "models": [
@@ -17,8 +19,22 @@
       "gated": false,
       "license": "Krea 2 Community License",
       "used_by": [
+        "cinema-studio",
+        "krea2-realism",
         "style-reference",
         "styles"
+      ]
+    },
+    {
+      "repo": "RudySen/Krea2-realism-V2",
+      "file": "Krea2-realism-V2.safetensors",
+      "dir": "loras",
+      "gb": 1.56,
+      "name": "Krea2-realism-V2.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "krea2-realism"
       ]
     },
     {
@@ -114,6 +130,7 @@
       "gated": false,
       "license": "Krea 2 Community License",
       "used_by": [
+        "cinema-studio",
         "style-reference"
       ]
     },
@@ -150,6 +167,8 @@
       "gated": false,
       "license": "Krea 2 Community License",
       "used_by": [
+        "cinema-studio",
+        "krea2-realism",
         "style-reference",
         "styles"
       ]
@@ -163,6 +182,8 @@
       "gated": false,
       "license": "Krea 2 Community License",
       "used_by": [
+        "cinema-studio",
+        "krea2-realism",
         "style-reference",
         "styles"
       ]

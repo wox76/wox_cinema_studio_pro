@@ -1,0 +1,158 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "triposplat-3d",
+  "name": "TripoSplat 3D + Orbit",
+  "section": "3d",
+  "pack": "3d-splat",
+  "status": "ready",
+  "higgsfield_feature": "Photoreal 3D Gaussian Splat",
+  "summary": "Cattura 3D Gaussian Splatting fotorealistica di oggetti e prodotti da una singola foto + video orbitale (8GB VRAM).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/image-to-splat-triposplat.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto Oggetto / Prodotto",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "99",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "cutout",
+      "type": "toggle",
+      "label": "Rimuovi sfondo (BiRefNet)",
+      "default": true,
+      "bind": [
+        {
+          "node": "88:35",
+          "field": "switch"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 10,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "88:6",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "num_gaussians",
+      "type": "select",
+      "label": "Densità Gaussiane",
+      "default": 262144,
+      "options": [
+        {
+          "value": 65536,
+          "label": "65k (Anteprima Veloce)"
+        },
+        {
+          "value": 262144,
+          "label": "262k (Alta Qualità)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "88:55",
+          "field": "num_gaussians"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "88:6",
+          "field": "seed"
+        },
+        {
+          "node": "88:55",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "42",
+      "type": "video",
+      "label": "Video Orbit 360°"
+    },
+    {
+      "node": "51",
+      "type": "3d",
+      "label": "Splat 3D"
+    }
+  ],
+  "models": [
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "diffusion_models/triposplat_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 0.74,
+      "phase": "denoise"
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "vae/triposplat_vae_decoder_fp16.safetensors",
+      "dir": "vae",
+      "gb": 0.58,
+      "phase": "decode"
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "clip_vision/dino_v3_vit_h.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.68,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/flux2-dev",
+      "file": "split_files/vae/flux2-vae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "phase": "aux"
+    }
+  ],
+  "credits": [
+    "TripoSplat (VAST-AI)",
+    "Workflow from Fuobe"
+  ],
+  "modes": [
+    "pixal3d",
+    "multi-to-3d",
+    "text-to-3d",
+    "object-to-3d",
+    "triposplat-3d"
+  ],
+  "mode_label": "3D Splat"
+}

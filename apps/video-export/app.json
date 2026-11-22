@@ -1,0 +1,77 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-export",
+  "name": "Master Export",
+  "section": "video",
+  "pack": "core",
+  "status": "ready",
+  "higgsfield_feature": "ProRes & Lossless Master Export",
+  "summary": "Esporta master video pronti per il montaggio professionale in Apple ProRes, FFV1 Lossless, H.265 HEVC o AV1.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/upscale-export",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "video",
+      "type": "video",
+      "label": "Clip da esportare",
+      "required": true,
+      "limits": {
+        "max_mb": 200
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "format",
+      "type": "select",
+      "label": "Codec Master",
+      "default": "video/h265-mp4",
+      "options": [
+        {
+          "value": "video/h265-mp4",
+          "label": "H.265 / HEVC Alta Qualità (.mp4)"
+        },
+        {
+          "value": "video/ProRes",
+          "label": "Apple ProRes 422 (.mov)"
+        },
+        {
+          "value": "video/ffv1-mkv",
+          "label": "FFV1 Archival Lossless (.mkv)"
+        },
+        {
+          "value": "video/h264-mp4",
+          "label": "H.264 Universale (.mp4)"
+        },
+        {
+          "value": "video/av1-webm",
+          "label": "AV1 WebM (.webm)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "3",
+          "field": "format"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "3",
+      "type": "video",
+      "label": "Master esportato"
+    }
+  ],
+  "models": [],
+  "credits": [
+    "ComfyUI VideoHelperSuite"
+  ]
+}

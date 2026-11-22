@@ -12,7 +12,7 @@
     "class_type": "SaveImage",
     "inputs": {
       "images": [
-        "66:59",
+        "66:60",
         0
       ],
       "filename_prefix": "wox-cinema-studio-pro/upscale"
@@ -32,8 +32,8 @@
         "66:51",
         0
       ],
-      "tile_size": 512,
-      "overlap": 128,
+      "tile_size": 384,
+      "overlap": 64,
       "temporal_size": 4096,
       "temporal_overlap": 8
     },
@@ -117,8 +117,8 @@
         "66:51",
         0
       ],
-      "tile_size": 512,
-      "overlap": 128,
+      "tile_size": 384,
+      "overlap": 64,
       "temporal_size": 4096,
       "temporal_overlap": 8
     },
@@ -141,11 +141,25 @@
       "title": "Resize Image/Mask"
     }
   },
+  "66:57_cap": {
+    "class_type": "ImageScaleToMaxDimension",
+    "inputs": {
+      "image": [
+        "66:57",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "largest_size": 2048
+    },
+    "_meta": {
+      "title": "VRAM Safety Cap (Max Dimension)"
+    }
+  },
   "66:58": {
     "class_type": "SeedVR2Preprocess",
     "inputs": {
       "resized_images": [
-        "66:57",
+        "66:57_cap",
         0
       ]
     },
@@ -161,13 +175,31 @@
         0
       ],
       "original_resized_images": [
-        "66:57",
+        "66:57_cap",
         0
       ],
-      "color_correction_method": "none"
+      "color_correction_method": "wavelet"
     },
     "_meta": {
       "title": "Post-Process SeedVR2 Output"
+    }
+  },
+  "66:60": {
+    "class_type": "ImageBlend",
+    "inputs": {
+      "image1": [
+        "66:57_cap",
+        0
+      ],
+      "image2": [
+        "66:59",
+        0
+      ],
+      "blend_factor": 0.7,
+      "blend_mode": "normal"
+    },
+    "_meta": {
+      "title": "Blend Original Brushstrokes & Upscale"
     }
   },
   "66:61": {

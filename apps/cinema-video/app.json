@@ -57,6 +57,22 @@
       ]
     },
     {
+      "id": "last_frame",
+      "type": "image",
+      "label": "Last frame",
+      "required": false,
+      "limits": {
+        "max_mb": 20
+      },
+      "help": "Optional final frame. If uploaded, the video transitions toward ending on this image.",
+      "bind": [
+        {
+          "node": "last_frame",
+          "field": "image"
+        }
+      ]
+    },
+    {
       "id": "moves",
       "type": "select",
       "label": "Camera move",
@@ -737,6 +753,22 @@
       "bind": [
         {
           "node": "398:362",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "help": "Number of render steps. Higher values take longer and can improve detail.",
+      "bind": [
+        {
+          "node": "140:137",
           "field": "value"
         }
       ]

@@ -7,7 +7,6 @@
     "behind-the-scenes",
     "camera-copy",
     "chameleon",
-    "cinema-video",
     "cloud-surf",
     "dub",
     "genjutsu",
@@ -22,7 +21,6 @@
     "reframe",
     "roller-coaster",
     "sdr-hdr",
-    "speak",
     "storm-creature",
     "talking",
     "transitions",
@@ -30,7 +28,6 @@
     "vfx-clean-plate",
     "vfx-day-to-night",
     "vfx-water",
-    "video",
     "video-t2v",
     "volcano-ad"
   ],
@@ -53,7 +50,6 @@
       "license": "FLUX Kommunity License",
       "used_by": [
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "mixed-media",
         "morph",
@@ -76,7 +72,6 @@
         "behind-the-scenes",
         "camera-copy",
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "dub",
         "genjutsu",
@@ -91,7 +86,6 @@
         "reframe",
         "roller-coaster",
         "sdr-hdr",
-        "speak",
         "storm-creature",
         "talking",
         "transitions",
@@ -99,7 +93,6 @@
         "vfx-clean-plate",
         "vfx-day-to-night",
         "vfx-water",
-        "video",
         "video-t2v",
         "volcano-ad"
       ]
@@ -129,7 +122,6 @@
         "asmr-product",
         "asmr-whisper",
         "behind-the-scenes",
-        "cinema-video",
         "idol",
         "kick-ad",
         "magic-button",
@@ -137,11 +129,9 @@
         "mixed-media",
         "mukbang",
         "rap-video",
-        "speak",
         "storm-creature",
         "talking",
         "truck-ad",
-        "video",
         "video-t2v"
       ]
     },
@@ -297,7 +287,6 @@
         "behind-the-scenes",
         "camera-copy",
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "dub",
         "genjutsu",
@@ -311,7 +300,6 @@
         "rap-video",
         "reframe",
         "roller-coaster",
-        "speak",
         "storm-creature",
         "talking",
         "transitions",
@@ -319,7 +307,6 @@
         "vfx-clean-plate",
         "vfx-day-to-night",
         "vfx-water",
-        "video",
         "video-t2v",
         "volcano-ad"
       ]
@@ -339,7 +326,6 @@
         "behind-the-scenes",
         "camera-copy",
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "dub",
         "idol",
@@ -350,7 +336,6 @@
         "mukbang",
         "rap-video",
         "roller-coaster",
-        "speak",
         "storm-creature",
         "talking",
         "transitions",
@@ -358,7 +343,6 @@
         "vfx-clean-plate",
         "vfx-day-to-night",
         "vfx-water",
-        "video",
         "video-t2v",
         "volcano-ad"
       ]
@@ -373,7 +357,6 @@
       "license": "FLUX Kommunity License",
       "used_by": [
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "mixed-media",
         "morph",
@@ -391,7 +374,6 @@
       "license": "FLUX Kommunity License",
       "used_by": [
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "mixed-media",
         "morph",
@@ -414,7 +396,6 @@
         "behind-the-scenes",
         "camera-copy",
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "dub",
         "genjutsu",
@@ -429,7 +410,6 @@
         "reframe",
         "roller-coaster",
         "sdr-hdr",
-        "speak",
         "storm-creature",
         "talking",
         "transitions",
@@ -437,7 +417,6 @@
         "vfx-clean-plate",
         "vfx-day-to-night",
         "vfx-water",
-        "video",
         "video-t2v",
         "volcano-ad"
       ]
@@ -457,7 +436,6 @@
         "behind-the-scenes",
         "camera-copy",
         "chameleon",
-        "cinema-video",
         "cloud-surf",
         "dub",
         "genjutsu",
@@ -472,7 +450,6 @@
         "reframe",
         "roller-coaster",
         "sdr-hdr",
-        "speak",
         "storm-creature",
         "talking",
         "transitions",
@@ -480,7 +457,6 @@
         "vfx-clean-plate",
         "vfx-day-to-night",
         "vfx-water",
-        "video",
         "video-t2v",
         "volcano-ad"
       ]

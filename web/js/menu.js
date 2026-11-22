@@ -3,7 +3,7 @@
 // screens the links behave as before, and phones use the menu button.
 import { el, icon } from "./util.js";
 import { t, lang } from "./i18n.js";
-import { apps, byId, FEATURED, MODELS, menuGroups, modelOf, usesModel, tagline } from "./catalog.js";
+import { apps, byId, FEATURED, FUOBE_FX_SECTIONS, MODELS, menuGroups, modelOf, usesModel, tagline } from "./catalog.js";
 
 const canHover = window.matchMedia?.("(hover: hover) and (pointer: fine)");
 const OPEN_MS = 90, CLOSE_MS = 180;
@@ -13,7 +13,7 @@ function thumbOf(app) {
   const src = ex?.poster || (ex && ex.type !== "video" ? ex.card : null);
   return el("span", { class: "mm-thumb" }, src
     ? el("img", { src, alt: "", loading: "lazy", decoding: "async" })
-    : icon(app.section === "video" ? "video" : app.section === "audio" ? "audio" : "image"));
+    : icon(app.section === "3d" ? "box" : app.section === "video" ? "video" : app.section === "audio" ? "audio" : "image"));
 }
 
 function tagOf(app) {
@@ -39,42 +39,85 @@ function modelItem(m, menuApps, studio) {
   // the model's own app, or the first app of this menu built on it (SeedVR2 in Image opens Upscale, not Upscale Video)
   const target = users.includes(byId.get(m.app)) ? byId.get(m.app) : users[0];
   return el("a", { class: "mm-item model", href: `#/app/${target.id}`, role: "menuitem" },
-    el("span", { class: "mm-thumb glyph" }, icon(studio === "video" ? "video" : studio === "audio" ? "audio" : "layers")),
+    el("span", { class: "mm-thumb glyph" }, icon(studio === "video" ? "video" : studio === "audio" ? "audio" : studio === "3d" ? "box" : "layers")),
     el("span", { class: "mm-txt" }, el("b", {}, el("span", { class: "nm" }, m.name),
       target.status === "draft" ? el("span", { class: "tag ghost" }, t("tag.draft")) : el("span", { class: "n" }, usedBy(users.length))),
-      el("small", {}, m.note[lang === "es" ? 1 : 0])));
+      el("small", {}, (lang === "it" && m.note[2]) ? m.note[2] : m.note[lang === "es" ? 1 : 0])));
+}
+
+function fxToolItem(item) {
+  const target = byId.get(item.appId);
+  if (!target) return null;
+  const ex = target.example;
+  const src = ex?.poster || (ex && ex.type !== "video" ? ex.card : null);
+  return el("a", { class: "mm-item", href: `#/app/${target.id}`, role: "menuitem", title: `${target.name} · ${item.sub}` },
+    el("span", { class: "mm-thumb" }, src
+      ? el("img", { src, alt: "", loading: "lazy", decoding: "async" })
+      : icon(target.section === "3d" ? "box" : target.section === "video" ? "video" : "image")),
+    el("span", { class: "mm-txt" },
+      el("b", {}, el("span", { class: "nm" }, item.label)),
+      el("small", {}, item.sub)));
 }
 
 function panelFor(studio) {
-  if (studio === "3d") {
-    const trellisApp = byId.get("trellis-3d");
+  if (studio === "fx") {
+    const total = FUOBE_FX_SECTIONS.reduce((n, s) => n + s.items.length, 0);
+    const fxApps = [...new Set(FUOBE_FX_SECTIONS.flatMap((s) => s.items.map((x) => byId.get(x.appId)).filter(Boolean)))];
     const feats = el("section", { class: "mm-feats" },
-      el("h4", {}, "3D Asset & Animation Studio", el("span", { class: "n" }, "2 strumenti")),
-      el("div", { class: "mm-cols one" },
+      el("h4", {}, "Fuobe FX Pipeline", el("span", { class: "n" }, `${total} strumenti`)),
+      el("div", { class: "mm-cols" },
+        ...FUOBE_FX_SECTIONS.map((sec) => el("div", { class: "mm-group", role: "group", "aria-label": sec.title },
+          el("h5", {}, `${sec.title} (${sec.items.length})`),
+          ...sec.items.map(fxToolItem)))));
+    const models = MODELS.map((m, i) => ({ m, i, n: fxApps.filter((a) => usesModel(a, m)).length }))
+      .filter((x) => x.n).sort((a, b) => b.n - a.n || a.i - b.i);
+    const mods = el("section", { class: "mm-models" },
+      el("h4", {}, t("menu.models")),
+      ...models.map(({ m }) => modelItem(m, fxApps, "video")));
+    return el("div", { class: "mm-inner mm-fx" }, feats, mods);
+  }
+
+  if (studio === "3d") {
+    const pick = (ids) => ids.map((id) => byId.get(id)).filter(Boolean);
+    const fiveModesApps = pick(["pixal3d", "multi-to-3d", "text-to-3d", "object-to-3d", "triposplat-3d"]);
+    const extraMeshApps = pick(["trellis-3d", "trellis2-native", "hunyuan3d-21", "idol-3d", "scene-3d-moge", "body-double-3d"]);
+    const knownIds = new Set([...fiveModesApps, ...extraMeshApps].map((a) => a.id));
+    const extra3d = apps.filter((a) => a.section === "3d" && !knownIds.has(a.id));
+    if (extra3d.length) extraMeshApps.push(...extra3d);
+    const all3d = [...fiveModesApps, ...extraMeshApps];
+    const actionForgeItem = el("a", {
+      class: "mm-item",
+      href: "/actionforge/",
+      target: "_blank",
+      rel: "noopener",
+      role: "menuitem",
+      title: "ActionForge - 3D Character Rigging & Animation Studio"
+    },
+      el("span", { class: "mm-thumb glyph" }, icon("cube")),
+      el("span", { class: "mm-txt" },
+        el("b", {}, el("span", { class: "nm" }, "ActionForge [Studio]"), el("span", { class: "tag violet" }, "Rigging")),
+        el("small", {}, "Auto-rigging scheletrico interattivo, pose ed esportazione FBX/GLB")
+      )
+    );
+    const feats = el("section", { class: "mm-feats" },
+      el("h4", {}, "3D Studio · 5 Modalità & ActionForge", el("span", { class: "n" }, `${all3d.length + 1} strumenti`)),
+      el("div", { class: "mm-cols" },
         el("div", { class: "mm-group", role: "group" },
-          el("h5", {}, "Generazione & Rigging"),
-          trellisApp ? appItem(trellisApp) : null,
-          el("a", {
-            class: "mm-item",
-            href: "/actionforge/",
-            target: "_blank",
-            rel: "noopener",
-            role: "menuitem",
-            title: "ActionForge - 3D Character Rigging & Animation Studio"
-          },
-            el("span", { class: "mm-thumb glyph" }, icon("cube")),
-            el("span", { class: "mm-txt" },
-              el("b", {}, el("span", { class: "nm" }, "ActionForge [Studio]"), el("span", { class: "tag violet" }, "Rigging")),
-              el("small", {}, "Auto-rigging scheletrico interattivo, pose ed esportazione FBX/GLB")
-            )
-          )
+          el("h5", {}, "Image to 3D · 5 Modalità Fuobe"),
+          ...fiveModesApps.map(appItem)
+        ),
+        el("div", { class: "mm-group", role: "group" },
+          el("h5", {}, "Motori 3D, Scene & Rigging"),
+          ...extraMeshApps.map(appItem),
+          actionForgeItem
         )
       )
     );
-    const m = MODELS.find((x) => x.app === "trellis-3d");
+    const models3d = MODELS.map((m, i) => ({ m, i, n: all3d.filter((a) => usesModel(a, m)).length }))
+      .filter((x) => x.n).sort((a, b) => b.n - a.n || a.i - b.i);
     const mods = el("section", { class: "mm-models" },
       el("h4", {}, t("menu.models")),
-      m && trellisApp ? modelItem(m, [trellisApp], "3d") : null
+      ...models3d.map((x) => modelItem(x.m, all3d, "3d"))
     );
     return el("div", { class: "mm-inner mm-3d" }, feats, mods);
   }
@@ -83,11 +126,90 @@ function panelFor(studio) {
   const menuApps = groups.flatMap((g) => g.apps);
   const models = MODELS.map((m, i) => ({ m, i, n: menuApps.filter((a) => usesModel(a, m)).length }))
     .filter((x) => x.n).sort((a, b) => b.n - a.n || a.i - b.i);
+
+  const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const countBadge = el("span", { class: "n" }, t("explore.apps", { n: menuApps.length }));
+  const emptyMsg = el("div", { class: "mm-empty", hidden: true }, "Nessun risultato trovato.");
+
+  const groupNodes = groups.map((g) => {
+    const gLabel = g.key ? t(g.key) : "";
+    const itemEntries = g.apps.map((a) => {
+      const node = appItem(a);
+      const model = modelOf(a);
+      const hay = norm([
+        a.id, a.name, a.summary, tagline(a), a.higgsfield_feature,
+        model?.name, ...(model?.note || []), gLabel,
+      ].filter(Boolean).join(" "));
+      return { node, hay };
+    });
+    const groupEl = el("div", { class: "mm-group", role: "group", "aria-label": gLabel || null },
+      g.key ? el("h5", {}, gLabel) : null, ...itemEntries.map((x) => x.node));
+    return { groupEl, itemEntries };
+  });
+
+  const modelEntries = models.map(({ m }) => {
+    const node = modelItem(m, menuApps, studio);
+    const hay = norm([m.name, m.file, ...(m.note || [])].filter(Boolean).join(" "));
+    return { node, hay };
+  });
+
+  let searchWrap = null;
+  if (studio === "image" || studio === "video") {
+    const input = el("input", {
+      class: "mm-search-input",
+      type: "search",
+      placeholder: studio === "video"
+        ? "Cerca app, effetti, stile, modello video..."
+        : "Cerca app, stile, ritocco, modello immagine...",
+      "aria-label": "Cerca nel menu",
+      autocomplete: "off",
+      spellcheck: "false",
+    });
+    const clearBtn = el("button", {
+      class: "mm-search-clear",
+      type: "button",
+      hidden: true,
+      "aria-label": "Pulisci ricerca",
+      onclick: () => { input.value = ""; applyFilter(); input.focus(); },
+    }, icon("x"));
+
+    const applyFilter = () => {
+      const tokens = norm(input.value).split(/\s+/).filter(Boolean);
+      clearBtn.hidden = tokens.length === 0;
+      let visibleApps = 0;
+      for (const g of groupNodes) {
+        let groupVisible = 0;
+        for (const item of g.itemEntries) {
+          const ok = tokens.every((tok) => item.hay.includes(tok));
+          item.node.hidden = !ok;
+          if (ok) { groupVisible++; visibleApps++; }
+        }
+        g.groupEl.hidden = groupVisible === 0;
+      }
+      for (const me of modelEntries) {
+        me.node.hidden = tokens.length > 0 && !tokens.every((tok) => me.hay.includes(tok));
+      }
+      countBadge.textContent = t("explore.apps", { n: visibleApps });
+      emptyMsg.hidden = visibleApps > 0;
+    };
+
+    input.addEventListener("input", applyFilter);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && input.value) {
+        e.stopPropagation();
+        input.value = "";
+        applyFilter();
+      }
+    });
+    searchWrap = el("div", { class: "mm-search-bar" }, icon("search"), input, clearBtn);
+  }
+
   const feats = el("section", { class: "mm-feats" },
-    el("h4", {}, t("menu.features"), el("span", { class: "n" }, t("explore.apps", { n: menuApps.length }))),
-    el("div", { class: `mm-cols${groups.length === 1 ? " one" : ""}` }, ...groups.map((g) => el("div", { class: "mm-group", role: "group", "aria-label": g.key ? t(g.key) : null },
-      g.key ? el("h5", {}, t(g.key)) : null, ...g.apps.map(appItem)))));
-  const mods = el("section", { class: "mm-models" }, el("h4", {}, t("menu.models")), ...models.map(({ m }) => modelItem(m, menuApps, studio)));
+    el("h4", {}, t("menu.features"), countBadge),
+    searchWrap,
+    el("div", { class: `mm-cols${groups.length === 1 ? " one" : ""}` }, ...groupNodes.map((g) => g.groupEl)),
+    emptyMsg);
+  const mods = el("section", { class: "mm-models" }, el("h4", {}, t("menu.models")), ...modelEntries.map((x) => x.node));
   return el("div", { class: `mm-inner mm-${studio}` }, feats, mods);
 }
 
@@ -123,7 +245,7 @@ export function attachMenus(bar, links) {
   };
   const later = () => { clearTimeout(openTimer); clearTimeout(closeTimer); closeTimer = setTimeout(close, CLOSE_MS); };
 
-  for (const key of ["image", "video", "audio", "3d"]) {
+  for (const key of ["image", "video", "audio", "3d", "fx"]) {
     const a = links.get(key);
     if (!a || !apps.length) continue;
     a.setAttribute("aria-haspopup", "true");
@@ -136,6 +258,10 @@ export function attachMenus(bar, links) {
     });
     a.addEventListener("pointerleave", later);
     a.addEventListener("click", (e) => {
+      if (key === "fx") {
+        close();
+        return;
+      }
       e.preventDefault();
       if (openKey === key && !panel.hidden) {
         close();

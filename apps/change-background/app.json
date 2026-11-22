@@ -1,0 +1,107 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "change-background",
+  "name": "Change Background",
+  "section": "image",
+  "pack": "image-qwen-edit",
+  "status": "ready",
+  "higgsfield_feature": "Change Background · AI Environment",
+  "summary": "Cambia completamente l'ambientazione alle spalle del soggetto adattando riflessi e luce ambientale.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/app-change-background",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "11",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "type": "textarea",
+      "label": "Nuovo sfondo",
+      "required": true,
+      "default": "a minimalist sunlit rooftop terrace overlooking Tokyo at blue hour",
+      "bind": [
+        {
+          "node": "4",
+          "field": "prompt",
+          "template": "Replace the entire background with {target}. Keep the main subject, pose, face, clothing and hair edges exact, matching rim light and reflections cleanly."
+        },
+        {
+          "node": "14",
+          "field": "prompt",
+          "template": "Replace the entire background with {target}. Keep the main subject, pose, face, clothing and hair edges exact, matching rim light and reflections cleanly."
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "16",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "9",
+      "type": "image",
+      "label": "Sfondo sostituito"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+      "file": "split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.43,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.38,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "lightx2v/Qwen-Image-Lightning",
+      "file": "Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors",
+      "dir": "loras",
+      "gb": 0.85,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Qwen-Image-Edit 2509 by Alibaba"
+  ]
+}

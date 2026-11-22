@@ -1,13 +1,28 @@
 {
   "pack": "image-qwen-edit",
   "apps": [
+    "ai-influencer-photo",
     "angles",
+    "change-background",
+    "character-studio",
+    "colorize",
+    "edit",
+    "fashion-factory",
+    "head-swap",
+    "ip-cleanup",
+    "marketing-studio",
+    "match-colors",
+    "match-lighting",
+    "object-remover",
+    "qwen-multiangle",
     "relight",
     "shots",
+    "watermark-remover",
     "whats-next",
+    "wonderfull",
     "zooms"
   ],
-  "download_gb": 31.69,
+  "download_gb": 54.44,
   "needs_hf_token": false,
   "custom_nodes": [],
   "models": [
@@ -20,11 +35,37 @@
       "gated": false,
       "license": "Apache-2.0",
       "used_by": [
+        "ai-influencer-photo",
         "angles",
+        "change-background",
+        "character-studio",
+        "colorize",
+        "edit",
+        "fashion-factory",
+        "head-swap",
+        "ip-cleanup",
+        "marketing-studio",
+        "match-colors",
+        "match-lighting",
+        "object-remover",
+        "qwen-multiangle",
         "relight",
         "shots",
+        "watermark-remover",
         "whats-next",
         "zooms"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+      "file": "split_files/diffusion_models/qwen_image_edit_2511_fp8mixed.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.53,
+      "name": "qwen_image_edit_2511_fp8mixed.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "wonderfull"
       ]
     },
     {
@@ -37,6 +78,7 @@
       "license": "Apache-2.0",
       "used_by": [
         "angles",
+        "qwen-multiangle",
         "relight",
         "shots",
         "whats-next",
@@ -56,6 +98,53 @@
       ]
     },
     {
+      "repo": "lightx2v/Qwen-Image-Edit-2511-Lightning",
+      "file": "Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors",
+      "dir": "loras",
+      "gb": 0.85,
+      "name": "Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "wonderfull"
+      ]
+    },
+    {
+      "repo": "prithivMLmods/Qwen-Image-Edit-2511-Ultra-Realistic-Portrait",
+      "file": "Qwen-Image-Edit-2511-Ultra-Realistic-Portrait-URP_10.safetensors",
+      "dir": "loras",
+      "gb": 0.24,
+      "name": "Qwen-Image-Edit-2511-Ultra-Realistic-Portrait-URP_10.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "wonderfull"
+      ]
+    },
+    {
+      "repo": "lightx2v/Qwen-Image-Lightning",
+      "file": "Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors",
+      "dir": "loras",
+      "gb": 0.85,
+      "name": "Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "ai-influencer-photo",
+        "change-background",
+        "colorize",
+        "edit",
+        "fashion-factory",
+        "head-swap",
+        "ip-cleanup",
+        "marketing-studio",
+        "match-colors",
+        "match-lighting",
+        "object-remover",
+        "watermark-remover"
+      ]
+    },
+    {
       "repo": "lovis93/next-scene-qwen-image-lora-2509",
       "file": "next-scene_lora-v2-3000.safetensors",
       "dir": "loras",
@@ -65,6 +154,18 @@
       "license": "MIT",
       "used_by": [
         "whats-next"
+      ]
+    },
+    {
+      "repo": "jtydhr88/ComfyUI-qwenmultiangle",
+      "file": "qwen-image-edit-2511-multiple-angles-lora.safetensors",
+      "dir": "loras",
+      "gb": 0.28,
+      "name": "qwen-image-edit-2511-multiple-angles-lora.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "qwen-multiangle"
       ]
     },
     {
@@ -90,10 +191,25 @@
       "gated": false,
       "license": "Apache-2.0",
       "used_by": [
+        "ai-influencer-photo",
         "angles",
+        "change-background",
+        "character-studio",
+        "colorize",
+        "edit",
+        "fashion-factory",
+        "head-swap",
+        "ip-cleanup",
+        "marketing-studio",
+        "match-colors",
+        "match-lighting",
+        "object-remover",
+        "qwen-multiangle",
         "relight",
         "shots",
+        "watermark-remover",
         "whats-next",
+        "wonderfull",
         "zooms"
       ]
     },
@@ -106,10 +222,25 @@
       "gated": false,
       "license": "Apache-2.0",
       "used_by": [
+        "ai-influencer-photo",
         "angles",
+        "change-background",
+        "character-studio",
+        "colorize",
+        "edit",
+        "fashion-factory",
+        "head-swap",
+        "ip-cleanup",
+        "marketing-studio",
+        "match-colors",
+        "match-lighting",
+        "object-remover",
+        "qwen-multiangle",
         "relight",
         "shots",
+        "watermark-remover",
         "whats-next",
+        "wonderfull",
         "zooms"
       ]
     }

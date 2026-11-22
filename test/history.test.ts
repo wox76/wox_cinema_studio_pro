@@ -284,3 +284,42 @@ test("history.page paginates entries and filters by media type", () => {
     assert.deepEqual(seen, imgIds.slice().sort());
   } finally { done(); }
 });
+
+test("History fetch3d saves out-model.glb and adds a 3d output entry for section 3d apps", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ff-hist-3d-"));
+  try {
+    const glbBytes = new Uint8Array([0x67, 0x6c, 0x54, 0x46, 2, 0, 0, 0]);
+    const history = new History(dir, {
+      fetch3d: async (jobId) => {
+        assert.equal(jobId, "job-3d-1");
+        return [{ nodeId: "20", name: "pixal_mesh.glb", ext: ".glb", bytes: glbBytes }];
+      },
+    });
+    const app = byId("pixal3d");
+    const entry = history.start(app, resolveValues(app, { image: { bytes: PNG, name: "chair.png", type: "image/png" } }));
+    let jobStatus = "running";
+    let completed: Date | null = null;
+    const job: JobLike = {
+      id: "job-3d-1",
+      get status() { return jobStatus; },
+      outputs: [],
+      error: null,
+      startedAt: new Date(),
+      get completedAt() { return completed; },
+      async wait() {
+        jobStatus = "succeeded";
+        completed = new Date();
+      },
+      async cancel() {},
+      async *events() {},
+    };
+    const doneEntry = await history.follow(entry, job);
+    assert.equal(doneEntry.status, "succeeded");
+    assert.equal(doneEntry.outputs.length, 1);
+    assert.equal(doneEntry.outputs[0].type, "3d");
+    assert.equal(doneEntry.outputs[0].file, "out-model.glb");
+    assert.deepEqual([...readFileSync(join(dir, doneEntry.id, "out-model.glb"))], [...glbBytes]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

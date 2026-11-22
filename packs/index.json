@@ -1,4 +1,38 @@
 {
+  "3d-body-double": {
+    "apps": [
+      "body-double-3d"
+    ],
+    "download_gb": 4.7,
+    "needs_hf_token": false
+  },
+  "3d-hunyuan": {
+    "apps": [
+      "hunyuan3d-21"
+    ],
+    "download_gb": 7.37,
+    "needs_hf_token": false
+  },
+  "3d-splat": {
+    "apps": [
+      "any-angle-3d",
+      "idol-3d",
+      "triposplat-3d"
+    ],
+    "download_gb": 5.1,
+    "needs_hf_token": false
+  },
+  "3d-studio": {
+    "apps": [
+      "multi-to-3d",
+      "object-to-3d",
+      "pixal3d",
+      "text-to-3d",
+      "trellis2-native"
+    ],
+    "download_gb": 33.17,
+    "needs_hf_token": false
+  },
   "audio": {
     "apps": [
       "music",
@@ -9,23 +43,39 @@
   },
   "core": {
     "apps": [
+      "face-swap",
       "smoke",
-      "smoke-invert"
+      "smoke-invert",
+      "video-captions",
+      "video-export",
+      "video-face-swap",
+      "video-join",
+      "video-remove-dialogue",
+      "video-trim"
     ],
     "download_gb": 0,
     "needs_hf_token": false
   },
   "image": {
     "apps": [
-      "z-image"
+      "ai-influencer",
+      "trellis-3d",
+      "z-image",
+      "z-image-grid",
+      "z-image-palette"
     ],
     "download_gb": 12.17,
     "needs_hf_token": false
   },
+  "image-flux1-krea": {
+    "apps": [
+      "flux1-krea"
+    ],
+    "download_gb": 22.28,
+    "needs_hf_token": false
+  },
   "image-flux3": {
     "apps": [
-      "ai-influencer",
-      "ai-influencer-photo",
       "billboard",
       "breakdown",
       "brick-toy",
@@ -34,16 +84,12 @@
       "character",
       "character-3",
       "character-swap",
-      "cinema-studio",
       "color-grade",
       "comic-book",
       "commercial-faces",
       "create-image",
-      "edit",
       "edit-text",
       "expand-image",
-      "face-swap",
-      "fashion-factory",
       "figure-3d",
       "fridge-ad",
       "game-styles",
@@ -83,55 +129,111 @@
       "ugc-shot",
       "victory-card"
     ],
-    "download_gb": 17.76,
+    "download_gb": 17.75,
     "needs_hf_token": true
+  },
+  "image-ideogram4": {
+    "apps": [
+      "ideogram4"
+    ],
+    "download_gb": 30.09,
+    "needs_hf_token": false
   },
   "image-krea2": {
     "apps": [
+      "cinema-studio",
+      "krea2-realism",
       "style-reference",
       "styles"
     ],
-    "download_gb": 23.67,
+    "download_gb": 25.23,
     "needs_hf_token": false
   },
   "image-moss": {
     "apps": [
       "moss-image"
     ],
-    "download_gb": 13.0,
+    "download_gb": 15.41,
+    "needs_hf_token": false
+  },
+  "image-qwen-2512": {
+    "apps": [
+      "qwen-image-2512"
+    ],
+    "download_gb": 31.76,
     "needs_hf_token": false
   },
   "image-qwen-edit": {
     "apps": [
+      "ai-influencer-photo",
       "angles",
+      "change-background",
+      "character-studio",
+      "colorize",
+      "edit",
+      "fashion-factory",
+      "head-swap",
+      "ip-cleanup",
+      "marketing-studio",
+      "match-colors",
+      "match-lighting",
+      "object-remover",
+      "qwen-multiangle",
       "relight",
       "shots",
+      "watermark-remover",
       "whats-next",
+      "wonderfull",
       "zooms"
     ],
-    "download_gb": 31.69,
+    "download_gb": 54.44,
+    "needs_hf_token": false
+  },
+  "image-qwen-layered": {
+    "apps": [
+      "layers-control",
+      "qwen-layered"
+    ],
+    "download_gb": 71.02,
     "needs_hf_token": false
   },
   "upscale": {
     "apps": [
       "depth-map",
       "remove-bg",
+      "scene-3d-moge",
       "smooth",
       "upscale",
       "upscale-video",
-      "video-remove-bg"
+      "video-depth",
+      "video-remove-bg",
+      "video-restore"
     ],
     "download_gb": 5.13,
     "needs_hf_token": false
   },
+  "video-bernini": {
+    "apps": [
+      "video-relight"
+    ],
+    "download_gb": 39.03,
+    "needs_hf_token": false
+  },
   "video-h3": {
     "apps": [
+      "cinema-video",
+      "director",
       "extend-video",
       "h3-photo",
       "h3-video",
-      "reshoot"
+      "marketing-video",
+      "music-video",
+      "orbit-360",
+      "reshoot",
+      "speak",
+      "video"
     ],
-    "download_gb": 75.72,
+    "download_gb": 91.57,
     "needs_hf_token": false
   },
   "video-ltx25": {
@@ -142,7 +244,6 @@
       "behind-the-scenes",
       "camera-copy",
       "chameleon",
-      "cinema-video",
       "cloud-surf",
       "dub",
       "genjutsu",
@@ -157,7 +258,6 @@
       "reframe",
       "roller-coaster",
       "sdr-hdr",
-      "speak",
       "storm-creature",
       "talking",
       "transitions",
@@ -165,7 +265,6 @@
       "vfx-clean-plate",
       "vfx-day-to-night",
       "vfx-water",
-      "video",
       "video-t2v",
       "volcano-ad"
     ],
@@ -202,5 +301,38 @@
     ],
     "download_gb": 45.06,
     "needs_hf_token": true
+  },
+  "video-wan-flf2v": {
+    "apps": [
+      "transitions-pro"
+    ],
+    "download_gb": 35.57,
+    "needs_hf_token": false
+  },
+  "video-wan-move": {
+    "apps": [
+      "draw-to-video"
+    ],
+    "download_gb": 25.39,
+    "needs_hf_token": false
+  },
+  "video-wan-uni3c": {
+    "apps": [
+      "fly-path"
+    ],
+    "download_gb": 26.65,
+    "needs_hf_token": false
+  },
+  "video-wan-vace": {
+    "apps": [
+      "video-blockout",
+      "video-evolution",
+      "video-insert",
+      "video-remove-object",
+      "video-restyle",
+      "video-swap"
+    ],
+    "download_gb": 72.62,
+    "needs_hf_token": false
   }
 }

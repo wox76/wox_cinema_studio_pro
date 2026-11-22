@@ -1,0 +1,71 @@
+{
+  "pack": "3d-body-double",
+  "apps": [
+    "body-double-3d"
+  ],
+  "download_gb": 4.7,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/sam3.1",
+      "file": "checkpoints/sam3.1_multiplex_fp16.safetensors",
+      "dir": "checkpoints",
+      "gb": 1.75,
+      "name": "sam3.1_multiplex_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "body-double-3d"
+      ]
+    },
+    {
+      "repo": "jtydhr88/ComfyUI-InstantHMR",
+      "file": "instanthmr_medium.safetensors",
+      "dir": "detection",
+      "gb": 0.18,
+      "name": "instanthmr_medium.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "body-double-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/sam-3d-body",
+      "file": "detection/sam_3d_body_dinov3_int8_convrot.safetensors",
+      "dir": "detection",
+      "gb": 1.99,
+      "name": "sam_3d_body_dinov3_int8_convrot.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "body-double-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/RT-DETR",
+      "file": "diffusion_models/rt_detr_v4-x-hgnet_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 0.12,
+      "name": "rt_detr_v4-x-hgnet_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "body-double-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/MoGe",
+      "file": "geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 0.66,
+      "name": "moge_2_vitl_normal_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "body-double-3d"
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import { flags, flagButton } from "./flags.js";
 import { sendToVideoEditor } from "./video_editor.js";
 import { resolveGlbUrl, sendToActionForge } from "./actionforge.js";
 import { create3DViewer } from "./viewer3d.js";
+import { openLayersModal } from "./layers_editor.js";
 
 function optionLabel(inp, v) {
   if (Array.isArray(v)) return v.map((x) => optionLabel(inp, x)).join(inp.multiple?.ordered ? " → " : ", ");
@@ -112,7 +113,6 @@ export function openViewer(items, startKey) {
     const app = byId.get(item.app);
     const output = item.outputs[out] || { type: item.type, url: item.full };
     const url = output.url;
-    const isVideo = output.type === "video";
     const fileName = output.name || output.file || item.fileName || (url ? url.split("/").pop() : null);
     const nameBase = fileName ? fileName.replace(/\.[a-z0-9]+$/i, "") : `media_${item.id || "item"}`;
 
@@ -121,19 +121,26 @@ export function openViewer(items, startKey) {
 
     const glbUrl = resolveGlbUrl(item);
     const is3dAsset = Boolean(glbUrl);
+    const hasVisualFallback = Boolean(
+      (output && output.type !== "3d" && output.url && !/\.(glb|gltf|ply|spz)$/i.test(output.url))
+      || item.outputs.some((o) => o.type === "video" || o.type === "image")
+    );
+    const visualFallbackOut = item.outputs.find((o) => o.type === "video" || o.type === "image") || output;
+    const isVideo = (is3dAsset ? visualFallbackOut?.type : output.type) === "video";
 
     let mediaEl;
     let vcrBox = null;
 
-    if (is3dAsset && viewMode3D === "3d") {
+    if (is3dAsset && (viewMode3D === "3d" || !hasVisualFallback)) {
       active3DContainer = create3DViewer(glbUrl, { width: "100%", height: "100%" });
       mediaEl = active3DContainer;
       currentVideoEl = null;
     } else {
-      mediaEl = fullMedia(output.type, output.url, { poster: item.poster });
+      const showOut = is3dAsset ? visualFallbackOut : output;
+      mediaEl = fullMedia(showOut.type, showOut.url, { poster: item.poster });
     }
 
-    if (isVideo && (!is3dAsset || viewMode3D !== "3d")) {
+    if (isVideo && (!is3dAsset || (hasVisualFallback && viewMode3D !== "3d"))) {
       const v = mediaEl.tagName === "VIDEO" ? mediaEl : mediaEl.querySelector("video");
       currentVideoEl = v;
       if (v) {
@@ -180,9 +187,9 @@ export function openViewer(items, startKey) {
       currentVideoEl = null;
     }
 
-    const viewToggle3D = is3dAsset ? el("div", { class: "tabs", style: { position: "absolute", top: "14px", left: "50%", transform: "translateX(-50%)", zIndex: "10" } },
+    const viewToggle3D = (is3dAsset && hasVisualFallback) ? el("div", { class: "tabs", style: { position: "absolute", top: "14px", left: "50%", transform: "translateX(-50%)", zIndex: "10" } },
       el("button", { type: "button", "aria-selected": String(viewMode3D === "3d"), onclick: () => { viewMode3D = "3d"; draw(); } }, icon("cube"), " Vista 3D Interattiva"),
-      el("button", { type: "button", "aria-selected": String(viewMode3D === "turntable"), onclick: () => { viewMode3D = "turntable"; draw(); } }, icon("play"), " 360° Turntable Video")
+      el("button", { type: "button", "aria-selected": String(viewMode3D === "turntable"), onclick: () => { viewMode3D = "turntable"; draw(); } }, icon("play"), visualFallbackOut?.type === "video" ? " 360° Turntable Video" : " Anteprima 2D")
     ) : null;
 
     stage.replaceChildren(...[
@@ -219,11 +226,11 @@ export function openViewer(items, startKey) {
     const glbBanner = glbUrl ? el("div", { class: "af-handoff-banner" },
       el("div", { class: "af-handoff-top" },
         el("strong", {}, "🧊 Modello 3D (.GLB) Pronto"),
-        el("span", {}, "TRELLIS.2 PBR")
+        el("span", {}, app?.name || "3D PBR")
       ),
       el("div", { class: "af-handoff-btns" },
         el("button", { class: "btn lime", type: "button", onclick: () => { close(); sendToActionForge(item); } }, "🦴 Rigga in ActionForge"),
-        el("a", { class: "btn ghost", href: glbUrl, download: `wox-trellis-${item.id || "model"}.glb` }, icon("download"), ".GLB")
+        el("a", { class: "btn ghost", href: glbUrl, download: `wox-${item.app || "model"}-${item.id || "3d"}.glb` }, icon("download"), ".GLB")
       )
     ) : null;
 
@@ -267,6 +274,17 @@ export function openViewer(items, startKey) {
         el("button", { class: "btn ghost", type: "button", onclick: () => { close(); hooks.compare?.({ ...item, full: url, type: output.type }); } }, icon("compare"), t("act.compare")),
         url && isVideo ? el("button", { class: "btn ghost", type: "button", title: "Esporta il fotogramma attuale in PNG", onclick: () => captureCurrentFrame(currentVideoEl, nameBase) }, icon("camera"), "Esporta Frame") : null,
         url && output.type === "audio" ? el("button", { class: "btn ghost", type: "button", onclick: () => { close(); sendToVideoEditor({ ...item, url, type: output.type }); } }, icon("film"), "Editor Video") : null,
+        (item.app === "qwen-layered" || item.app === "layers-control") && item.outputs.some((o) => o.type === "image")
+          ? el("button", {
+              class: "btn ghost",
+              type: "button",
+              onclick: () => {
+                const layerUrls = item.outputs.filter((o) => o.type === "image" && o.url).map((o) => o.url);
+                close();
+                openLayersModal(layerUrls);
+              },
+            }, icon("layers"), "Composita Livelli")
+          : null,
         saveToLibBtn,
         item.kind === "example" && app ? flagButton(flags.key(app.id)) : null,
         item.kind === "history"

@@ -1,0 +1,171 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-join",
+  "name": "Join Clips",
+  "section": "video",
+  "pack": "core",
+  "status": "ready",
+  "higgsfield_feature": "Video Join · Merge Clips",
+  "summary": "Unisce in sequenza due clip video adattando automaticamente entrambe allo stesso formato e FPS.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/video-concat-2.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "video1",
+      "type": "video",
+      "label": "Prima Clip",
+      "required": true,
+      "limits": {
+        "max_mb": 200
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "video2",
+      "type": "video",
+      "label": "Seconda Clip",
+      "required": true,
+      "limits": {
+        "max_mb": 200
+      },
+      "bind": [
+        {
+          "node": "4",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Formato Finale",
+      "default": "832x480",
+      "options": [
+        {
+          "value": "832x480",
+          "label": "16:9 Landscape (832×480)",
+          "sets": [
+            {
+              "node": "3",
+              "field": "width",
+              "value": 832
+            },
+            {
+              "node": "3",
+              "field": "height",
+              "value": 480
+            },
+            {
+              "node": "6",
+              "field": "width",
+              "value": 832
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 480
+            }
+          ]
+        },
+        {
+          "value": "480x832",
+          "label": "9:16 Verticale (480×832)",
+          "sets": [
+            {
+              "node": "3",
+              "field": "width",
+              "value": 480
+            },
+            {
+              "node": "3",
+              "field": "height",
+              "value": 832
+            },
+            {
+              "node": "6",
+              "field": "width",
+              "value": 480
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 832
+            }
+          ]
+        },
+        {
+          "value": "640x640",
+          "label": "1:1 Quadrato (640×640)",
+          "sets": [
+            {
+              "node": "3",
+              "field": "width",
+              "value": 640
+            },
+            {
+              "node": "3",
+              "field": "height",
+              "value": 640
+            },
+            {
+              "node": "6",
+              "field": "width",
+              "value": 640
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 640
+            }
+          ]
+        },
+        {
+          "value": "1280x720",
+          "label": "720p HD (1280×720)",
+          "sets": [
+            {
+              "node": "3",
+              "field": "width",
+              "value": 1280
+            },
+            {
+              "node": "3",
+              "field": "height",
+              "value": 720
+            },
+            {
+              "node": "6",
+              "field": "width",
+              "value": 1280
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 720
+            }
+          ]
+        }
+      ],
+      "bind": []
+    }
+  ],
+  "outputs": [
+    {
+      "node": "22",
+      "type": "video",
+      "label": "Clip unita"
+    }
+  ],
+  "models": [],
+  "credits": [
+    "ComfyUI Core Video Concat"
+  ]
+}

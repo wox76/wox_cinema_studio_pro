@@ -1,0 +1,90 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "any-angle-3d",
+  "name": "Any Angle 3D Splat",
+  "section": "3d",
+  "pack": "3d-splat",
+  "status": "ready",
+  "higgsfield_feature": "3D View & Turntable",
+  "summary": "Ricostruisce una vista 3D esplorabile del soggetto da una foto: esporta Mesh .GLB, video Turntable 360° e sweep multi-angolo (8GB VRAM).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/any-angle-3d.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto soggetto o prodotto",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "image"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "83",
+      "type": "video",
+      "label": "Turntable 360°"
+    },
+    {
+      "node": "91",
+      "type": "3d",
+      "label": "Modello 3D .GLB"
+    },
+    {
+      "node": "21",
+      "type": "image",
+      "label": "Matte Soggetto"
+    }
+  ],
+  "models": [
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "diffusion_models/triposplat_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 0.74,
+      "phase": "denoise"
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "vae/triposplat_vae_decoder_fp16.safetensors",
+      "dir": "vae",
+      "gb": 0.58,
+      "phase": "decode"
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "clip_vision/dino_v3_vit_h.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.68,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/flux2-dev",
+      "file": "split_files/vae/flux2-vae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "phase": "aux"
+    }
+  ],
+  "credits": [
+    "TripoSplat (VAST-AI)",
+    "Workflow from Fuobe"
+  ]
+}

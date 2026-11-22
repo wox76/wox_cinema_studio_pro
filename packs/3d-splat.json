@@ -1,0 +1,105 @@
+{
+  "pack": "3d-splat",
+  "apps": [
+    "any-angle-3d",
+    "idol-3d",
+    "triposplat-3d"
+  ],
+  "download_gb": 5.1,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "file": "background_removal/birefnet.safetensors",
+      "dir": "background_removal",
+      "gb": 0.44,
+      "name": "birefnet.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "any-angle-3d",
+        "idol-3d",
+        "triposplat-3d"
+      ]
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "clip_vision/dino_v3_vit_h.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.68,
+      "name": "dino_v3_vit_h.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "any-angle-3d",
+        "idol-3d",
+        "triposplat-3d"
+      ]
+    },
+    {
+      "repo": "nynxz/Idol",
+      "file": "diffusion_models/idol_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 0.74,
+      "name": "idol_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "idol-3d"
+      ]
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "diffusion_models/triposplat_fp16.safetensors",
+      "dir": "diffusion_models",
+      "gb": 0.74,
+      "name": "triposplat_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "any-angle-3d",
+        "triposplat-3d"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/flux2-dev",
+      "file": "split_files/vae/flux2-vae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "name": "flux2-vae.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "any-angle-3d",
+        "idol-3d",
+        "triposplat-3d"
+      ]
+    },
+    {
+      "repo": "nynxz/Idol",
+      "file": "vae/idol_decoder_fp16.safetensors",
+      "dir": "vae",
+      "gb": 0.58,
+      "name": "idol_decoder_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "idol-3d"
+      ]
+    },
+    {
+      "repo": "VAST-AI/TripoSplat",
+      "file": "vae/triposplat_vae_decoder_fp16.safetensors",
+      "dir": "vae",
+      "gb": 0.58,
+      "name": "triposplat_vae_decoder_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "any-angle-3d",
+        "triposplat-3d"
+      ]
+    }
+  ]
+}

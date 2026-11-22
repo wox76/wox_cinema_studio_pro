@@ -176,7 +176,7 @@
       "required": ["node", "type"],
       "properties": {
         "node": { "type": "string" },
-        "type": { "enum": ["image", "video", "audio"] },
+        "type": { "enum": ["image", "video", "audio", "3d"] },
         "label": { "type": "string" }
       }
     },
@@ -189,7 +189,7 @@
         "file": { "type": "string", "description": "Path inside the repo. ComfyUI sees it by its base name." },
         "dir": {
           "enum": [
-            "diffusion_models", "text_encoders", "vae", "loras", "checkpoints", "clip_vision",
+            "diffusion_models", "text_encoders", "vae", "loras", "checkpoints", "clip_vision", "ipadapter",
             "latent_upscale_models", "upscale_models", "model_patches", "geometry_estimation",
             "background_removal", "frame_interpolation", "audio_encoders", "embeddings", "detection"
           ],

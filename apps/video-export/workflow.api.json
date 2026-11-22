@@ -1,0 +1,48 @@
+{
+  "1": {
+    "class_type": "LoadVideo",
+    "inputs": {
+      "file": "clip.mp4"
+    },
+    "_meta": {
+      "title": "Load Video"
+    }
+  },
+  "2": {
+    "class_type": "GetVideoComponents",
+    "inputs": {
+      "video": [
+        "1",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Get Video Components"
+    }
+  },
+  "3": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ],
+      "frame_rate": [
+        "2",
+        2
+      ],
+      "loop_count": 0,
+      "filename_prefix": "wox-cinema-studio-pro/master-export",
+      "format": "video/h264-mp4",
+      "pingpong": false,
+      "save_output": true,
+      "audio": [
+        "2",
+        1
+      ]
+    },
+    "_meta": {
+      "title": "Master Export (VHS)"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "pack": "video-bernini",
+  "apps": [
+    "video-relight"
+  ],
+  "download_gb": 39.03,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/Bernini-R",
+      "file": "diffusion_models/wan2.2_bernini_r_high_noise_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "gb": 15.3,
+      "name": "wan2.2_bernini_r_high_noise_fp8_scaled.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-relight"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Bernini-R",
+      "file": "diffusion_models/wan2.2_bernini_r_low_noise_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "gb": 15.3,
+      "name": "wan2.2_bernini_r_low_noise_fp8_scaled.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-relight"
+      ]
+    },
+    {
+      "repo": "Kijai/WanVideo_comfy",
+      "file": "Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+      "dir": "loras",
+      "gb": 1.44,
+      "name": "lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-relight"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "file": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 6.74,
+      "name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-relight"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "file": "split_files/vae/wan_2.1_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "name": "wan_2.1_vae.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "video-relight"
+      ]
+    }
+  ]
+}

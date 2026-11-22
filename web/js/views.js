@@ -1,7 +1,7 @@
 // The pages that are not a workspace: Explore (home), Apps (the store), Library and the VRAM map.
 import { el, icon, masonry } from "./util.js";
 import { t } from "./i18n.js";
-import { apps, byId, CATEGORIES, HERO, START_HERE, hosted, tagline, iconOf, fitOf, categoryOf, studioOf, menuGroups, IMAGE_TABS, VIDEO_TABS, recentApps } from "./catalog.js";
+import { apps, byId, CATEGORIES, FUOBE_FX_SECTIONS, HERO, START_HERE, hosted, tagline, iconOf, fitOf, categoryOf, studioOf, menuGroups, IMAGE_TABS, VIDEO_TABS, recentApps } from "./catalog.js";
 import { exampleItem, thumb, hoverPlay, optionTile } from "./media.js";
 import { feed, feedView, hooks } from "./feed.js";
 import { pickOption, recreate } from "./workspace.js";
@@ -76,14 +76,18 @@ export function exploreView() {
 
   // the same apps the top bar's menu lists for that studio
   const count = (studio) => menuGroups(studio).reduce((n, g) => n + g.apps.length, 0);
+  const fxTotal = FUOBE_FX_SECTIONS.reduce((n, s) => n + s.items.length, 0);
   const tiles = [
     ["image", "image", "#/image", count("image")], ["video", "video", "#/video", count("video")], ["audio", "audio", "#/audio", count("audio")],
-    ["3d", "cube", "#/app/trellis-3d", 1],
+    ["3d", "cube", "#/app/trellis-3d", apps.filter((a) => studioOf(a) === "3d").length],
+    ["fx", "spark", "#/fx", fxTotal],
+    ["marketing", "bolt", "#/marketing", 96],
+    ["layers", "layers", "#/layers", null],
     ["apps", "layers", "#/apps", apps.length], ["library", "film", "#/library", null], ["vram", "chip", "#/vram", null],
   ].map(([key, ic, hash, n]) => el("a", { class: "tile6", href: hash },
     el("span", { class: "ic" }, icon(ic)),
-    el("span", { class: "t" }, t(`tile.${key}.t`), n ? el("span", { class: "tag ghost" }, t("explore.apps", { n })) : null),
-    el("p", {}, t(`tile.${key}.d`))));
+    el("span", { class: "t" }, key === "fx" ? "Fuobe FX (62)" : key === "marketing" ? "Marketing & Kinetic" : key === "layers" ? "Layers Studio RGBA" : t(`tile.${key}.t`), n ? el("span", { class: "tag ghost" }, t("explore.apps", { n })) : null),
+    el("p", {}, key === "fx" ? "62 strumenti VFX in 5 fasi: Replace, Clean Plates, Finish, Look, Camera & 3D." : key === "marketing" ? "Product Shot, Ads, Posters, Marketplace, UGC Hooks & 18 scene Kinetic Motion." : key === "layers" ? "Scomposizione AI in livelli RGBA + compositore interattivo PNG." : t(`tile.${key}.d`))));
 
   const grid = el("div");
   if (withEx.length) masonry(grid, withEx.map((a) => exampleTile(a, withEx)), { min: 250 });
@@ -157,15 +161,33 @@ function appCard(a) {
   return card;
 }
 
-export function appsView() {
+export function appsView(initialStudio = null) {
+  if (initialStudio === "fx") {
+    appsStudio = "fx";
+    appsCat = "all";
+  } else if (initialStudio === null && location.hash === "#/apps" && appsStudio === "fx") {
+    appsStudio = "all";
+    appsCat = "all";
+  }
   const body = el("div");
   const search = el("input", { type: "search", placeholder: t("apps.search"), value: appsQuery, "aria-label": t("apps.search") });
   const pills = el("div", { class: "pills", role: "group" });
   const studios = el("div", { class: "seg", role: "group", style: { marginBottom: "14px" } });
+  const fxCount = FUOBE_FX_SECTIONS.reduce((n, s) => n + s.items.length, 0);
+
+  const fxCard = (item) => {
+    const a = byId.get(item.appId);
+    if (!a) return null;
+    const card = appCard({ ...a, name: item.label, summary: item.sub });
+    const descEl = card.querySelector("p");
+    if (descEl) descEl.textContent = `${item.sub} · [${a.name}]`;
+    return card;
+  };
 
   const draw = () => {
     studios.replaceChildren(
       el("button", { type: "button", "aria-pressed": String(appsStudio === "all"), onclick: () => { appsStudio = "all"; appsCat = "all"; draw(); } }, t("apps.all")),
+      el("button", { type: "button", "aria-pressed": String(appsStudio === "fx"), onclick: () => { appsStudio = "fx"; appsCat = "all"; draw(); } }, icon("spark"), `Fuobe FX (${fxCount})`),
       el("button", { type: "button", "aria-pressed": String(appsStudio === "video"), onclick: () => { appsStudio = "video"; appsCat = "all"; draw(); } }, icon("video"), `${t("nav.video")} Studio`),
       el("button", { type: "button", "aria-pressed": String(appsStudio === "image"), onclick: () => { appsStudio = "image"; appsCat = "all"; draw(); } }, icon("image"), `${t("nav.image")} Studio`)
     );
@@ -186,13 +208,21 @@ export function appsView() {
       ? activeList.flatMap((g) => g.apps.map((id) => byId.get(id)).filter(Boolean))
       : apps;
 
-    const cats = [
-      recentSection(studioPool),
-      ...(activeList
-        ? activeList.map((g) => ({ id: g.id, label: t(`${prefix}.${g.id}`), desc: "", getApps: () => g.apps.map((id) => byId.get(id)).filter(Boolean) }))
-        : [...CATEGORIES.map((c) => ({ id: c.id, label: t(`cat.${c.id}.t`), desc: t(`cat.${c.id}.d`), getApps: () => c.apps.map((id) => byId.get(id)).filter(Boolean) })),
-           ...(apps.some((a) => categoryOf(a.id) === "more") ? [{ id: "more", label: t("cat.more.t"), desc: "", getApps: () => apps.filter((a) => categoryOf(a.id) === "more") }] : [])]),
-    ];
+    const cats = appsStudio === "fx"
+      ? FUOBE_FX_SECTIONS.map((sec) => ({
+          id: sec.id,
+          label: `${sec.title} (${sec.items.length})`,
+          desc: sec.line,
+          isFx: true,
+          fxItems: sec.items,
+        }))
+      : [
+          recentSection(studioPool),
+          ...(activeList
+            ? activeList.map((g) => ({ id: g.id, label: t(`${prefix}.${g.id}`), desc: "", getApps: () => g.apps.map((id) => byId.get(id)).filter(Boolean) }))
+            : [...CATEGORIES.map((c) => ({ id: c.id, label: t(`cat.${c.id}.t`), desc: t(`cat.${c.id}.d`), getApps: () => c.apps.map((id) => byId.get(id)).filter(Boolean) })),
+               ...(apps.some((a) => categoryOf(a.id) === "more") ? [{ id: "more", label: t("cat.more.t"), desc: "", getApps: () => apps.filter((a) => categoryOf(a.id) === "more") }] : [])]),
+        ];
 
     pills.replaceChildren(
       el("button", { type: "button", "aria-pressed": String(appsCat === "all"), onclick: () => { appsCat = "all"; draw(); } }, t("apps.all")),
@@ -201,9 +231,24 @@ export function appsView() {
 
     const q = appsQuery.trim().toLowerCase();
     const match = (a) => !q || [a.name, tagline(a), a.summary, a.higgsfield_feature, a.id].filter(Boolean).join(" ").toLowerCase().includes(q);
+    const matchFx = (it) => {
+      if (!q) return true;
+      const a = byId.get(it.appId);
+      return [it.fxId, it.label, it.sub, a?.name, a?.summary, a?.id].filter(Boolean).join(" ").toLowerCase().includes(q);
+    };
 
     const selectedCats = appsCat === "all" ? cats : cats.filter((c) => c.id === appsCat);
     const sections = selectedCats.map((c) => {
+      if (c.isFx) {
+        const list = c.fxItems.filter(matchFx);
+        if (!list.length) return null;
+        return el("section", {},
+          el("div", { class: "sec-head" },
+            el("div", {}, el("h2", { class: "display" }, c.label), c.desc ? el("p", {}, c.desc) : null),
+            appsCat === "all" ? el("button", { class: "more", type: "button", style: { background: "none", border: 0, cursor: "pointer" }, onclick: () => { appsCat = c.id; draw(); window.scrollTo({ top: 0 }); } },
+              t("apps.seeall"), icon("chevR")) : null),
+          el("div", { class: "app-row" }, ...list.map(fxCard)));
+      }
       const list = c.getApps().filter(match);
       if (!list.length) return null;
       return el("section", {},
@@ -221,13 +266,13 @@ export function appsView() {
   draw();
   const node = el("div", { class: "page" },
     el("header", { class: "apps-head" },
-      el("span", { class: "ic" }, icon("grid")),
+      el("span", { class: "ic" }, icon(appsStudio === "fx" ? "spark" : "grid")),
       el("h1", { class: "display" }, t("apps.title.a"), " ", el("em", {}, t("apps.title.b"))),
       el("p", {}, t("apps.sub")),
       studios,
       el("div", { class: "apps-bar" }, el("label", { class: "search" }, icon("search"), search), pills)),
     body);
-  return { node, active: "apps" };
+  return { node, active: appsStudio === "fx" ? "fx" : "apps" };
 }
 
 // ------------------------------------------------------------------ Library

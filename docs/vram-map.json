@@ -3,32 +3,6 @@
   "headroom_gb": 4.0,
   "apps": [
     {
-      "id": "trellis-3d",
-      "name": "TRELLIS 3D Studio",
-      "section": "image",
-      "pack": "image",
-      "status": "ready",
-      "whole_gb": 11.6,
-      "phases_gb": {
-        "encode": 1.2,
-        "denoise": 2.6,
-        "denoise2": 5.2,
-        "decode": 3.8,
-        "aux": 0.5
-      },
-      "largest_phase": "denoise2",
-      "largest_phase_gb": 5.2,
-      "optional_gb": 0,
-      "biggest_file": {
-        "name": "shape_flow_img_dit_1_3B_64_bf16.safetensors",
-        "gb": 5.2
-      },
-      "verdict_24gb": "fits by phases",
-      "modal_gpu": "RTX 4090 Laptop (16 GB)",
-      "measured_peak_gb": 11.4,
-      "measured_on": "RTX 4090 Laptop 16GB · Low-VRAM Offload"
-    },
-    {
       "id": "smooth",
       "name": "Smooth & Slow-mo",
       "section": "utility",
@@ -133,6 +107,136 @@
       "measured_on": "H100 · 20261024-172353-h100"
     },
     {
+      "id": "scene-3d-moge",
+      "name": "Scene 3D Mesh · MoGe-2",
+      "section": "3d",
+      "pack": "upscale",
+      "status": "ready",
+      "whole_gb": 0.66,
+      "phases_gb": {
+        "encode": 0.66,
+        "denoise": 0.66,
+        "denoise2": 0.0,
+        "decode": 0.66,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.66,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "moge_2_vitl_normal_fp16.safetensors",
+        "gb": 0.66
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-depth",
+      "name": "Video Depth & Normals",
+      "section": "video",
+      "pack": "upscale",
+      "status": "ready",
+      "whole_gb": 1.31,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 1.31,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 1.31,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "moge_2_vitl_normal_fp16.safetensors",
+        "gb": 1.31
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "any-angle-3d",
+      "name": "Any Angle 3D Splat",
+      "section": "3d",
+      "pack": "3d-splat",
+      "status": "ready",
+      "whole_gb": 3.78,
+      "phases_gb": {
+        "encode": 1.68,
+        "denoise": 0.74,
+        "denoise2": 0.0,
+        "decode": 0.92,
+        "aux": 0.44
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 1.68,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "dino_v3_vit_h.safetensors",
+        "gb": 1.68
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "idol-3d",
+      "name": "Idol 3D · Personaggi & Prodotti",
+      "section": "3d",
+      "pack": "3d-splat",
+      "status": "ready",
+      "whole_gb": 3.78,
+      "phases_gb": {
+        "encode": 1.68,
+        "denoise": 0.74,
+        "denoise2": 0.0,
+        "decode": 0.92,
+        "aux": 0.44
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 1.68,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "dino_v3_vit_h.safetensors",
+        "gb": 1.68
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "triposplat-3d",
+      "name": "TripoSplat 3D + Orbit",
+      "section": "3d",
+      "pack": "3d-splat",
+      "status": "ready",
+      "whole_gb": 3.78,
+      "phases_gb": {
+        "encode": 1.68,
+        "denoise": 0.74,
+        "denoise2": 0.0,
+        "decode": 0.92,
+        "aux": 0.44
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 1.68,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "dino_v3_vit_h.safetensors",
+        "gb": 1.68
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
       "id": "upscale",
       "name": "Upscale Image",
       "section": "image",
@@ -185,56 +289,160 @@
       "measured_on": "L40S · 20261020-133620-l40s"
     },
     {
-      "id": "ai-influencer",
-      "name": "AI Influencer",
-      "section": "image",
-      "pack": "image-flux3",
+      "id": "video-restore",
+      "name": "Restore Footage",
+      "section": "video",
+      "pack": "upscale",
       "status": "ready",
-      "whole_gb": 11.03,
+      "whole_gb": 3.96,
       "phases_gb": {
-        "encode": 4.86,
-        "denoise": 5.83,
+        "encode": 0.0,
+        "denoise": 3.46,
         "denoise2": 0.0,
-        "decode": 0.34,
+        "decode": 0.5,
         "aux": 0.0
       },
       "largest_phase": "denoise",
-      "largest_phase_gb": 5.83,
+      "largest_phase_gb": 3.46,
       "optional_gb": 0,
       "biggest_file": {
-        "name": "flux3-image-klein-int8-convrot.safetensors",
-        "gb": 5.83
+        "name": "seedvr2_3b_int8_convrot.safetensors",
+        "gb": 3.46
       },
       "verdict_24gb": "fits whole",
       "modal_gpu": "L4 / A10G (24 GB)",
-      "measured_peak_gb": 9.86,
-      "measured_on": "L40S · 20261026-002124-l40s"
+      "measured_peak_gb": null,
+      "measured_on": null
     },
     {
-      "id": "ai-influencer-photo",
-      "name": "AI Influencer · Your Photo",
-      "section": "image",
-      "pack": "image-flux3",
+      "id": "body-double-3d",
+      "name": "Body Double 3D · Human Rig",
+      "section": "3d",
+      "pack": "3d-body-double",
       "status": "ready",
-      "whole_gb": 11.03,
+      "whole_gb": 4.7,
       "phases_gb": {
-        "encode": 4.86,
-        "denoise": 5.83,
+        "encode": 1.99,
+        "denoise": 1.99,
         "denoise2": 0.0,
-        "decode": 0.34,
-        "aux": 0.0
+        "decode": 1.99,
+        "aux": 3.74
       },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 5.83,
+      "largest_phase": "aux",
+      "largest_phase_gb": 3.74,
       "optional_gb": 0,
       "biggest_file": {
-        "name": "flux3-image-klein-int8-convrot.safetensors",
-        "gb": 5.83
+        "name": "sam_3d_body_dinov3_int8_convrot.safetensors",
+        "gb": 1.99
       },
       "verdict_24gb": "fits whole",
       "modal_gpu": "L4 / A10G (24 GB)",
-      "measured_peak_gb": 12.21,
-      "measured_on": "L40S · 20261026-021906-l40s"
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "trellis2-native",
+      "name": "TRELLIS.2 Native PBR",
+      "section": "3d",
+      "pack": "3d-studio",
+      "status": "ready",
+      "whole_gb": 8.96,
+      "phases_gb": {
+        "encode": 1.22,
+        "denoise": 5.25,
+        "denoise2": 0.0,
+        "decode": 2.05,
+        "aux": 0.44
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 5.25,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "trellis_2_int8_convrot.safetensors",
+        "gb": 5.25
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "multi-to-3d",
+      "name": "Multi-View to 3D · Pixal3D",
+      "section": "3d",
+      "pack": "3d-studio",
+      "status": "ready",
+      "whole_gb": 9.95,
+      "phases_gb": {
+        "encode": 1.22,
+        "denoise": 5.58,
+        "denoise2": 0.0,
+        "decode": 2.05,
+        "aux": 0.66
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 5.58,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "pixal3d_multiview_int8_convrot.safetensors",
+        "gb": 5.58
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "object-to-3d",
+      "name": "Pick Object to 3D · SAM3 + Pixal3D",
+      "section": "3d",
+      "pack": "3d-studio",
+      "status": "ready",
+      "whole_gb": 11.26,
+      "phases_gb": {
+        "encode": 2.97,
+        "denoise": 5.58,
+        "denoise2": 0.0,
+        "decode": 2.05,
+        "aux": 0.66
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 5.58,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "pixal3d_int8_convrot.safetensors",
+        "gb": 5.58
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "pixal3d",
+      "name": "Pixal3D PBR Studio",
+      "section": "3d",
+      "pack": "3d-studio",
+      "status": "ready",
+      "whole_gb": 9.95,
+      "phases_gb": {
+        "encode": 1.22,
+        "denoise": 5.58,
+        "denoise2": 0.0,
+        "decode": 2.05,
+        "aux": 0.66
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 5.58,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "pixal3d_int8_convrot.safetensors",
+        "gb": 5.58
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
     },
     {
       "id": "billboard",
@@ -445,32 +653,6 @@
       "measured_on": "H100 · 20261024-164909-h100"
     },
     {
-      "id": "cinema-studio",
-      "name": "Cinema Studio",
-      "section": "image",
-      "pack": "image-flux3",
-      "status": "ready",
-      "whole_gb": 11.03,
-      "phases_gb": {
-        "encode": 4.86,
-        "denoise": 5.83,
-        "denoise2": 0.0,
-        "decode": 0.34,
-        "aux": 0.0
-      },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 5.83,
-      "optional_gb": 0,
-      "biggest_file": {
-        "name": "flux3-image-klein-int8-convrot.safetensors",
-        "gb": 5.83
-      },
-      "verdict_24gb": "fits whole",
-      "modal_gpu": "L4 / A10G (24 GB)",
-      "measured_peak_gb": 11.61,
-      "measured_on": "L40S · 20261026-002124-l40s"
-    },
-    {
       "id": "color-grade",
       "name": "Color Grade",
       "section": "image",
@@ -549,32 +731,6 @@
       "measured_on": "H100 · 20261023-225832-h100"
     },
     {
-      "id": "edit",
-      "name": "Edit Image",
-      "section": "image",
-      "pack": "image-flux3",
-      "status": "ready",
-      "whole_gb": 11.03,
-      "phases_gb": {
-        "encode": 4.86,
-        "denoise": 5.83,
-        "denoise2": 0.0,
-        "decode": 0.34,
-        "aux": 0.0
-      },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 5.83,
-      "optional_gb": 0,
-      "biggest_file": {
-        "name": "flux3-image-klein-int8-convrot.safetensors",
-        "gb": 5.83
-      },
-      "verdict_24gb": "fits whole",
-      "modal_gpu": "L4 / A10G (24 GB)",
-      "measured_peak_gb": 38.22,
-      "measured_on": "H100 · 20261024-164909-h100"
-    },
-    {
       "id": "edit-text",
       "name": "Edit Text",
       "section": "image",
@@ -625,58 +781,6 @@
       "modal_gpu": "L4 / A10G (24 GB)",
       "measured_peak_gb": 11.47,
       "measured_on": "H100 · 20261024-174729-h100"
-    },
-    {
-      "id": "face-swap",
-      "name": "Face Swap",
-      "section": "image",
-      "pack": "image-flux3",
-      "status": "ready",
-      "whole_gb": 11.04,
-      "phases_gb": {
-        "encode": 4.87,
-        "denoise": 5.83,
-        "denoise2": 0.0,
-        "decode": 0.34,
-        "aux": 0.0
-      },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 5.83,
-      "optional_gb": 0,
-      "biggest_file": {
-        "name": "flux3-image-klein-int8-convrot.safetensors",
-        "gb": 5.83
-      },
-      "verdict_24gb": "fits whole",
-      "modal_gpu": "L4 / A10G (24 GB)",
-      "measured_peak_gb": 11.32,
-      "measured_on": "H100 · 20261024-164909-h100"
-    },
-    {
-      "id": "fashion-factory",
-      "name": "Fashion Factory",
-      "section": "image",
-      "pack": "image-flux3",
-      "status": "ready",
-      "whole_gb": 11.03,
-      "phases_gb": {
-        "encode": 4.86,
-        "denoise": 5.83,
-        "denoise2": 0.0,
-        "decode": 0.34,
-        "aux": 0.0
-      },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 5.83,
-      "optional_gb": 0,
-      "biggest_file": {
-        "name": "flux3-image-klein-int8-convrot.safetensors",
-        "gb": 5.83
-      },
-      "verdict_24gb": "fits whole",
-      "modal_gpu": "L4 / A10G (24 GB)",
-      "measured_peak_gb": 11.95,
-      "measured_on": "H100 · 20261024-164909-h100"
     },
     {
       "id": "figure-3d",
@@ -1667,8 +1771,34 @@
       "measured_on": "H100 · 20261024-164909-h100"
     },
     {
+      "id": "ai-influencer",
+      "name": "AI Influencer",
+      "section": "image",
+      "pack": "image",
+      "status": "ready",
+      "whole_gb": 12.17,
+      "phases_gb": {
+        "encode": 5.63,
+        "denoise": 6.2,
+        "denoise2": 0.0,
+        "decode": 0.34,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 6.2,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "z_image_turbo_int8_convrot.safetensors",
+        "gb": 6.2
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": 9.86,
+      "measured_on": "L40S · 20261026-002124-l40s"
+    },
+    {
       "id": "z-image",
-      "name": "Z-Image Turbo",
+      "name": "Create Image",
       "section": "image",
       "pack": "image",
       "status": "ready",
@@ -1693,30 +1823,82 @@
       "measured_on": "H100 · 20261024-164909-h100"
     },
     {
-      "id": "moss-image",
-      "name": "Layout Image",
+      "id": "z-image-grid",
+      "name": "Contact Sheet Grid",
       "section": "image",
-      "pack": "image-moss",
-      "status": "draft",
-      "whole_gb": 13.0,
+      "pack": "image",
+      "status": "ready",
+      "whole_gb": 10.74,
       "phases_gb": {
-        "encode": 7.34,
-        "denoise": 5.41,
+        "encode": 4.2,
+        "denoise": 6.2,
         "denoise2": 0.0,
-        "decode": 0.25,
+        "decode": 0.34,
         "aux": 0.0
       },
-      "largest_phase": "encode",
-      "largest_phase_gb": 7.34,
+      "largest_phase": "denoise",
+      "largest_phase_gb": 6.2,
       "optional_gb": 0,
       "biggest_file": {
-        "name": "qwen3.5_9b_w4a8_gptq.safetensors",
-        "gb": 7.34
+        "name": "z_image_turbo_int8_convrot.safetensors",
+        "gb": 6.2
       },
       "verdict_24gb": "fits whole",
       "modal_gpu": "L4 / A10G (24 GB)",
-      "measured_peak_gb": 13.03,
-      "measured_on": "L40S · 20261024-230058-l40s"
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "z-image-palette",
+      "name": "Soul HEX Palette",
+      "section": "image",
+      "pack": "image",
+      "status": "ready",
+      "whole_gb": 10.74,
+      "phases_gb": {
+        "encode": 4.2,
+        "denoise": 6.2,
+        "denoise2": 0.0,
+        "decode": 0.34,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 6.2,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "z_image_turbo_int8_convrot.safetensors",
+        "gb": 6.2
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "hunyuan3d-21",
+      "name": "Hunyuan3D 2.1 Sculpt",
+      "section": "3d",
+      "pack": "3d-hunyuan",
+      "status": "ready",
+      "whole_gb": 7.37,
+      "phases_gb": {
+        "encode": 7.37,
+        "denoise": 7.37,
+        "denoise2": 0.0,
+        "decode": 7.37,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 7.37,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "hunyuan_3d_v2.1.safetensors",
+        "gb": 7.37
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
     },
     {
       "id": "music",
@@ -1743,6 +1925,32 @@
       "modal_gpu": "L4 / A10G (24 GB)",
       "measured_peak_gb": 37.06,
       "measured_on": "L40S · 20261020-133620-l40s"
+    },
+    {
+      "id": "moss-image",
+      "name": "MOSS-Image · 30 Film Looks",
+      "section": "image",
+      "pack": "image-moss",
+      "status": "ready",
+      "whole_gb": 15.41,
+      "phases_gb": {
+        "encode": 9.75,
+        "denoise": 5.41,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 9.75,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen3.5_9b_int8_convrot.safetensors",
+        "gb": 9.75
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": 13.03,
+      "measured_on": "L40S · 20261024-230058-l40s"
     },
     {
       "id": "sfx",
@@ -1772,7 +1980,7 @@
     },
     {
       "id": "create-image",
-      "name": "Create Image",
+      "name": "Create Image [FLUX]",
       "section": "image",
       "pack": "image-flux3",
       "status": "ready",
@@ -1795,6 +2003,32 @@
       "modal_gpu": "L4 / A10G (24 GB)",
       "measured_peak_gb": 15.39,
       "measured_on": "L40S · 20261024-230058-l40s"
+    },
+    {
+      "id": "cinema-studio",
+      "name": "Cinema Studio",
+      "section": "image",
+      "pack": "image-krea2",
+      "status": "ready",
+      "whole_gb": 19.44,
+      "phases_gb": {
+        "encode": 5.24,
+        "denoise": 13.95,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 13.95,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "krea2_turbo_int8_convrot.safetensors",
+        "gb": 13.49
+      },
+      "verdict_24gb": "fits whole",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": 11.61,
+      "measured_on": "L40S · 20261026-002124-l40s"
     },
     {
       "id": "style-reference",
@@ -1849,8 +2083,112 @@
       "measured_on": "L40S · 20261020-133620-l40s"
     },
     {
+      "id": "text-to-3d",
+      "name": "Text to 3D · Z-Image + Pixal3D",
+      "section": "3d",
+      "pack": "3d-studio",
+      "status": "ready",
+      "whole_gb": 20.59,
+      "phases_gb": {
+        "encode": 11.86,
+        "denoise": 5.58,
+        "denoise2": 0.0,
+        "decode": 2.05,
+        "aux": 0.66
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 11.86,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "z_image_turbo_int8_convrot.safetensors",
+        "gb": 6.1
+      },
+      "verdict_24gb": "fits by phases",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "flux1-krea",
+      "name": "FLUX.1 Krea [dev]",
+      "section": "image",
+      "pack": "image-flux1-krea",
+      "status": "ready",
+      "whole_gb": 22.28,
+      "phases_gb": {
+        "encode": 10.04,
+        "denoise": 11.9,
+        "denoise2": 0.0,
+        "decode": 0.34,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 11.9,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "flux1-krea-dev_fp8_scaled.safetensors",
+        "gb": 11.9
+      },
+      "verdict_24gb": "fits by phases",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "transitions-pro",
+      "name": "Transitions Pro · 11 Effetti",
+      "section": "video",
+      "pack": "video-wan-flf2v",
+      "status": "ready",
+      "whole_gb": 35.57,
+      "phases_gb": {
+        "encode": 6.74,
+        "denoise": 14.29,
+        "denoise2": 14.29,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 14.29,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
+        "gb": 14.29
+      },
+      "verdict_24gb": "fits by phases",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "krea2-realism",
+      "name": "Krea 2 Realism V2",
+      "section": "image",
+      "pack": "image-krea2",
+      "status": "ready",
+      "whole_gb": 20.54,
+      "phases_gb": {
+        "encode": 5.24,
+        "denoise": 15.05,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 15.05,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "krea2_turbo_int8_convrot.safetensors",
+        "gb": 13.49
+      },
+      "verdict_24gb": "fits by phases",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
       "id": "camera-moves",
-      "name": "Camera Moves",
+      "name": "Camera Moves Pro (108+)",
       "section": "video",
       "pack": "video-wan-camera",
       "status": "ready",
@@ -1953,6 +2291,58 @@
       "measured_on": "H100 · 20261023-162024-h100"
     },
     {
+      "id": "draw-to-video",
+      "name": "Draw to Video · Wan-Move",
+      "section": "video",
+      "pack": "video-wan-move",
+      "status": "ready",
+      "whole_gb": 25.39,
+      "phases_gb": {
+        "encode": 8.0,
+        "denoise": 17.14,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 17.14,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "Wan21-WanMove_fp8_scaled_e4m3fn_KJ.safetensors",
+        "gb": 16.4
+      },
+      "verdict_24gb": "fits by phases",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "fly-path",
+      "name": "Fly Path 3D · Uni3C",
+      "section": "video",
+      "pack": "video-wan-uni3c",
+      "status": "ready",
+      "whole_gb": 26.65,
+      "phases_gb": {
+        "encode": 8.0,
+        "denoise": 18.4,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 18.4,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.1_i2v_720p_14B_fp8_scaled.safetensors",
+        "gb": 16.4
+      },
+      "verdict_24gb": "fits by phases",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
       "id": "recast",
       "name": "Recast",
       "section": "video",
@@ -1977,6 +2367,422 @@
       "modal_gpu": "L4 / A10G (24 GB)",
       "measured_peak_gb": 30.57,
       "measured_on": "L40S · 20261020-162214-l40s"
+    },
+    {
+      "id": "ideogram4",
+      "name": "Ideogram 4 Studio",
+      "section": "image",
+      "pack": "image-ideogram4",
+      "status": "ready",
+      "whole_gb": 30.09,
+      "phases_gb": {
+        "encode": 10.59,
+        "denoise": 19.16,
+        "denoise2": 0.0,
+        "decode": 0.34,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 19.16,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen3vl_8b_fp8_scaled.safetensors",
+        "gb": 10.59
+      },
+      "verdict_24gb": "fits by phases",
+      "modal_gpu": "L4 / A10G (24 GB)",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "character-studio",
+      "name": "Character Studio",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.34,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 20.43,
+        "denoise2": 0.0,
+        "decode": 0.53,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 20.43,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "qwen-layered",
+      "name": "Qwen RGBA Layers",
+      "section": "image",
+      "pack": "image-qwen-layered",
+      "status": "ready",
+      "whole_gb": 30.16,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 20.53,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 20.53,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_layered_fp8mixed.safetensors",
+        "gb": 20.53
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "orbit-360",
+      "name": "360° Orbit + Audio · H3",
+      "section": "video",
+      "pack": "video-h3",
+      "status": "ready",
+      "whole_gb": 40.6,
+      "phases_gb": {
+        "encode": 15.69,
+        "denoise": 21.13,
+        "denoise2": 0.0,
+        "decode": 3.78,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.13,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "gb": 20.97
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "ai-influencer-photo",
+      "name": "AI Influencer · Your Photo",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": 12.21,
+      "measured_on": "L40S · 20261026-021906-l40s"
+    },
+    {
+      "id": "change-background",
+      "name": "Change Background",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "colorize",
+      "name": "Photo Colorize",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "edit",
+      "name": "Edit Image",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": 38.22,
+      "measured_on": "H100 · 20261024-164909-h100"
+    },
+    {
+      "id": "fashion-factory",
+      "name": "Fashion Factory",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 28.53,
+      "phases_gb": {
+        "encode": 7.0,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": 11.95,
+      "measured_on": "H100 · 20261024-164909-h100"
+    },
+    {
+      "id": "head-swap",
+      "name": "Head Swap",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "ip-cleanup",
+      "name": "IP & Brand Cleanup",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "marketing-studio",
+      "name": "Marketing Studio · Ad & Print Templates",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "match-colors",
+      "name": "Match Colors",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "match-lighting",
+      "name": "Match Lighting",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "object-remover",
+      "name": "Object Remover",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "watermark-remover",
+      "name": "Watermark Remover",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 30.91,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.28,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.28,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
     },
     {
       "id": "asmr-host",
@@ -2239,32 +3045,6 @@
       "measured_on": "H100 · 20261022-035829-h100"
     },
     {
-      "id": "speak",
-      "name": "Speak",
-      "section": "video",
-      "pack": "video-ltx25",
-      "status": "ready",
-      "whole_gb": 39.7,
-      "phases_gb": {
-        "encode": 15.37,
-        "denoise": 21.5,
-        "denoise2": 0.0,
-        "decode": 1.83,
-        "aux": 1.0
-      },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 21.5,
-      "optional_gb": 5.2,
-      "biggest_file": {
-        "name": "ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors",
-        "gb": 21.5
-      },
-      "verdict_24gb": "tight (by phases)",
-      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
-      "measured_peak_gb": 41.84,
-      "measured_on": "H100 · 20261024-164909-h100"
-    },
-    {
       "id": "storm-creature",
       "name": "Storm Creature",
       "section": "video",
@@ -2341,32 +3121,6 @@
       "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
       "measured_peak_gb": 41.8,
       "measured_on": "H100 · 20261023-225832-h100"
-    },
-    {
-      "id": "video",
-      "name": "Image to Video",
-      "section": "video",
-      "pack": "video-ltx25",
-      "status": "ready",
-      "whole_gb": 39.7,
-      "phases_gb": {
-        "encode": 15.37,
-        "denoise": 21.5,
-        "denoise2": 0.0,
-        "decode": 1.83,
-        "aux": 1.0
-      },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 21.5,
-      "optional_gb": 5.2,
-      "biggest_file": {
-        "name": "ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors",
-        "gb": 21.5
-      },
-      "verdict_24gb": "tight (by phases)",
-      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
-      "measured_peak_gb": 41.79,
-      "measured_on": "H100 · 20261024-164909-h100"
     },
     {
       "id": "video-t2v",
@@ -2499,6 +3253,32 @@
       "measured_on": "H100 · 20261022-035829-h100"
     },
     {
+      "id": "qwen-multiangle",
+      "name": "Qwen Multiangle Camera",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 31.19,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.56,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.56,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
       "id": "whats-next",
       "name": "What's Next",
       "section": "image",
@@ -2523,6 +3303,32 @@
       "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
       "measured_peak_gb": 28.7,
       "measured_on": "L40S · 20261024-230058-l40s"
+    },
+    {
+      "id": "wonderfull",
+      "name": "Wonderfull",
+      "section": "image",
+      "pack": "image-qwen-edit",
+      "status": "ready",
+      "whole_gb": 31.25,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 21.62,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 21.62,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_edit_2511_fp8mixed.safetensors",
+        "gb": 20.53
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
     },
     {
       "id": "vfx-clean-plate",
@@ -2731,6 +3537,32 @@
       "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
       "measured_peak_gb": 50.28,
       "measured_on": "H100 · 20261023-225832-h100"
+    },
+    {
+      "id": "qwen-image-2512",
+      "name": "Qwen-Image 2512 Pro",
+      "section": "image",
+      "pack": "image-qwen-2512",
+      "status": "ready",
+      "whole_gb": 31.76,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 22.13,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 22.13,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_2512_fp8_e4m3fn.safetensors",
+        "gb": 20.43
+      },
+      "verdict_24gb": "tight (by phases)",
+      "modal_gpu": "test on L4 / A10G; L40S (48 GB) is comfortable",
+      "measured_peak_gb": null,
+      "measured_on": null
     },
     {
       "id": "camera-copy",
@@ -2967,6 +3799,58 @@
       "measured_on": "H100 · 20261024-164909-h100"
     },
     {
+      "id": "cinema-video",
+      "name": "Cinema Studio",
+      "section": "video",
+      "pack": "video-h3",
+      "status": "ready",
+      "whole_gb": 51.53,
+      "phases_gb": {
+        "encode": 27.14,
+        "denoise": 20.97,
+        "denoise2": 0.0,
+        "decode": 3.42,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 27.14,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+        "gb": 27.14
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), by phases",
+      "measured_peak_gb": 44.3,
+      "measured_on": "L40S · 20261026-015446-l40s"
+    },
+    {
+      "id": "director",
+      "name": "AI Director",
+      "section": "video",
+      "pack": "video-h3",
+      "status": "ready",
+      "whole_gb": 51.53,
+      "phases_gb": {
+        "encode": 27.14,
+        "denoise": 20.97,
+        "denoise2": 0.0,
+        "decode": 3.42,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 27.14,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+        "gb": 27.14
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), by phases",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
       "id": "extend-video",
       "name": "Extend Video",
       "section": "video",
@@ -3020,7 +3904,7 @@
     },
     {
       "id": "h3-video",
-      "name": "H3 Video",
+      "name": "Create Video",
       "section": "video",
       "pack": "video-h3",
       "status": "ready",
@@ -3043,6 +3927,58 @@
       "modal_gpu": "L40S (48 GB), by phases",
       "measured_peak_gb": 48.33,
       "measured_on": "H100 · 20261024-172353-h100"
+    },
+    {
+      "id": "marketing-video",
+      "name": "Marketing Video · UGC, Hypermotion & Ads",
+      "section": "video",
+      "pack": "video-h3",
+      "status": "ready",
+      "whole_gb": 51.53,
+      "phases_gb": {
+        "encode": 27.14,
+        "denoise": 20.97,
+        "denoise2": 0.0,
+        "decode": 3.42,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 27.14,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+        "gb": 27.14
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), by phases",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "music-video",
+      "name": "Music Video",
+      "section": "video",
+      "pack": "video-h3",
+      "status": "ready",
+      "whole_gb": 51.53,
+      "phases_gb": {
+        "encode": 27.14,
+        "denoise": 20.97,
+        "denoise2": 0.0,
+        "decode": 3.42,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 27.14,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+        "gb": 27.14
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), by phases",
+      "measured_peak_gb": null,
+      "measured_on": null
     },
     {
       "id": "reshoot",
@@ -3071,30 +4007,287 @@
       "measured_on": "L40S · 20261024-035222-l40s"
     },
     {
-      "id": "cinema-video",
-      "name": "Cinema Studio Video",
+      "id": "speak",
+      "name": "Speak",
       "section": "video",
-      "pack": "video-ltx25",
+      "pack": "video-h3",
       "status": "ready",
-      "whole_gb": 50.73,
+      "whole_gb": 51.53,
       "phases_gb": {
-        "encode": 20.23,
-        "denoise": 27.33,
+        "encode": 27.14,
+        "denoise": 20.97,
         "denoise2": 0.0,
-        "decode": 2.17,
-        "aux": 1.0
+        "decode": 3.42,
+        "aux": 0.0
       },
-      "largest_phase": "denoise",
-      "largest_phase_gb": 27.33,
-      "optional_gb": 5.2,
+      "largest_phase": "encode",
+      "largest_phase_gb": 27.14,
+      "optional_gb": 0,
       "biggest_file": {
-        "name": "ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors",
-        "gb": 21.5
+        "name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+        "gb": 27.14
       },
       "verdict_24gb": "needs Modal",
       "modal_gpu": "L40S (48 GB), by phases",
-      "measured_peak_gb": 44.3,
-      "measured_on": "L40S · 20261026-015446-l40s"
+      "measured_peak_gb": 41.84,
+      "measured_on": "H100 · 20261024-164909-h100"
+    },
+    {
+      "id": "video",
+      "name": "Image to Video",
+      "section": "video",
+      "pack": "video-h3",
+      "status": "ready",
+      "whole_gb": 51.53,
+      "phases_gb": {
+        "encode": 27.14,
+        "denoise": 20.97,
+        "denoise2": 0.0,
+        "decode": 3.42,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 27.14,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+        "gb": 27.14
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), by phases",
+      "measured_peak_gb": 41.79,
+      "measured_on": "H100 · 20261024-164909-h100"
+    },
+    {
+      "id": "video-insert",
+      "name": "Insert in Video · VACE",
+      "section": "video",
+      "pack": "video-wan-vace",
+      "status": "ready",
+      "whole_gb": 38.18,
+      "phases_gb": {
+        "encode": 8.49,
+        "denoise": 29.44,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 29.44,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.1_vace_14B_fp16.safetensors",
+        "gb": 28.0
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), whole",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-remove-object",
+      "name": "Video Object Remover",
+      "section": "video",
+      "pack": "video-wan-vace",
+      "status": "ready",
+      "whole_gb": 38.18,
+      "phases_gb": {
+        "encode": 8.49,
+        "denoise": 29.44,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 29.44,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.1_vace_14B_fp16.safetensors",
+        "gb": 28.0
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), whole",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-swap",
+      "name": "Video Object Swap",
+      "section": "video",
+      "pack": "video-wan-vace",
+      "status": "ready",
+      "whole_gb": 38.18,
+      "phases_gb": {
+        "encode": 8.49,
+        "denoise": 29.44,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 29.44,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.1_vace_14B_fp16.safetensors",
+        "gb": 28.0
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), whole",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-relight",
+      "name": "Video Relight · Bernini",
+      "section": "video",
+      "pack": "video-bernini",
+      "status": "ready",
+      "whole_gb": 39.03,
+      "phases_gb": {
+        "encode": 6.74,
+        "denoise": 32.04,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 32.04,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.2_bernini_r_high_noise_fp8_scaled.safetensors",
+        "gb": 15.3
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), whole",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-blockout",
+      "name": "3D Blockout to Video",
+      "section": "video",
+      "pack": "video-wan-vace",
+      "status": "ready",
+      "whole_gb": 40.05,
+      "phases_gb": {
+        "encode": 6.74,
+        "denoise": 33.06,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 33.06,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors",
+        "gb": 15.3
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), whole",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-evolution",
+      "name": "Video Evolution / Morph",
+      "section": "video",
+      "pack": "video-wan-vace",
+      "status": "ready",
+      "whole_gb": 41.43,
+      "phases_gb": {
+        "encode": 8.12,
+        "denoise": 33.06,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 33.06,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors",
+        "gb": 15.3
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), whole",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-restyle",
+      "name": "Video Restyle · VACE",
+      "section": "video",
+      "pack": "video-wan-vace",
+      "status": "ready",
+      "whole_gb": 41.43,
+      "phases_gb": {
+        "encode": 8.12,
+        "denoise": 33.06,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 33.06,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors",
+        "gb": 15.3
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), whole",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "layers-control",
+      "name": "Layers Control · Guided Split",
+      "section": "image",
+      "pack": "image-qwen-layered",
+      "status": "ready",
+      "whole_gb": 50.49,
+      "phases_gb": {
+        "encode": 9.38,
+        "denoise": 40.86,
+        "denoise2": 0.0,
+        "decode": 0.25,
+        "aux": 0.0
+      },
+      "largest_phase": "denoise",
+      "largest_phase_gb": 40.86,
+      "optional_gb": 0,
+      "biggest_file": {
+        "name": "qwen_image_layered_control_bf16.safetensors",
+        "gb": 40.86
+      },
+      "verdict_24gb": "needs Modal",
+      "modal_gpu": "L40S (48 GB), by phases",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "face-swap",
+      "name": "Face Swap",
+      "section": "image",
+      "pack": "core",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 0,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": 11.32,
+      "measured_on": "H100 · 20261024-164909-h100"
     },
     {
       "id": "smoke",
@@ -3123,6 +4316,167 @@
       "id": "smoke-invert",
       "name": "Smoke test (file input)",
       "section": "utility",
+      "pack": "core",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 0,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "trellis-3d",
+      "name": "TRELLIS 3D Studio",
+      "section": "3d",
+      "pack": "image",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 12.17,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": 11.4,
+      "measured_on": "NVIDIA GeForce RTX 4090 Laptop GPU (16GB VRAM Low-VRAM Offload Mode)"
+    },
+    {
+      "id": "video-captions",
+      "name": "Video Captions",
+      "section": "video",
+      "pack": "core",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 0,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-export",
+      "name": "Master Export",
+      "section": "video",
+      "pack": "core",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 0,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-face-swap",
+      "name": "Video Face Swap",
+      "section": "video",
+      "pack": "core",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 0,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-join",
+      "name": "Join Clips",
+      "section": "video",
+      "pack": "core",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 0,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-remove-dialogue",
+      "name": "Clean Audio / Mute",
+      "section": "video",
+      "pack": "core",
+      "status": "ready",
+      "whole_gb": 0,
+      "phases_gb": {
+        "encode": 0.0,
+        "denoise": 0.0,
+        "denoise2": 0.0,
+        "decode": 0.0,
+        "aux": 0.0
+      },
+      "largest_phase": "encode",
+      "largest_phase_gb": 0.0,
+      "optional_gb": 0,
+      "biggest_file": null,
+      "verdict_24gb": "no models",
+      "modal_gpu": "any",
+      "measured_peak_gb": null,
+      "measured_on": null
+    },
+    {
+      "id": "video-trim",
+      "name": "Trim Video",
+      "section": "video",
       "pack": "core",
       "status": "ready",
       "whole_gb": 0,

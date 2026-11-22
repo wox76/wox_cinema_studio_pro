@@ -1,0 +1,198 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "ideogram4",
+  "name": "Ideogram 4 Studio",
+  "section": "image",
+  "pack": "image-ideogram4",
+  "status": "ready",
+  "higgsfield_feature": "Typography & Design",
+  "summary": "Ideogram 4 INT8 con dual-model guidance: tipografia perfetta, poster, design grafico ed editoriale.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/ideogram4-t2i.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Prompt",
+      "required": true,
+      "default": "A bold retro cinema poster featuring the title 'WOX STUDIO' in glowing neon art-deco typography over a rainy futuristic city street",
+      "bind": [
+        {
+          "node": "98:24",
+          "field": "text"
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "type": "select",
+      "label": "Profilo Velocità / Qualità",
+      "default": "Quality",
+      "options": [
+        {
+          "value": "Quality",
+          "label": "Quality (Massima fedeltà)"
+        },
+        {
+          "value": "Default",
+          "label": "Default (Bilanciato)"
+        },
+        {
+          "value": "Turbo",
+          "label": "Turbo (Veloce)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "98:156",
+          "field": "choice"
+        }
+      ]
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Formato & Risoluzione",
+      "default": "1024x1024",
+      "options": [
+        {
+          "value": "1024x1024",
+          "label": "1:1 Quadrato (1024×1024)",
+          "sets": [
+            {
+              "node": "98:27",
+              "field": "value",
+              "value": 1024
+            },
+            {
+              "node": "98:28",
+              "field": "value",
+              "value": 1024
+            }
+          ]
+        },
+        {
+          "value": "1344x768",
+          "label": "16:9 Cinema (1344×768)",
+          "sets": [
+            {
+              "node": "98:27",
+              "field": "value",
+              "value": 1344
+            },
+            {
+              "node": "98:28",
+              "field": "value",
+              "value": 768
+            }
+          ]
+        },
+        {
+          "value": "768x1344",
+          "label": "9:16 Verticale (768×1344)",
+          "sets": [
+            {
+              "node": "98:27",
+              "field": "value",
+              "value": 768
+            },
+            {
+              "node": "98:28",
+              "field": "value",
+              "value": 1344
+            }
+          ]
+        },
+        {
+          "value": "1152x896",
+          "label": "4:3 Poster (1152×896)",
+          "sets": [
+            {
+              "node": "98:27",
+              "field": "value",
+              "value": 1152
+            },
+            {
+              "node": "98:28",
+              "field": "value",
+              "value": 896
+            }
+          ]
+        },
+        {
+          "value": "896x1152",
+          "label": "3:4 Locandina (896×1152)",
+          "sets": [
+            {
+              "node": "98:27",
+              "field": "value",
+              "value": 896
+            },
+            {
+              "node": "98:28",
+              "field": "value",
+              "value": 1152
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "98:18",
+          "field": "noise_seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "158",
+      "type": "image",
+      "label": "Immagine"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Ideogram-4",
+      "file": "diffusion_models/ideogram4_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 9.58,
+      "phase": "denoise"
+    },
+    {
+      "repo": "Comfy-Org/Ideogram-4",
+      "file": "diffusion_models/ideogram4_unconditional_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 9.58,
+      "phase": "denoise"
+    },
+    {
+      "repo": "Comfy-Org/Ideogram-4",
+      "file": "text_encoders/qwen3vl_8b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 10.59,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/flux2-dev",
+      "file": "split_files/vae/flux2-vae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "phase": "decode"
+    }
+  ],
+  "credits": [
+    "Ideogram 4 INT8 (Comfy-Org)",
+    "Workflow from Fuobe"
+  ]
+}

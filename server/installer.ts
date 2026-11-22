@@ -155,6 +155,26 @@ const CUSTOM_NODES: CustomNodeDef[] = [
     usedBy: [],
   },
   {
+    id: "comfyui-bodydouble",
+    name: "ComfyUI-BodyDouble (Fuobe MIT)",
+    description: "Generazione doppelgänger umani 3D da immagine con pipeline SMPL-X / MHR + GLB.",
+    essential: false,
+    type: "bundled_dir",
+    sourceRel: "custom_nodes/ComfyUI-BodyDouble",
+    targetRel: "custom_nodes/ComfyUI-BodyDouble",
+    usedBy: ["body-double-3d"],
+  },
+  {
+    id: "comfyui-instanthmr",
+    name: "ComfyUI-InstantHMR (Apache-2.0)",
+    description: "Ricostruzione rapida mesh umana InstantHMR da foto per Body Double 3D.",
+    essential: false,
+    type: "bundled_dir",
+    sourceRel: "custom_nodes/ComfyUI-InstantHMR",
+    targetRel: "custom_nodes/ComfyUI-InstantHMR",
+    usedBy: ["body-double-3d"],
+  },
+  {
     id: "backend-deps",
     name: "Wox Gateway & Comfy API Proxy",
     description: "Dipendenze Python essenziali per Wox Cinema Studio Pro (comfy-api-proxy, huggingface_hub[hf-xet], aiohttp) e configurazione extra_model_paths.yaml.",
@@ -232,8 +252,73 @@ const PACK_META: Record<string, { title: string; description: string; essential:
     essential: false,
   },
   "image-moss": {
-    title: "MOSS-Image · Layout & Design",
-    description: "Generazione immagini con controllo spaziale e tipografico preciso.",
+    title: "MOSS-Image · Layout & 30 Film Looks",
+    description: "Generazione immagini con controllo spaziale, tipografico e 30 Film Look.",
+    essential: false,
+  },
+  "image-qwen-2512": {
+    title: "Qwen-Image 2512 · Testi & Visual Editoriali",
+    description: "Rendering testuale ultra-nitido, locandine ed editoriali con Qwen-Image 2512.",
+    essential: false,
+  },
+  "image-ideogram4": {
+    title: "Ideogram 4 · Tipografia & Branding Pro",
+    description: "Grafica pubblicitaria, loghi e testi complessi perfettamente leggibili.",
+    essential: false,
+  },
+  "image-flux1-krea": {
+    title: "FLUX.1 Krea Dev · Fotografia Estetica Naturale",
+    description: "Fotografia ad altissimo realismo priva di effetto sintetico.",
+    essential: false,
+  },
+  "image-qwen-layered": {
+    title: "Qwen-Image Layered · Scomposizione RGBA",
+    description: "Separa automaticamente qualsiasi immagine in livelli RGBA trasparenti.",
+    essential: false,
+  },
+  "video-wan-move": {
+    title: "Draw to Video · Wan-Move 14B",
+    description: "Animazione guidata da traiettorie disegnate a mano libera sopra la foto.",
+    essential: false,
+  },
+  "video-wan-uni3c": {
+    title: "Fly Path 3D · Wan 2.1 Uni3C",
+    description: "Voli di camera 3D controllati da traiettorie parametriche (Orbit, Arc, Figure-8, Dolly).",
+    essential: false,
+  },
+  "video-wan-flf2v": {
+    title: "Transizioni Pro · Wan 2.2 FLF2V",
+    description: "11 transizioni cinematografiche seamless tra fotogramma iniziale e finale.",
+    essential: false,
+  },
+  "3d-studio": {
+    title: "Studio 3D PBR · Pixal3D & TRELLIS.2 Native",
+    description: "Mesh 3D PBR (.GLB) pronte per ActionForge (Pixal3D, TRELLIS.2 Native, Idol 3D).",
+    essential: false,
+  },
+  "3d-hunyuan": {
+    title: "Hunyuan3D 2.1 · Scultura & Mesh 3D",
+    description: "Ricostruzione geometrica e scultura 3D ad alta definizione (.GLB).",
+    essential: false,
+  },
+  "3d-splat": {
+    title: "TripoSplat 3D · Gaussian Splatting",
+    description: "Generazione 3D ultra-rapida Gaussian Splatting / mesh da immagine singola.",
+    essential: false,
+  },
+  "3d-body-double": {
+    title: "Body Double 3D · SAM 3D Body & InstantHMR",
+    description: "Ricostruzione fotogrammetrica di doppi umani 3D (.GLB) da foto.",
+    essential: false,
+  },
+  "video-wan-vace": {
+    title: "Fuobe FX VACE Studio · Wan 2.1 & 2.2 Fun VACE",
+    description: "Suite completa VFX video: Insert/Swap/Remove Object, Restyle DA3, Evolution Morph e 3D Blockout.",
+    essential: false,
+  },
+  "video-bernini": {
+    title: "Video Relight Studio · Bernini-R 14B",
+    description: "Ri-illuminazione video controllata da prompt preservando soggetto e movimento (Bernini-R).",
     essential: false,
   },
 };
@@ -247,7 +332,7 @@ const REACTOR_MODELS: ModelDef[] = [
     gb: 0.53,
     gated: false,
     license: "InsightFace",
-    used_by: ["face-swap", "character-studio", "fashion-factory"],
+    used_by: ["face-swap", "video-face-swap", "character-studio", "fashion-factory"],
   },
   {
     repo: "TencentARC/GFPGAN",
@@ -257,7 +342,7 @@ const REACTOR_MODELS: ModelDef[] = [
     gb: 0.35,
     gated: false,
     license: "Apache-2.0",
-    used_by: ["face-swap", "character-studio"],
+    used_by: ["face-swap", "video-face-swap", "character-studio"],
     directUrl: "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth",
   },
   {
@@ -275,8 +360,9 @@ const REACTOR_MODELS: ModelDef[] = [
 
 // Known local compatibility aliases so existing downloaded weights satisfy updated pack filenames
 const MODEL_ALIASES: Record<string, string[]> = {
+  "diffusion_models/krea2_turbo_int8_convrot.safetensors": ["diffusion_models/krea2_turbo_fp8_scaled.safetensors"],
   "diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors": ["diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors"],
-  "diffusion_models/z_image_turbo_int8_convrot.safetensors": ["diffusion_models/z-image-turbo-fp8-e4m3fn.safetensors"],
+  "diffusion_models/z_image_turbo_int8_convrot.safetensors": ["diffusion_models/z-image-turbo-fp8-e4m3fn.safetensors", "diffusion_models/z_image_turbo_bf16.safetensors"],
   "loras/Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors": ["loras/Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors"],
   "loras/minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors": ["loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors"],
   "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors": ["text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors"],
@@ -1078,7 +1164,7 @@ print(f"✓ Salvato in {dest}", flush=True)
   }
 
   startJob(opts: {
-    action: "install_all_starter" | "install_all_everything" | "install_nodes" | "download_packs" | "download_model";
+    action: "install_all_starter" | "install_all_everything" | "install_nodes" | "download_packs" | "download_model" | "update_comfyui";
     nodes?: string[];
     packs?: string[];
     model?: ModelDef;
@@ -1097,6 +1183,7 @@ print(f"✓ Salvato in {dest}", flush=True)
       install_nodes: "Installazione & Verifica Nodi ComfyUI",
       download_packs: `Download Pack Modelli (${(opts.packs || []).join(", ")})`,
       download_model: `Download Modello ${opts.model?.name || ""}`,
+      update_comfyui: "Aggiornamento ComfyUI Core & Dipendenze",
     };
 
     this.cancelRequested = false;
@@ -1125,7 +1212,7 @@ print(f"✓ Salvato in {dest}", flush=True)
 
         // Verify git if needed
         const needComfyClone = !existsSync(join(comfyDir, "main.py"));
-        if (needComfyClone || opts.action === "install_nodes" || opts.action === "install_all_starter" || opts.action === "install_all_everything") {
+        if (needComfyClone || opts.action === "install_nodes" || opts.action === "install_all_starter" || opts.action === "install_all_everything" || opts.action === "update_comfyui") {
           const gitCheck = spawnSync("git", ["--version"], { timeout: 5000 });
           if (gitCheck.status !== 0) {
             throw new Error("Git non trovato nel PATH. Installa Git prima di eseguire l'Auto-Installer (https://git-scm.com).");
@@ -1183,7 +1270,21 @@ print(f"✓ Salvato in {dest}", flush=True)
         let nodesToInstall: CustomNodeDef[] = [];
         let modelsToDownload: ModelDef[] = [];
 
-        if (opts.action === "install_nodes") {
+        if (opts.action === "update_comfyui") {
+          if (!existsSync(join(comfyDir, ".git"))) {
+            throw new Error(`Impossibile aggiornare: ${comfyDir} non contiene una repository Git.`);
+          }
+          task.currentStep = "Aggiornamento repository ComfyUI Core (git pull)...";
+          task.percent = 15;
+          await this.runCmd("git", ["pull", "--ff-only", "origin", "master"], comfyDir);
+          const req = join(comfyDir, "requirements.txt");
+          if (existsSync(req)) {
+            task.currentStep = "Aggiornamento dipendenze Python ComfyUI Core...";
+            task.percent = 50;
+            await this.pipInstallRequirements(pythonBin, req, comfyDir, "ComfyUI Core");
+          }
+          nodesToInstall = CUSTOM_NODES.filter((n) => n.type === "bundled_dir" || n.type === "bundled_file" || n.type === "backend_deps");
+        } else if (opts.action === "install_nodes") {
           const wantedIds = opts.nodes && opts.nodes.length > 0 ? new Set(opts.nodes) : null;
           nodesToInstall = CUSTOM_NODES.filter((n) => (wantedIds ? wantedIds.has(n.id) : !this.isNodeInstalled(n, comfyDir)));
           if (nodesToInstall.length === 0) nodesToInstall = [...CUSTOM_NODES];

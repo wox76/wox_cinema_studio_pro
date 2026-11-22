@@ -1,0 +1,204 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "orbit-360",
+  "name": "360° Orbit + Audio · H3",
+  "section": "video",
+  "pack": "video-h3",
+  "status": "ready",
+  "higgsfield_feature": "360° Frozen Moment Orbit",
+  "summary": "Orbita cinematografica a 360° intorno a un istante congelato con audio sincronizzato (MiniMax H3 + Orbit LoRA, solo 0.16 GB extra).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/minimax-h3-orbit.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Fotogramma da orbitare",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "138",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Descrizione Orbita & Scena",
+      "required": true,
+      "default": "A smooth 360-degree camera orbit around the frozen subject, dramatic studio lighting, cinematic parallax, subtle ambient atmosphere",
+      "bind": [
+        {
+          "node": "131",
+          "field": "prompt"
+        }
+      ]
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Formato & Risoluzione",
+      "default": "1344x768",
+      "options": [
+        {
+          "value": "1344x768",
+          "label": "16:9 Cinema (1344×768)",
+          "sets": [
+            {
+              "node": "131",
+              "field": "width",
+              "value": 1344
+            },
+            {
+              "node": "131",
+              "field": "height",
+              "value": 768
+            }
+          ]
+        },
+        {
+          "value": "1024x1024",
+          "label": "1:1 Quadrato (1024×1024)",
+          "sets": [
+            {
+              "node": "131",
+              "field": "width",
+              "value": 1024
+            },
+            {
+              "node": "131",
+              "field": "height",
+              "value": 1024
+            }
+          ]
+        },
+        {
+          "value": "768x1344",
+          "label": "9:16 Verticale (768×1344)",
+          "sets": [
+            {
+              "node": "131",
+              "field": "width",
+              "value": 768
+            },
+            {
+              "node": "131",
+              "field": "height",
+              "value": 1344
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "frames",
+      "type": "select",
+      "label": "Durata",
+      "default": 73,
+      "options": [
+        {
+          "value": 49,
+          "label": "2 s (49 frame)"
+        },
+        {
+          "value": 73,
+          "label": "3 s (73 frame)"
+        },
+        {
+          "value": 121,
+          "label": "5 s (121 frame)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "131",
+          "field": "length"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "default": 28,
+      "bind": [
+        {
+          "node": "124",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "129",
+          "field": "noise_seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "174",
+      "type": "video",
+      "label": "Video 360° Orbit"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "dir": "text_encoders",
+      "gb": 15.69,
+      "phase": "encode"
+    },
+    {
+      "repo": "Kijai/MiniMax-H3-experimental",
+      "file": "minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 3.17,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode"
+    },
+    {
+      "repo": "pablodawson/MiniMax-H3-360-Orbit-LoRA",
+      "file": "minimax_h3_flf2v_lora_v1.safetensors",
+      "dir": "loras",
+      "gb": 0.16,
+      "phase": "denoise"
+    }
+  ],
+  "credits": [
+    "MiniMax H3",
+    "360 Orbit LoRA by pablodawson",
+    "Workflow from Fuobe"
+  ]
+}

@@ -1,5 +1,6 @@
 // The waiter: turns form values into a filled workflow using only what app.json says,
 // asks the gateway to clear the GPU when the app's models change, and submits with the Comfy SDK.
+import { deflateSync } from "node:zlib";
 import { Comfy } from "@comfyorg/sdk";
 import type { App, Input } from "./registry.ts";
 import { isFileInput, modelKey } from "./registry.ts";
@@ -120,6 +121,109 @@ export function renderTemplate(template: string, values: Values): string {
     .replace(/,$/, "");
 }
 
+function crc32(buf: Uint8Array): number {
+  let c = 0xffffffff;
+  for (let i = 0; i < buf.length; i++) {
+    c ^= buf[i];
+    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (c & 1 ? 0xedb88320 : 0);
+  }
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type: string, data: Uint8Array): Uint8Array {
+  const len = data.length;
+  const out = new Uint8Array(12 + len);
+  const view = new DataView(out.buffer);
+  view.setUint32(0, len, false);
+  for (let i = 0; i < 4; i++) out[4 + i] = type.charCodeAt(i);
+  out.set(data, 8);
+  view.setUint32(8 + len, crc32(out.subarray(4, 8 + len)), false);
+  return out;
+}
+
+/** Generate a 256x64 RGB PNG swatch image from #RRGGBB hex codes (for z-image-palette when no swatch file is uploaded). */
+export function buildPaletteSwatchPng(hexes: string[]): Uint8Array {
+  const colors = (hexes.length ? hexes : ["#0F0C0B", "#65370D", "#916D4C", "#C6BE94", "#F2F1C4"]).map((h) => {
+    const clean = h.replace("#", "");
+    return [
+      parseInt(clean.slice(0, 2), 16) || 0,
+      parseInt(clean.slice(2, 4), 16) || 0,
+      parseInt(clean.slice(4, 6), 16) || 0,
+    ];
+  });
+  const w = 256, h = 64;
+  const rowLen = 1 + w * 3;
+  const raw = new Uint8Array(rowLen * h);
+  for (let y = 0; y < h; y++) {
+    const off = y * rowLen;
+    raw[off] = 0;
+    for (let x = 0; x < w; x++) {
+      const c = colors[Math.min(colors.length - 1, Math.floor((x / w) * colors.length))];
+      raw[off + 1 + x * 3] = c[0];
+      raw[off + 1 + x * 3 + 1] = c[1];
+      raw[off + 1 + x * 3 + 2] = c[2];
+    }
+  }
+  const ihdr = new Uint8Array(13);
+  const iv = new DataView(ihdr.buffer);
+  iv.setUint32(0, w, false);
+  iv.setUint32(4, h, false);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 2; // RGB
+  const idat = new Uint8Array(deflateSync(raw));
+  const sig = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  const c1 = pngChunk("IHDR", ihdr);
+  const c2 = pngChunk("IDAT", idat);
+  const c3 = pngChunk("IEND", new Uint8Array(0));
+  const out = new Uint8Array(sig.length + c1.length + c2.length + c3.length);
+  out.set(sig, 0);
+  out.set(c1, sig.length);
+  out.set(c2, sig.length + c1.length);
+  out.set(c3, sig.length + c1.length + c2.length);
+  return out;
+}
+
+/** Resample normalized [[x, y], ...] motion polylines into `count` pixel points for WanMoveTracksFromCoords. */
+export function resampleMotionTracks(raw: string, width: number, height: number, count: number): string {
+  try {
+    const parsed = JSON.parse(raw);
+    const paths: [number, number][][] = Array.isArray(parsed?.paths) ? parsed.paths : Array.isArray(parsed) && Array.isArray(parsed[0]) && Array.isArray(parsed[0][0]) ? parsed : [];
+    if (!paths.length) return raw;
+    const nFrames = Math.max(2, Math.trunc(count || 81));
+    const tracks = paths
+      .filter((p) => Array.isArray(p) && p.length > 0)
+      .map((path) => {
+        if (path.length === 1) {
+          const pt = { x: Math.round(path[0][0] * (width - 1)), y: Math.round(path[0][1] * (height - 1)) };
+          return Array.from({ length: nFrames }, () => pt);
+        }
+        const cum = [0];
+        for (let i = 1; i < path.length; i++) {
+          cum.push(cum[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+        }
+        const total = cum[cum.length - 1] || 1;
+        const pts: { x: number; y: number }[] = [];
+        let j = 0;
+        for (let k = 0; k < nFrames; k++) {
+          const d = (total * k) / (nFrames - 1);
+          while (j < cum.length - 2 && cum[j + 1] < d) j++;
+          const seg = cum[j + 1] - cum[j] || 1;
+          const t = Math.min(1, Math.max(0, (d - cum[j]) / seg));
+          const nx = path[j][0] + (path[j + 1][0] - path[j][0]) * t;
+          const ny = path[j][1] + (path[j + 1][1] - path[j][1]) * t;
+          pts.push({
+            x: Math.max(0, Math.min(width - 1, Math.round(nx * (width - 1)))),
+            y: Math.max(0, Math.min(height - 1, Math.round(ny * (height - 1)))),
+          });
+        }
+        return pts;
+      });
+    return tracks.length ? JSON.stringify(tracks) : raw;
+  } catch {
+    return raw;
+  }
+}
+
 /** A value in an option's or preset's `sets`: a string with {placeholders} is filled like a bind template. */
 export function setValue(value: unknown, values: Values): unknown {
   return typeof value === "string" && /\{[a-z][a-z0-9_]*\}/.test(value) ? renderTemplate(value, values) : value;
@@ -180,6 +284,40 @@ export function applyInputs(
     }
   }
 
+  // Handle z-image-palette auto swatch PNG generation when no palette_image is uploaded
+  if (app.id === "z-image-palette" && !isFileValue(values.palette_image)) {
+    const combined = `${String(values.palette_preset ?? "")} ${String(values.palette_text ?? "")}`;
+    const hexes = [...combined.matchAll(/#[0-9a-fA-F]{6}\b/g)].map((m) => m[0]);
+    const pngBytes = buildPaletteSwatchPng(hexes);
+    wf.setInput("1", "image", asset({ bytes: pngBytes, name: "palette_swatch.png", type: "image/png" }));
+  }
+
+  // Handle draw-to-video normalized track resampling to selected resolution & frame count
+  if (app.id === "draw-to-video" && typeof values.tracks === "string") {
+    const g = (wf as any).json as Record<string, any> | undefined;
+    const w = Number(g?.["2"]?.inputs?.width ?? 832);
+    const h = Number(g?.["2"]?.inputs?.height ?? 480);
+    const frames = Number(values.frames ?? g?.["11"]?.inputs?.length ?? 81);
+    const resampled = resampleMotionTracks(values.tracks, w, h, frames);
+    wf.setInput("3", "value", resampled);
+  }
+
+  // Handle multi-to-3d optional side views (left, back, right) so any 2–4 photos work cleanly
+  if (app.id === "multi-to-3d" && (wf as any).json) {
+    const g = (wf as any).json as Record<string, any>;
+    const sideNodes: [string, string[]][] = [
+      ["left", ["361", "348", "349"]],
+      ["back", ["362", "351", "350"]],
+      ["right", ["363", "353", "352"]],
+    ];
+    for (const [field, nids] of sideNodes) {
+      if (!isFileValue(values[field])) {
+        if (g["324"]?.inputs) delete g["324"].inputs[field];
+        for (const nid of nids) delete g[nid];
+      }
+    }
+  }
+
   // Handle trellis-3d hybrid Image-to-3D / Text-to-3D routing
   if (app.id === "trellis-3d" && (wf as any).json) {
     const g = (wf as any).json as Record<string, any>;
@@ -201,13 +339,13 @@ export function applyInputs(
     }
   }
 
-  // Handle optional first_frame in video modes (cinema-video, director)
+  // Handle optional first_frame and last_frame in video modes (cinema-video, director)
   if ((app.id === "cinema-video" || app.id === "director") && (wf as any).json) {
     const g = (wf as any).json as Record<string, any>;
+    const targetMp = Number(g["403"]?.inputs?.megapixels) || 0.6;
     const hasFirstFrame = isFileValue(values.first_frame);
     if (hasFirstFrame && g["140:131"]) {
       // Match first_frame_scale megapixels to the chosen resolution if available
-      const targetMp = Number(g["403"]?.inputs?.megapixels) || 0.6;
       if (g["first_frame_scale"]?.inputs) {
         g["first_frame_scale"].inputs.megapixels = targetMp;
       }
@@ -224,6 +362,20 @@ export function applyInputs(
       }
       delete g["first_frame"];
       delete g["first_frame_scale"];
+    }
+
+    const hasLastFrame = isFileValue(values.last_frame);
+    if (hasLastFrame && g["140:131"]) {
+      if (g["last_frame_scale"]?.inputs) {
+        g["last_frame_scale"].inputs.megapixels = targetMp;
+      }
+      g["140:131"].inputs.last_frame = ["last_frame_scale", 0];
+    } else {
+      if (g["140:131"]?.inputs) {
+        delete g["140:131"].inputs.last_frame;
+      }
+      delete g["last_frame"];
+      delete g["last_frame_scale"];
     }
   }
 
@@ -269,12 +421,103 @@ export function applyInputs(
     }
   }
 
-    // Clean up unused static placeholder ref nodes in cinema-video / director
+    // Clean up unused static placeholder ref nodes and wire MiniMaxH3ReferenceToVideo in cinema-video / director
     if ((app.id === "cinema-video" || app.id === "director") && (wf as any).json) {
       const g = (wf as any).json as Record<string, any>;
       const usedNodes = new Set(refEntries.map((r) => r.mappedNode));
       for (const placeholder of ["1", "still:18:11", "still:18:12", "still:18:13", "still:18:14"]) {
         if (!usedNodes.has(placeholder)) delete g[placeholder];
+      }
+
+      if (refEntries.length > 0 && g["140:131"]) {
+        const hasFirstFrame = isFileValue(values.first_frame);
+        const hasLastFrame = isFileValue(values.last_frame);
+        const baseInputs = g["140:131"].inputs || {};
+        const refNodeInputs: Record<string, unknown> = {
+          clip: baseInputs.clip ?? ["140:128", 0],
+          vae: baseInputs.vae ?? ["140:119", 0],
+          audio_vae: ["140:120", 0],
+          width: baseInputs.width ?? ["403", 0],
+          height: baseInputs.height ?? ["403", 1],
+          length: baseInputs.length ?? ["140:132", 1],
+          prompt: baseInputs.prompt ?? ["398:376", 0],
+          ref_image_size: "match",
+        };
+
+        const refTagMap = new Map<number, string>();
+        let imgIdx = 0;
+        let vidIdx = 0;
+        for (const r of refEntries) {
+          if (!r.isVideo) {
+            if (imgIdx < 9) {
+              refNodeInputs[`ref_images.ref_image_${imgIdx}`] = [r.mappedNode, 0];
+              refTagMap.set(r.num, `<Picture ${imgIdx + 1}>`);
+              imgIdx++;
+            }
+          } else {
+            if (vidIdx < 3) {
+              const compNode = `ref_vid_comp_${vidIdx}`;
+              g[compNode] = {
+                class_type: "GetVideoComponents",
+                inputs: { video: [r.mappedNode, 0] },
+                _meta: { title: `Extract Reference Video ${vidIdx + 1}` },
+              };
+              refNodeInputs[`ref_videos.ref_video_${vidIdx}`] = [compNode, 0];
+              refNodeInputs[`ref_video_audios.ref_video_audio_${vidIdx}`] = [compNode, 1];
+              refTagMap.set(r.num, `<Video ${vidIdx + 1}>`);
+              vidIdx++;
+            }
+          }
+        }
+
+        g["140:131"] = {
+          class_type: "MiniMaxH3ReferenceToVideo",
+          inputs: refNodeInputs,
+          _meta: { title: "MiniMax H3 Reference to Video" },
+        };
+
+        // Rewrite @refN tags in the motion prompt to <Picture i> / <Video k>
+        if (g["398:376"]?.inputs?.value) {
+          let motionPrompt = String(g["398:376"].inputs.value);
+          motionPrompt = motionPrompt.replace(/\[?\s*@ref(\d+)\s*\]?/gi, (_: string, n: string) => {
+            return refTagMap.get(Number(n)) ?? `@ref${n}`;
+          });
+          g["398:376"].inputs.value = motionPrompt;
+        }
+
+        // Chain MiniMaxH3AddGuide if first_frame and/or last_frame were also uploaded
+        let condOut: [string, number] = ["140:131", 0];
+        if (hasFirstFrame && g["first_frame_scale"]) {
+          g["guide_first_frame"] = {
+            class_type: "MiniMaxH3AddGuide",
+            inputs: {
+              positive: condOut,
+              vae: ["140:119", 0],
+              latent: ["140:131", 1],
+              image: ["first_frame_scale", 0],
+              frame_idx: 0,
+            },
+            _meta: { title: "Guide First Frame" },
+          };
+          condOut = ["guide_first_frame", 0];
+        }
+        if (hasLastFrame && g["last_frame_scale"]) {
+          g["guide_last_frame"] = {
+            class_type: "MiniMaxH3AddGuide",
+            inputs: {
+              positive: condOut,
+              vae: ["140:119", 0],
+              latent: ["140:131", 1],
+              image: ["last_frame_scale", 0],
+              frame_idx: -1,
+            },
+            _meta: { title: "Guide Last Frame" },
+          };
+          condOut = ["guide_last_frame", 0];
+        }
+        if (g["140:126"]?.inputs) {
+          g["140:126"].inputs.conditioning = condOut;
+        }
       }
     }
   const imageRefs = refEntries.filter((r) => !r.isVideo).slice(0, 3);
@@ -636,6 +879,29 @@ export class Runner {
 
   jobs() {
     return this.comfy.jobs;
+  }
+
+  /** Fetch any 3D model files (.glb, .gltf, .ply, .spz) produced by ComfyUI SaveGLB / Save3DAdvanced nodes via the gateway. */
+  async fetch3dOutputs(jobId: string): Promise<{ nodeId: string; name: string; ext: string; bytes: Uint8Array }[]> {
+    const headers = this.token ? { authorization: `Bearer ${this.token}` } : undefined;
+    try {
+      const res = await this.doFetch(`${this.baseUrl}/wox/jobs/${encodeURIComponent(jobId)}/3d`, { headers });
+      if (!res.ok) return [];
+      const data = (await res.json()) as { files?: { node_id: string; filename: string; url: string }[] };
+      const out: { nodeId: string; name: string; ext: string; bytes: Uint8Array }[] = [];
+      for (const f of data.files ?? []) {
+        if (!f.url) continue;
+        const r = await this.doFetch(f.url, { headers });
+        if (!r.ok) continue;
+        const buf = new Uint8Array(await r.arrayBuffer());
+        const m = /\.[a-z0-9]{1,5}$/i.exec(f.filename || "");
+        const ext = (m ? m[0] : ".glb").toLowerCase();
+        out.push({ nodeId: String(f.node_id || ""), name: f.filename || `model${ext}`, ext, bytes: buf });
+      }
+      return out;
+    } catch {
+      return [];
+    }
   }
 
   /**

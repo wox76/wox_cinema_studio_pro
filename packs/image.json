@@ -1,7 +1,11 @@
 {
   "pack": "image",
   "apps": [
-    "z-image"
+    "ai-influencer",
+    "trellis-3d",
+    "z-image",
+    "z-image-grid",
+    "z-image-palette"
   ],
   "download_gb": 12.17,
   "needs_hf_token": false,
@@ -16,7 +20,11 @@
       "gated": false,
       "license": "Apache-2.0",
       "used_by": [
-        "z-image"
+        "ai-influencer",
+        "trellis-3d",
+        "z-image",
+        "z-image-grid",
+        "z-image-palette"
       ]
     },
     {
@@ -28,7 +36,11 @@
       "gated": false,
       "license": "Apache-2.0",
       "used_by": [
-        "z-image"
+        "ai-influencer",
+        "trellis-3d",
+        "z-image",
+        "z-image-grid",
+        "z-image-palette"
       ]
     },
     {
@@ -40,7 +52,11 @@
       "gated": false,
       "license": "Apache-2.0",
       "used_by": [
-        "z-image"
+        "ai-influencer",
+        "trellis-3d",
+        "z-image",
+        "z-image-grid",
+        "z-image-palette"
       ]
     }
   ]

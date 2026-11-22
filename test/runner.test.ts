@@ -5,7 +5,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadRegistry } from "../server/registry.ts";
 import { History } from "../server/history.ts";
-import { applyInputs, explainSubmitError, InputError, renderTemplate, resolveValues, Runner, type Settable } from "../server/runner.ts";
+import {
+  applyInputs,
+  buildPaletteSwatchPng,
+  explainSubmitError,
+  InputError,
+  renderTemplate,
+  resampleMotionTracks,
+  resolveValues,
+  Runner,
+  type Settable,
+} from "../server/runner.ts";
 
 const { apps } = loadRegistry();
 const byId = (id: string) => apps.find((a) => a.id === id)!;
@@ -508,4 +518,109 @@ test("History transformOutput rewrites saved output bytes before marking succeed
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("buildPaletteSwatchPng synthesizes a valid PNG and z-image-palette auto-injects it when palette_image is omitted", () => {
+  const png = buildPaletteSwatchPng(["#0F0C0B", "#14B8A6", "#F97316"]);
+  assert.deepEqual([...png.slice(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const app = byId("z-image-palette");
+  const wf = recorder();
+  let uploadedName = "";
+  const values = resolveValues(app, { prompt: "editorial portrait", palette_text: "#112233, #AABBCC" });
+  applyInputs(app, values, wf, (f) => {
+    uploadedName = f.name;
+    assert.ok(f.bytes.length > 40);
+    return `asset:${f.name}`;
+  });
+  assert.equal(uploadedName, "palette_swatch.png");
+  assert.equal(wf.sets["1.image"], "asset:palette_swatch.png");
+});
+
+test("resampleMotionTracks converts normalized paths into exact pixel coordinates and draw-to-video injects them", () => {
+  const resampled = resampleMotionTracks('{"aspect":[832,480],"paths":[[[0,0],[1,0.5]]]}', 832, 480, 17);
+  const parsed = JSON.parse(resampled) as Array<Array<{ x: number; y: number }>>;
+  assert.equal(parsed.length, 1);
+  assert.equal(parsed[0].length, 17);
+  assert.deepEqual(parsed[0][0], { x: 0, y: 0 });
+  assert.deepEqual(parsed[0][16], { x: 831, y: 240 });
+
+  const app = byId("draw-to-video");
+  const wf = recorder();
+  const img = { bytes: new Uint8Array([1, 2, 3]), name: "start.png" };
+  const values = resolveValues(app, {
+    image: img,
+    tracks: '{"aspect":[832,480],"paths":[[[0.2,0.2],[0.8,0.8]]]}',
+    prompt: "camera pans cleanly",
+  });
+  applyInputs(app, values, wf, (f) => `asset:${f.name}`);
+  const injected = JSON.parse(String(wf.sets["3.value"])) as Array<Array<{ x: number; y: number }>>;
+  assert.equal(injected.length, 1);
+  assert.equal(injected[0].length, 81);
+  assert.equal(wf.sets["1.image"], "asset:start.png");
+});
+
+test("multi-to-3d prunes unuploaded optional side views while keeping required front view", () => {
+  const app = byId("multi-to-3d");
+  assert.deepEqual(app.modes, ["pixal3d", "multi-to-3d", "text-to-3d", "object-to-3d", "triposplat-3d"]);
+  const front = { bytes: new Uint8Array([1, 2, 3]), name: "front.png" };
+  const back = { bytes: new Uint8Array([4, 5, 6]), name: "back.png" };
+  const wf = {
+    sets: {} as Record<string, unknown>,
+    json: {
+      "324": { class_type: "Pixal3DMultiViewConditioning", inputs: { front: ["312", 0], left: ["349", 0], back: ["350", 0], right: ["352", 0] } },
+      "360": { class_type: "LoadImage", inputs: { image: "front.png" } },
+      "361": { class_type: "LoadImage", inputs: { image: "left.png" } },
+      "348": { class_type: "RemoveBackground", inputs: {} },
+      "349": { class_type: "ImageCropToMask", inputs: {} },
+      "362": { class_type: "LoadImage", inputs: { image: "back.png" } },
+      "351": { class_type: "RemoveBackground", inputs: {} },
+      "350": { class_type: "ImageCropToMask", inputs: {} },
+      "363": { class_type: "LoadImage", inputs: { image: "right.png" } },
+      "353": { class_type: "RemoveBackground", inputs: {} },
+      "352": { class_type: "ImageCropToMask", inputs: {} },
+    } as Record<string, any>,
+    setInput(node: string, field: string, value: unknown) {
+      this.sets[`${node}.${field}`] = value;
+      if (this.json[node]?.inputs) this.json[node].inputs[field] = value;
+    },
+  };
+  applyInputs(app, resolveValues(app, { front, back, seed: 42 }), wf, (f) => `asset:${f.name}`);
+  assert.equal(wf.sets["360.image"], "asset:front.png");
+  assert.equal(wf.sets["362.image"], "asset:back.png");
+  assert.deepEqual(wf.json["324"].inputs.back, ["350", 0]);
+  assert.equal(wf.json["324"].inputs.left, undefined);
+  assert.equal(wf.json["324"].inputs.right, undefined);
+  assert.equal(wf.json["361"], undefined);
+  assert.equal(wf.json["363"], undefined);
+});
+
+test("marketing-studio and marketing-video compose template, hook, setting, ad_style and copy cleanly", () => {
+  const mStudio = byId("marketing-studio");
+  const wf1 = recorder();
+  const f1 = { bytes: new Uint8Array([1, 2]), name: "bottle.png" };
+  applyInputs(mStudio, resolveValues(mStudio, {
+    image: f1,
+    brand: "Atelier Noir",
+    product: "Serum 07",
+    headline: "PURE GLOW",
+    cta: "Shop Now",
+  }), wf1, (f) => `asset:${f.name}`);
+  const p1 = String(wf1.sets["4.prompt"]);
+  assert.match(p1, /Atelier Noir/);
+  assert.match(p1, /Serum 07/);
+  assert.match(p1, /PURE GLOW/);
+  assert.doesNotMatch(p1, /\{[a-z_]+\}/);
+
+  const mVideo = byId("marketing-video");
+  const wf2 = recorder();
+  applyInputs(mVideo, resolveValues(mVideo, {
+    image: f1,
+    hook: mVideo.inputs.find((i) => i.id === "hook")!.options![1].value as string,
+    setting: mVideo.inputs.find((i) => i.id === "setting")!.options![1].value as string,
+    duration: 5,
+  }), wf2, (f) => `asset:${f.name}`);
+  const p2 = String(wf2.sets["105:104.prompt"]);
+  assert.match(p2, /Opening hook:/);
+  assert.match(p2, /Setting:/);
+  assert.doesNotMatch(p2, /\{[a-z_]+\}/);
 });

@@ -3,10 +3,13 @@
   "apps": [
     "depth-map",
     "remove-bg",
+    "scene-3d-moge",
     "smooth",
     "upscale",
     "upscale-video",
-    "video-remove-bg"
+    "video-depth",
+    "video-remove-bg",
+    "video-restore"
   ],
   "download_gb": 5.13,
   "needs_hf_token": false,
@@ -35,7 +38,8 @@
       "license": "Apache-2.0",
       "used_by": [
         "upscale",
-        "upscale-video"
+        "upscale-video",
+        "video-restore"
       ]
     },
     {
@@ -59,7 +63,9 @@
       "gated": false,
       "license": "MIT",
       "used_by": [
-        "depth-map"
+        "depth-map",
+        "scene-3d-moge",
+        "video-depth"
       ]
     },
     {
@@ -72,7 +78,8 @@
       "license": "Apache-2.0",
       "used_by": [
         "upscale",
-        "upscale-video"
+        "upscale-video",
+        "video-restore"
       ]
     }
   ]

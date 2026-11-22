@@ -1,0 +1,76 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-restore",
+  "name": "Restore Footage",
+  "section": "video",
+  "pack": "upscale",
+  "status": "ready",
+  "higgsfield_feature": "Restore Old Footage · SeedVR2",
+  "summary": "Restaura filmati compressi, sfocati o d'archivio recuperando nitidezza, volti e micro-dettagli con SeedVR2 3B.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/video-tools-restore",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "clip",
+      "type": "video",
+      "label": "Filmato da restaurare",
+      "required": true,
+      "limits": {
+        "max_mb": 200,
+        "seconds": [
+          1,
+          20
+        ]
+      },
+      "bind": [
+        {
+          "node": "73",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "66:54",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "76",
+      "type": "video",
+      "label": "Filmato restaurato"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/SeedVR2",
+      "file": "diffusion_models/seedvr2_3b_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 3.46,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/SeedVR2",
+      "file": "vae/seedvr2_ema_vae_fp16.safetensors",
+      "dir": "vae",
+      "gb": 0.5,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "SeedVR2 by ByteDance Seed (Apache-2.0)"
+  ]
+}

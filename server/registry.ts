@@ -28,7 +28,7 @@ export type Input = {
   bind?: Bind[];
 };
 export type Preset = { id: string; label: string; sets: SetField[] };
-export type Output = { node: string; type: "image" | "video" | "audio"; label?: string };
+export type Output = { node: string; type: "image" | "video" | "audio" | "3d"; label?: string };
 export type Model = {
   repo: string;
   file: string;
@@ -45,7 +45,7 @@ export type ApiWorkflow = Record<string, ApiNode>;
 export type AppManifest = {
   id: string;
   name: string;
-  section: "image" | "video" | "audio" | "utility";
+  section: "image" | "video" | "audio" | "3d" | "utility";
   summary?: string;
   higgsfield_feature?: string;
   /** sibling apps shown as a switch at the top of the form (Cinema Studio: image, video) */

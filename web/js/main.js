@@ -7,6 +7,11 @@ import { t } from "./i18n.js";
 import { loadCatalog, byId, lastAppFor, studioOf, FEATURED, hosted } from "./catalog.js";
 import { topbar, gpuState, pollGpu } from "./nav.js";
 import { exploreView, appsView, libraryView, vramView } from "./views.js";
+import { marketingView } from "./marketing.js";
+import { kineticView } from "./kinetic.js";
+import { layersView } from "./layers_editor.js";
+import { gameStudioView } from "./game_studio.js";
+import { woxCodeView } from "./wox_code.js";
 import { workspaceView, recreate, useIn, sendToEdit, quickHandoffBar, sendItemToApp } from "./workspace.js";
 import { hooks, feed } from "./feed.js";
 import { openViewer } from "./viewer.js";
@@ -54,6 +59,12 @@ function route() {
     location.replace(`#/app/${lastAppFor(studio[1])}`);
     return null;
   }
+  if (hash.startsWith("#/fx")) return appsView("fx");
+  if (hash.startsWith("#/marketing")) return marketingView();
+  if (hash.startsWith("#/kinetic")) return kineticView();
+  if (hash.startsWith("#/layers")) return layersView();
+  if (hash.startsWith("#/game")) return gameStudioView();
+  if (hash.startsWith("#/code")) return woxCodeView();
   if (hash.startsWith("#/apps") || hash.startsWith("#apps")) return appsView();
   if (hash.startsWith("#/library")) return libraryView();
   if (hash.startsWith("#/vram")) return vramView(gpuState.data?.device ? gpuState.data : null);

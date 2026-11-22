@@ -1,0 +1,73 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-trim",
+  "name": "Trim Video",
+  "section": "video",
+  "pack": "core",
+  "status": "ready",
+  "higgsfield_feature": "Video Trim · Cut Clip",
+  "summary": "Taglia qualsiasi clip video scegliendo il punto iniziale (start_time) e la durata esatta senza modelli AI.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/video-trim.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "video",
+      "type": "video",
+      "label": "Clip Video",
+      "required": true,
+      "limits": {
+        "max_mb": 200
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "start_time",
+      "type": "number",
+      "label": "Inizio (secondi)",
+      "default": 0,
+      "min": 0,
+      "max": 600,
+      "step": 0.1,
+      "bind": [
+        {
+          "node": "2",
+          "field": "start_time"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "number",
+      "label": "Durata (secondi)",
+      "default": 5,
+      "min": 0.2,
+      "max": 120,
+      "step": 0.1,
+      "bind": [
+        {
+          "node": "2",
+          "field": "duration"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "3",
+      "type": "video",
+      "label": "Clip tagliata"
+    }
+  ],
+  "models": [],
+  "credits": [
+    "ComfyUI Core Video Slice"
+  ]
+}

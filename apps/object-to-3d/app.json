@@ -1,0 +1,158 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "object-to-3d",
+  "name": "Pick Object to 3D · SAM3 + Pixal3D",
+  "section": "3d",
+  "pack": "3d-studio",
+  "status": "ready",
+  "modes": [
+    "pixal3d",
+    "multi-to-3d",
+    "text-to-3d",
+    "object-to-3d",
+    "triposplat-3d"
+  ],
+  "mode_label": "Oggetto",
+  "higgsfield_feature": "Image to 3D · Pick One Object",
+  "summary": "Isola un singolo oggetto da una foto complessa descrivendolo (SAM 3.1) e trasformalo in mesh 3D PBR (.GLB) pronta per ActionForge.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/image-to-3d-objects",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Foto Scena Complessa",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "122",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "object_name",
+      "type": "text",
+      "label": "Oggetto da estrarre in 3D",
+      "required": true,
+      "default": "the vintage armchair",
+      "help": "Es: the sports car, the chandelier, the backpack",
+      "bind": [
+        {
+          "node": "402",
+          "field": "text"
+        }
+      ]
+    },
+    {
+      "id": "texture_size",
+      "type": "select",
+      "label": "Risoluzione Texture PBR",
+      "default": 2048,
+      "options": [
+        {
+          "value": 1024,
+          "label": "1024×1024 (Veloce)"
+        },
+        {
+          "value": 2048,
+          "label": "2048×2048 (HD Consigliato)"
+        },
+        {
+          "value": 4096,
+          "label": "4096×4096 (4K Ultra)"
+        }
+      ],
+      "bind": [
+        {
+          "node": "288",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "3",
+          "field": "seed"
+        },
+        {
+          "node": "12",
+          "field": "seed"
+        },
+        {
+          "node": "18",
+          "field": "seed"
+        },
+        {
+          "node": "23",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "322",
+      "type": "3d",
+      "label": "Oggetto Estratto 3D .GLB"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/sam3.1",
+      "file": "checkpoints/sam3.1_multiplex_fp16.safetensors",
+      "dir": "checkpoints",
+      "gb": 1.75,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "diffusion_models/pixal3d_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.58,
+      "phase": "denoise"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "clip_vision/dino_v3_L_naf_fp32.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.22,
+      "phase": "encode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_shape_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 1.1,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/Pixal3D",
+      "file": "vae/trellis_2_texture_vae_bf16.safetensors",
+      "dir": "vae",
+      "gb": 0.95,
+      "phase": "decode"
+    },
+    {
+      "repo": "Comfy-Org/MoGe",
+      "file": "geometry_estimation/moge_2_vitl_normal_fp16.safetensors",
+      "dir": "geometry_estimation",
+      "gb": 0.66,
+      "phase": "aux"
+    }
+  ],
+  "credits": [
+    "SAM 3.1 Multiplex + Pixal3D + TRELLIS.2"
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "krea2-realism",
+  "name": "Krea 2 Realism V2",
+  "section": "image",
+  "pack": "image-krea2",
+  "status": "ready",
+  "higgsfield_feature": "Photorealistic T2I (Fuobe)",
+  "summary": "Fotorealismo ultra-naturale in 6 step con Krea 2 Turbo + Realism V2 LoRA (fino a 1536px).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/krea2-realism-t2i.json",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Prompt",
+      "required": true,
+      "default": "An editorial photograph of a woman in a camel wool coat on a sunlit city street, late afternoon light, natural skin texture.",
+      "bind": [
+        {
+          "node": "6",
+          "field": "text"
+        }
+      ]
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Formato & Risoluzione",
+      "default": "1024x1024",
+      "options": [
+        {
+          "value": "1024x1024",
+          "label": "1:1 Quadrato (1024×1024)",
+          "sets": [
+            {
+              "node": "5",
+              "field": "width",
+              "value": 1024
+            },
+            {
+              "node": "5",
+              "field": "height",
+              "value": 1024
+            }
+          ]
+        },
+        {
+          "value": "1536x1536",
+          "label": "1:1 HD (1536×1536)",
+          "sets": [
+            {
+              "node": "5",
+              "field": "width",
+              "value": 1536
+            },
+            {
+              "node": "5",
+              "field": "height",
+              "value": 1536
+            }
+          ]
+        },
+        {
+          "value": "1344x768",
+          "label": "16:9 Cinema (1344×768)",
+          "sets": [
+            {
+              "node": "5",
+              "field": "width",
+              "value": 1344
+            },
+            {
+              "node": "5",
+              "field": "height",
+              "value": 768
+            }
+          ]
+        },
+        {
+          "value": "768x1344",
+          "label": "9:16 Verticale (768×1344)",
+          "sets": [
+            {
+              "node": "5",
+              "field": "width",
+              "value": 768
+            },
+            {
+              "node": "5",
+              "field": "height",
+              "value": 1344
+            }
+          ]
+        },
+        {
+          "value": "1536x1024",
+          "label": "3:2 Foto (1536×1024)",
+          "sets": [
+            {
+              "node": "5",
+              "field": "width",
+              "value": 1536
+            },
+            {
+              "node": "5",
+              "field": "height",
+              "value": 1024
+            }
+          ]
+        },
+        {
+          "value": "1024x1536",
+          "label": "2:3 Ritratto (1024×1536)",
+          "sets": [
+            {
+              "node": "5",
+              "field": "width",
+              "value": 1024
+            },
+            {
+              "node": "5",
+              "field": "height",
+              "value": 1536
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "default": 6,
+      "bind": [
+        {
+          "node": "3",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "lora_strength",
+      "type": "slider",
+      "label": "Forza Realism V2 LoRA",
+      "min": 0.0,
+      "max": 1.5,
+      "step": 0.05,
+      "default": 1.0,
+      "bind": [
+        {
+          "node": "15",
+          "field": "strength_model"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "3",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "29",
+      "type": "image",
+      "label": "Immagine"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/Krea-2",
+      "file": "diffusion_models/krea2_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 13.49,
+      "phase": "denoise",
+      "license": "Krea 2 Community License"
+    },
+    {
+      "repo": "Comfy-Org/Krea-2",
+      "file": "text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 5.24,
+      "phase": "encode",
+      "license": "Krea 2 Community License"
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "RudySen/Krea2-realism-V2",
+      "file": "Krea2-realism-V2.safetensors",
+      "dir": "loras",
+      "gb": 1.56,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "Krea 2 Turbo (Krea)",
+    "Krea2-realism-V2 by RudySen",
+    "Workflow from Fuobe"
+  ]
+}

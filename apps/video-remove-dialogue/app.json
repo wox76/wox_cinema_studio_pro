@@ -1,0 +1,62 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "video-remove-dialogue",
+  "name": "Clean Audio / Mute",
+  "section": "video",
+  "pack": "core",
+  "status": "ready",
+  "higgsfield_feature": "Remove Dialogue · Mute Speech",
+  "summary": "Rimuove dialoghi e rumori di fondo dal video sostituendo la traccia vocale con silenzio pulito pronto per il doppiaggio.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/video-remove-dialogue",
+    "comfyui": "0.42.0"
+  },
+  "inputs": [
+    {
+      "id": "video",
+      "type": "video",
+      "label": "Clip Video",
+      "required": true,
+      "limits": {
+        "max_mb": 200
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "number",
+      "label": "Durata massima (s)",
+      "default": 20,
+      "min": 1,
+      "max": 300,
+      "step": 1,
+      "bind": [
+        {
+          "node": "2",
+          "field": "duration"
+        },
+        {
+          "node": "4",
+          "field": "duration"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "6",
+      "type": "video",
+      "label": "Video senza parlato"
+    }
+  ],
+  "models": [],
+  "credits": [
+    "ComfyUI Core EmptyAudio"
+  ]
+}

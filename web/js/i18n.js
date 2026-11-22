@@ -4,7 +4,7 @@
 import { store } from "./util.js";
 
 const en = {
-  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Image", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.apps": "Apps", "nav.library": "Library",
+  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Image", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.game": "Game 3D", "nav.code": "Wox Code", "nav.fx": "FX", "nav.marketing": "Marketing", "nav.apps": "Apps", "nav.library": "Library",
   "nav.vram": "VRAM map", "nav.create": "Create", "nav.lang": "Language", "nav.shell": "ComfyUI Terminal",
   "menu.features": "Features", "menu.models": "Models", "menu.used": "{n} apps", "menu.used1": "1 app",
   "tag.featured": "Featured", "tag.new": "New", "tag.draft": "Draft", "tag.top": "Top",
@@ -109,7 +109,7 @@ const en = {
 };
 
 const es = {
-  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Imagen", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.apps": "Apps", "nav.library": "Biblioteca",
+  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Imagen", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.game": "Game 3D", "nav.code": "Wox Code", "nav.fx": "FX", "nav.marketing": "Marketing", "nav.apps": "Apps", "nav.library": "Biblioteca",
   "nav.vram": "Mapa de VRAM", "nav.create": "Crear", "nav.lang": "Idioma", "nav.shell": "Consola ComfyUI",
   "menu.features": "Funciones", "menu.models": "Modelos", "menu.used": "{n} apps", "menu.used1": "1 app",
   "tag.featured": "Destacado", "tag.new": "Nuevo", "tag.draft": "Borrador", "tag.top": "Top",
@@ -215,7 +215,7 @@ const es = {
 
 const it = {
   ...en,
-  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Immagine", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.apps": "App", "nav.library": "Libreria",
+  "nav.home": "Home", "nav.explore": "Home", "nav.image": "Immagine", "nav.video": "Video", "nav.audio": "Audio", "nav.3d": "3D", "nav.game": "Game 3D", "nav.code": "Wox Code", "nav.fx": "FX", "nav.marketing": "Marketing", "nav.apps": "App", "nav.library": "Libreria",
   "nav.vram": "Mappa VRAM", "nav.create": "Crea", "nav.lang": "Lingua", "nav.shell": "Terminale ComfyUI",
   "menu.features": "Strumenti", "menu.models": "Modelli AI", "menu.used": "{n} app", "menu.used1": "1 app",
   "tag.featured": "In primo piano", "tag.new": "Nuovo", "tag.draft": "Bozza", "tag.top": "Top",

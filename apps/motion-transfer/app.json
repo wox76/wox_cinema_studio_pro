@@ -3,7 +3,7 @@
   "id": "motion-transfer",
   "name": "Motion Transfer",
   "section": "video",
-  "pack": "video-wan",
+  "pack": "video-h3",
   "status": "ready",
   "higgsfield_feature": "Character swap / Genjutsu-style motion",
   "summary": "Animates a character image with the motion of a driving clip, with Wan Animate 2.",
@@ -24,7 +24,7 @@
       },
       "bind": [
         {
-          "node": "189",
+          "node": "ref_image",
           "field": "image"
         }
       ]
@@ -43,7 +43,7 @@
       },
       "bind": [
         {
-          "node": "240",
+          "node": "ref_video",
           "field": "file"
         }
       ]
@@ -53,12 +53,7 @@
       "type": "textarea",
       "label": "Character description",
       "default": "Character appearance description: a stylized clay robot with round eyes",
-      "bind": [
-        {
-          "node": "605",
-          "field": "value"
-        }
-      ]
+      "bind": []
     },
     {
       "id": "action_prompt",
@@ -67,56 +62,94 @@
       "default": "dancing energetically in the street",
       "bind": [
         {
-          "node": "604",
+          "node": "prompt",
+          "field": "value",
+          "template": "The character from <Picture 1> ({character_prompt}) performs the exact motion and choreography from <Video 1>. {action_prompt}"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Seconds",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "bind": [
+        {
+          "node": "duration",
           "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "steps",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "seed",
+          "field": "noise_seed"
         }
       ]
     }
   ],
   "outputs": [
     {
-      "node": "246",
+      "node": "75",
       "type": "video",
-      "label": "Result"
-    },
-    {
-      "node": "292",
-      "type": "video",
-      "label": "Second pass"
+      "label": "Video"
     }
   ],
   "models": [
     {
-      "repo": "Comfy-Org/Wan-Animate-2",
-      "file": "diffusion_models/wan_animate_2_distill_int8_convrot.safetensors",
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
       "dir": "diffusion_models",
-      "gb": 16.65,
+      "gb": 20.97,
       "phase": "denoise",
-      "license": "Apache-2.0"
+      "license": "MiniMax H3 Community License"
     },
     {
-      "repo": "Comfy-Org/Wan-Animate-2",
-      "file": "text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
       "dir": "text_encoders",
-      "gb": 6.74,
+      "gb": 27.14,
       "phase": "encode",
-      "license": "Apache-2.0"
+      "license": "MiniMax H3 Community License"
     },
     {
-      "repo": "Comfy-Org/Wan-Animate-2",
-      "file": "clip_vision/clip_vision_h.safetensors",
-      "dir": "clip_vision",
-      "gb": 1.26,
-      "phase": "encode",
-      "license": "Apache-2.0"
-    },
-    {
-      "repo": "Comfy-Org/Wan-Animate-2",
-      "file": "vae/Wan2_1_VAE_bf16.safetensors",
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
       "dir": "vae",
-      "gb": 0.25,
+      "gb": 2.81,
       "phase": "decode",
-      "license": "Apache-2.0"
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
     }
   ],
   "notes": "Use footage and photos of yourself, fictional characters, or people who agreed to it.",

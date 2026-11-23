@@ -29,30 +29,79 @@
       ]
     },
     {
-      "id": "texture_size",
+      "id": "quality",
       "type": "select",
-      "label": "Risoluzione Texture PBR",
-      "default": 2048,
+      "label": "Modalità Qualità",
+      "default": "balanced",
       "options": [
         {
-          "value": 1024,
-          "label": "1024×1024 (Veloce)"
+          "value": "fast",
+          "label": "Veloce (Preview · 1K PBR · 100k facce)",
+          "sets": [
+            { "node": "94", "field": "target_resolution", "value": 1024 },
+            { "node": "3", "field": "steps", "value": 12 },
+            { "node": "18", "field": "steps", "value": 16 },
+            { "node": "23", "field": "steps", "value": 12 },
+            { "node": "12", "field": "steps", "value": 14 },
+            { "node": "12", "field": "cfg", "value": 1.5 },
+            { "node": "241", "field": "resolution", "value": 512 },
+            { "node": "241", "field": "sign_mode.qef", "value": false },
+            { "node": "241", "field": "fix_poles", "value": false },
+            { "node": "241", "field": "smooth_iters", "value": 2 },
+            { "node": "241", "field": "project_back", "value": 0.5 },
+            { "node": "186", "field": "target_face_count", "value": 100000 },
+            { "node": "288", "field": "value", "value": 1024 },
+            { "node": "224", "field": "resolution", "value": 1024 },
+            { "node": "233", "field": "resolution", "value": 1024 },
+            { "node": "233", "field": "samples", "value": 32 }
+          ]
         },
         {
-          "value": 2048,
-          "label": "2048×2048 (HD · Consigliato 16GB)"
+          "value": "balanced",
+          "label": "Bilanciata (HD · 2K PBR · 250k facce · Consigliata)",
+          "sets": [
+            { "node": "94", "field": "target_resolution", "value": 1536 },
+            { "node": "3", "field": "steps", "value": 16 },
+            { "node": "18", "field": "steps", "value": 24 },
+            { "node": "23", "field": "steps", "value": 18 },
+            { "node": "12", "field": "steps", "value": 24 },
+            { "node": "12", "field": "cfg", "value": 3.0 },
+            { "node": "241", "field": "resolution", "value": 512 },
+            { "node": "241", "field": "sign_mode.qef", "value": true },
+            { "node": "241", "field": "fix_poles", "value": true },
+            { "node": "241", "field": "smooth_iters", "value": 2 },
+            { "node": "241", "field": "project_back", "value": 0.75 },
+            { "node": "186", "field": "target_face_count", "value": 250000 },
+            { "node": "288", "field": "value", "value": 2048 },
+            { "node": "224", "field": "resolution", "value": 2048 },
+            { "node": "233", "field": "resolution", "value": 2048 },
+            { "node": "233", "field": "samples", "value": 64 }
+          ]
         },
         {
-          "value": 4096,
-          "label": "4096×4096 (4K Ultra)"
+          "value": "ultra",
+          "label": "Ultra (4K PBR · QEF Sharp · 36 step · 16GB Safe)",
+          "sets": [
+            { "node": "94", "field": "target_resolution", "value": 1536 },
+            { "node": "3", "field": "steps", "value": 24 },
+            { "node": "18", "field": "steps", "value": 36 },
+            { "node": "23", "field": "steps", "value": 28 },
+            { "node": "12", "field": "steps", "value": 36 },
+            { "node": "12", "field": "cfg", "value": 3.5 },
+            { "node": "241", "field": "resolution", "value": 640 },
+            { "node": "241", "field": "sign_mode.qef", "value": false },
+            { "node": "241", "field": "fix_poles", "value": true },
+            { "node": "241", "field": "smooth_iters", "value": 1 },
+            { "node": "241", "field": "project_back", "value": 0.9 },
+            { "node": "186", "field": "target_face_count", "value": 400000 },
+            { "node": "288", "field": "value", "value": 4096 },
+            { "node": "224", "field": "resolution", "value": 4096 },
+            { "node": "233", "field": "resolution", "value": 2048 },
+            { "node": "233", "field": "samples", "value": 128 }
+          ]
         }
       ],
-      "bind": [
-        {
-          "node": "288",
-          "field": "value"
-        }
-      ]
+      "bind": []
     },
     {
       "id": "seed",

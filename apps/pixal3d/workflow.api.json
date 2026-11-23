@@ -549,13 +549,14 @@
   "241": {
     "inputs": {
       "resolution": 768,
-      "sign_mode": "solid",
-      "sign_mode.fill": 20,
+      "sign_mode": "udf",
       "sign_mode.qef": false,
+      "sign_mode.drop_inverted_components": false,
+      "sign_mode.drop_enclosed_components": false,
       "band": 1,
-      "project_back": 0,
+      "project_back": 0.7,
       "fix_poles": false,
-      "smooth_iters": 20,
+      "smooth_iters": 2,
       "drop_small_components": 0.01,
       "precluster_max_verts": 20000000,
       "mesh": [

@@ -269,7 +269,10 @@ export async function openLibrary3dPicker({ intent = "unrigged" } = {}) {
     const glbUrl = resolveGlbUrl(e);
     if (!glbUrl) continue;
     const prompt = e.values?.prompt || e.values?.text || "";
-    const previewImg = (e.outputs || []).find((o) => o.type === "image")?.url || null;
+    const previewImg =
+      (e.outputs || []).find((o) => o.type === "image")?.url ||
+      (e.inputs || []).find((i) => i.type === "image")?.url ||
+      null;
     const dateStr = e.created ? new Date(e.created).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
     models3d.push({
       id: e.id,
@@ -479,7 +482,21 @@ export async function openLibrary3dPicker({ intent = "unrigged" } = {}) {
       ),
       el(
         "div",
-        { class: "shell-head-right" },
+        { class: "shell-head-right", style: { display: "flex", alignItems: "center", gap: "8px" } },
+        el(
+          "button",
+          {
+            class: "btn ghost sm",
+            type: "button",
+            title: "Carica un file .glb o .fbx dal tuo computer",
+            style: { fontSize: "12px", padding: "5px 10px" },
+            onclick: () => {
+              close();
+              postToActionForge({ type: "WOX_TRIGGER_FILE_PICKER" });
+            },
+          },
+          "📁 Sfoglia dal PC"
+        ),
         el(
           "button",
           {

@@ -528,9 +528,10 @@
   "241": {
     "inputs": {
       "resolution": 768,
-      "sign_mode": "solid",
-      "sign_mode.fill": 20,
+      "sign_mode": "udf",
       "sign_mode.qef": false,
+      "sign_mode.drop_inverted_components": false,
+      "sign_mode.drop_enclosed_components": false,
       "band": 1,
       "project_back": 0,
       "fix_poles": false,

@@ -630,11 +630,11 @@ export async function bootWoxOS() {
     const id = `win-${winCounter}`;
     const vw = window.innerWidth;
     const vh = window.innerHeight - 34;
-    const w = Math.min(width || Math.floor(vw * 0.86), vw - 24);
-    const h = Math.min(height || Math.floor(vh * 0.52), vh - 120);
-    const offset = ((winCounter - 1) % 6) * 26;
-    const l = left !== undefined ? left : Math.max(12, Math.floor((vw - w) / 2) + offset);
-    const t = top !== undefined ? top : Math.max(110, 120 + offset);
+    const w = Math.min(width || 650, vw - 16);
+    const h = Math.min(height || 1005, vh - 84);
+    const offset = ((winCounter - 1) % 6) * 22;
+    const l = left !== undefined ? left : Math.max(8, Math.floor((vw - w) / 2) + offset);
+    const t = top !== undefined ? top : Math.max(8, 12 + offset);
 
     const actions = [];
     if (onSend) {
@@ -738,25 +738,16 @@ export async function bootWoxOS() {
       allow: "clipboard-read; clipboard-write; autoplay; microphone; camera; fullscreen",
     });
 
-    const defaultW = info.id === "video-editor" ? Math.min(1180, window.innerWidth - 40)
-      : info.id === "library" ? Math.min(1120, window.innerWidth - 40)
-      : info.id === "upscale" ? Math.min(425, window.innerWidth - 24)
-      : undefined;
-    const defaultH = info.id === "video-editor" ? Math.min(680, window.innerHeight - 140)
-      : info.id === "library" ? Math.min(760, window.innerHeight - 120)
-      : info.id === "upscale" ? Math.min(920, window.innerHeight - 120)
-      : undefined;
-
     const rec = createWindowFrame({
       appId: info.id,
       title: info.name,
       displayUrl,
       glyph: info.glyph,
       grad: info.grad,
-      width: opts.width ?? defaultW,
-      height: opts.height ?? defaultH,
+      width: opts.width ?? 650,
+      height: opts.height ?? 1005,
       left: opts.left,
-      top: opts.top ?? (info.id === "library" || info.id === "upscale" ? 14 : undefined),
+      top: opts.top,
       bodyNode: iframe,
       iframe,
       onSend: (anchor, winId) => openSendWindowPopover(anchor, winId),
@@ -899,9 +890,8 @@ export async function bootWoxOS() {
       displayUrl: "WoxOS ▸ Carosello Media",
       glyph: "🎠",
       grad: "linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)",
-      width: 680,
-      height: 360,
-      top: 120,
+      width: 650,
+      height: 1005,
       bodyNode: carNode,
     });
 
@@ -1083,8 +1073,8 @@ export async function bootWoxOS() {
       displayUrl: "WoxOS ▸ Applications",
       glyph: "⊞",
       grad: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
-      width: 920,
-      height: 600,
+      width: 650,
+      height: 1005,
       bodyNode: finderNode,
     });
   }
@@ -2122,9 +2112,8 @@ export async function bootWoxOS() {
       displayUrl: "WoxOS ▸ Desktop & Wallpaper",
       glyph: "🎨",
       grad: "linear-gradient(135deg, #6366f1 0%, #10b981 100%)",
-      width: 560,
-      height: 540,
-      top: 64,
+      width: 650,
+      height: 1005,
       bodyNode: prefsBody,
     });
   }
@@ -2478,15 +2467,15 @@ export async function bootWoxOS() {
   document.body.replaceChildren(desktop);
   renderDock();
 
-  // Restore saved layout if present; otherwise open Cinema Studio Video (640x790)
+  // Restore saved layout if present; otherwise open Cinema Studio Video (650x1005)
   if (!restoreSavedLayout()) {
-    const initialW = Math.min(640, window.innerWidth - 24);
-    const initialH = Math.min(790, window.innerHeight - 120);
+    const initialW = Math.min(650, window.innerWidth - 16);
+    const initialH = Math.min(1005, window.innerHeight - 118);
     openAppWindow("cinema-video", {
       width: initialW,
       height: initialH,
-      left: Math.max(12, Math.floor((window.innerWidth - initialW) / 2)),
-      top: 14,
+      left: Math.max(8, Math.floor((window.innerWidth - initialW) / 2)),
+      top: 12,
     });
   }
 }

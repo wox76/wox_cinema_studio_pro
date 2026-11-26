@@ -1,0 +1,534 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "moss-image",
+  "name": "MOSS-Image · 30 Film Looks",
+  "section": "image",
+  "pack": "image-moss",
+  "status": "ready",
+  "higgsfield_feature": "Layout & 30 Film Looks",
+  "summary": "MOSS-Image (16GB VRAM) con i 30 Film & Camera Looks di Fuobe (Halation, Slide, Tintype, Daguerreotype, Instant, Bleach Bypass).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "fuobe/moss-image-t2i.json",
+    "comfyui": "0.42.0",
+    "notes": "Requires ComfyUI >= 2026-10 (moss_image CLIPType). Use 'Aggiorna ComfyUI Core' in Settings if needed."
+  },
+  "inputs": [
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Prompt (o Layout JSON)",
+      "required": true,
+      "default": "A neon-lit diner in the rain at midnight, retro signage reading WOX STUDIO, cinematic reflection on wet asphalt",
+      "bind": [
+        {
+          "node": "4",
+          "field": "text",
+          "template": "{look} {prompt} {look}"
+        }
+      ]
+    },
+    {
+      "id": "look",
+      "type": "select",
+      "label": "Film Look (30 Pellicole Fuobe)",
+      "default": "",
+      "options": [
+        {
+          "value": "",
+          "label": "Nessuno (MOSS-Image Standard)",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "night colour film photograph, cool blue-teal shadows, warm orange highlights, a soft red halation glow around every bright light, fine visible film grain, deep inky blacks",
+          "label": "Colour film · Night halation",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "flat even daylight, HDR, clean digital look, sterile sharpening, teal skin, orange walls, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "documentary colour film photograph, muted low-saturation colours, hard contrast, cool cyan-leaning shadows, deep dense reds, matte highlights, fine grain",
+          "label": "Colour film · Muted chrome",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "vivid saturated colours, HDR, glossy digital look, warm golden glow, pastel colours, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "vivid slide film photograph, deeply saturated colours, rich deep blues, dense greens, glowing reds, high contrast, underexposed, low-key, dark rich shadows, fine crisp grain",
+          "label": "Slide · Vivid slide",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "washed-out pastel colours, faded, lifted blacks, overexposed, HDR, flat lighting, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "cross-processed slide film photograph, punchy yellow-green highlights, deep cyan shadows, high contrast, oversaturated shifted colours, crushed blacks, strong grain",
+          "label": "Slide · Cross-processed",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "natural colours, neutral white balance, soft low contrast, clean digital look, accurate skin tones, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "black and white film photograph, monochrome, gritty silver grain, deep blacks, bright whites, strong punchy contrast",
+          "label": "Black & white · Grainy 400",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "color, colorful, saturated colors, color cast, red, orange, yellow, green, blue, purple, pink, sepia tint, smooth digital look, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "fine-grain black and white film photograph, monochrome, smooth silky tonal range, silvery mid-greys, crisp detail, soft deep blacks",
+          "label": "Black & white · Fine grain 100",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "color, colorful, saturated colors, color cast, red, orange, yellow, green, blue, purple, pink, sepia tint, harsh grain, crushed shadows, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "pushed black and white film photograph, monochrome, coarse heavy grain, crushed blacks, blown-out highlights, harsh gritty contrast",
+          "label": "Black & white · Pushed 3200",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "color, colorful, saturated colors, color cast, red, orange, yellow, green, blue, purple, pink, sepia tint, smooth clean digital look, soft low contrast, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "antique sepia-toned photographic print, warm brown monochrome, soft faded contrast, fine paper texture, gentle dark vignette",
+          "label": "Black & white · Sepia print",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "color, colorful, saturated colors, red, green, blue, purple, pink, modern digital look, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "wet plate tintype photograph, monochrome metallic grey-brown tones, dark lacquered plate edges, uneven chemical streaks and swirls at the borders, soft glowing highlights, antique",
+          "label": "Black & white · Tintype",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "color, colorful, saturated colors, color cast, red, orange, yellow, green, blue, purple, pink, modern digital look, clean straight edges, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "daguerreotype photograph on a silvered mirror plate, cool silvery monochrome, soft glowing highlights, tarnished dark edges, faint fine scratches, antique",
+          "label": "Black & white · Daguerreotype",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "color, colorful, saturated colors, color cast, red, orange, yellow, green, blue, purple, pink, modern digital look, clean edges, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "antique glass plate photograph print, silvery monochrome, soft glow, chipped dark corners, uneven emulsion along the edges, fine dust specks",
+          "label": "Black & white · Glass plate",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "color, colorful, saturated colors, color cast, red, orange, yellow, green, blue, purple, pink, modern digital look, clean edges, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "vintage instant film photograph, soft dreamy colours, creamy warm highlights, gentle low contrast, slightly faded blacks, thick white instant-film border with a wider bottom edge",
+          "label": "Instant · Vintage instant",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "HDR, crisp digital look, high contrast, borderless full-bleed image, black border, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "expired instant film photograph, faded washed-out colours, magenta and yellow colour shifts, chemical blotches and uneven development at the edges, soft low contrast, white instant-film border",
+          "label": "Instant · Expired instant",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "crisp clean image, accurate colours, HDR, digital look, borderless full-bleed image, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "mini instant film print, the photograph framed by a plain white card border on all four sides, a slightly wider white strip along the bottom edge, bright airy colours, soft on-camera flash, gentle contrast",
+          "label": "Instant · Mini instant",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "dark moody grade, HDR, heavy grain, borderless full-bleed image, black border, cropped border, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "35mm motion picture film frame, cinematic colour grade, cool teal-blue shadows, warm natural skin tones, soft glowing halation around highlights, fine organic film grain, rich deep blacks",
+          "label": "Motion picture · Cinema 500",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "video look, HDR, digital sharpening, flat lighting, oversaturated colours, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "Super 8 home movie film frame, warm faded colours, heavy grain, soft blooming highlights, dim corners, rounded dark frame edges, nostalgic 1970s",
+          "label": "Motion picture · Super 8",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "crisp digital look, HDR, clean modern colour, sharp square corners, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "plastic toy camera photograph, heavy dark vignette, soft smeared edges around a sharp centre, saturated colours, coarse grain",
+          "label": "Toy & odd cameras · Plastic toy camera",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "even sharpness to the corners, clean digital look, HDR, bright corners, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "lo-fi compact camera snapshot, punchy saturated colours, strong dark vignette, high contrast, deep shadows, coarse grain",
+          "label": "Toy & odd cameras · Lo-fi compact",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "muted colours, bright even corners, soft low contrast, clean digital look, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "pinhole camera photograph, soft dreamy focus across the whole frame, deep dark vignette fading to black at the corners, gentle glow, muted colours",
+          "label": "Toy & odd cameras · Pinhole",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "crisp sharp detail, bright corners, HDR, digital sharpening, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "toy fisheye camera photograph, circular fisheye image inside a black surround, strong barrel distortion bending straight lines, saturated colours, dark vignette",
+          "label": "Toy & odd cameras · Toy fisheye",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "rectilinear lens, straight lines, full-frame rectangular image, flat perspective, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "half-frame film diptych, two tall vertical frames side by side with a thin dark gap between them, the same moment from two slightly different angles, warm film colours, grain",
+          "label": "Toy & odd cameras · Half-frame diptych",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "single image, one frame, panorama, digital look, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "110 pocket camera snapshot, small-format grain, soft slightly smeared detail, faded warm 1970s colours, gentle flash, rounded corners",
+          "label": "Toy & odd cameras · Pocket 110",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "crisp digital look, HDR, cold modern colour, razor sharp detail, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "cheap disposable film camera snapshot taken with a harsh direct on-camera flash, the subject's face and clothes blown bright and flat by the flash, a hard dark flash shadow on the wall right behind the subject, the background falling off darker, punchy saturated colours, plastic lens softness, coarse grain",
+          "label": "Toy & odd cameras · Disposable",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "soft studio lighting, HDR, cinematic grade, clean digital look, shallow depth of field, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "early 2000s compact digital camera photo, harsh direct flash, cool slightly overexposed tones, crisp digital noise, small sensor look, an orange digital date stamp in the bottom right corner",
+          "label": "Toy & odd cameras · 2000s digicam",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "film grain, cinematic colour grade, shallow depth of field, bokeh, warm film tones, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "teal and orange cinematic colour grade, deep teal shadows, warm orange skin tones and highlights, rich contrast, polished blockbuster look",
+          "label": "Looks · Teal and orange",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "teal skin, orange walls, teal walls, desaturated, flat grey, pastel, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "film photograph with a warm orange-red light leak glowing in from the right edge of the frame, faded warm colours, soft grain",
+          "label": "Broken film · Light leaks",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "clean even exposure, HDR, digital look, blue light leak, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "fogged film photograph, milky haze over the whole frame, lifted hazy blacks, soft orange fog glow spreading down from the top edge, low contrast, grain",
+          "label": "Broken film · Fogged film",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "crisp clean contrast, deep blacks, HDR, digital look, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "double exposure film photograph, a faint second exposure of tall city skyscrapers at night blended across the left half of the frame, the subject's face clear and sharp, soft film grain",
+          "label": "Broken film · Double exposure",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "single clean exposure, digital collage, hard cut-out edges, HDR, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "last frame at the end of a film roll, the right edge of the frame burned to glowing orange-red, a bright overexposed streak fading into the picture, a strip of film edge with sprocket holes along the right side",
+          "label": "Broken film · End of roll",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "clean even exposure, digital look, HDR, full clean frame, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        },
+        {
+          "value": "old damaged film print, fine white vertical scratches, dust specks and hair marks across the whole frame, faded colours, grain",
+          "label": "Broken film · Scratched print",
+          "sets": [
+            {
+              "node": "5",
+              "field": "text",
+              "value": "clean pristine image, digital look, HDR, vivid saturated colours, nsfw, worst quality, bad anatomy, watermark, jpeg artifact"
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Formato & Risoluzione",
+      "default": "1024x1024",
+      "options": [
+        {
+          "value": "1024x1024",
+          "label": "1:1 Quadrato (1024×1024)",
+          "sets": [
+            {
+              "node": "6",
+              "field": "width",
+              "value": 1024
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 1024
+            }
+          ]
+        },
+        {
+          "value": "1344x768",
+          "label": "16:9 Cinema (1344×768)",
+          "sets": [
+            {
+              "node": "6",
+              "field": "width",
+              "value": 1344
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 768
+            }
+          ]
+        },
+        {
+          "value": "768x1344",
+          "label": "9:16 Verticale (768×1344)",
+          "sets": [
+            {
+              "node": "6",
+              "field": "width",
+              "value": 768
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 1344
+            }
+          ]
+        },
+        {
+          "value": "1248x832",
+          "label": "3:2 Foto (1248×832)",
+          "sets": [
+            {
+              "node": "6",
+              "field": "width",
+              "value": 1248
+            },
+            {
+              "node": "6",
+              "field": "height",
+              "value": 832
+            }
+          ]
+        }
+      ],
+      "bind": []
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 8,
+      "max": 50,
+      "step": 1,
+      "default": 25,
+      "bind": [
+        {
+          "node": "8",
+          "field": "steps"
+        }
+      ]
+    },
+    {
+      "id": "cfg",
+      "type": "slider",
+      "label": "CFG",
+      "min": 1.0,
+      "max": 5.0,
+      "step": 0.5,
+      "default": 2.5,
+      "bind": [
+        {
+          "node": "8",
+          "field": "cfg"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "8",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "10",
+      "type": "image",
+      "label": "Immagine"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MOSS-Image",
+      "file": "diffusion_models/moss_image_sft_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 5.41,
+      "phase": "denoise",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/MOSS-Image",
+      "file": "text_encoders/qwen3.5_9b_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.75,
+      "phase": "encode",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "Comfy-Org/MOSS-Image",
+      "file": "vae/flux2-vae_small.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "phase": "decode",
+      "license": "Apache-2.0"
+    }
+  ],
+  "credits": [
+    "MOSS-Image (Apache-2.0)",
+    "30 Film Looks from Fuobe"
+  ]
+}

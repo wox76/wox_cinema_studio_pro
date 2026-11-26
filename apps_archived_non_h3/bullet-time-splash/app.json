@@ -1,0 +1,189 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "bullet-time-splash",
+  "name": "Bullet Time Splash",
+  "section": "video",
+  "summary": "Bursts frozen water around the subject, then circles the camera through the suspended drops.",
+  "higgsfield_feature": "Bullet Time Splash",
+  "pack": "video-h3",
+  "status": "ready",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "image_to_video_wan.json",
+    "comfyui": "0.42.0",
+    "notes": "Template app written by tools/template_apps.py: the workflow is apps/effects's (built by tools/build_apps.py) with Wan21_I2V_rotation_000003750.safetensors as the effect LoRA (node ff_effect), after FLUX 3 Klein (apps/edit, merged in as edit:*) redraws the photo with a fixed instruction (node edit:4: \"Add a frozen splash of clear water bursting around this exact person, droplets and ribbons of water suspended in the air, same place and light. Keep the face, hair and outfit identical.\"); Wan starts from Klein's image; the prompt below is fixed and \"Extra direction\" is appended to it."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Your photo",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "first_frame",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "subject",
+      "type": "text",
+      "label": "Who or what is in the photo",
+      "default": "a person",
+      "required": true,
+      "bind": [
+        {
+          "node": "prompt",
+          "field": "value",
+          "template": "Bullet-time frozen moment with suspended water and liquid splashes in mid-air, 360-degree camera orbit around {subject}. {details}"
+        }
+      ]
+    },
+    {
+      "id": "details",
+      "type": "textarea",
+      "label": "Extra direction",
+      "default": "",
+      "help": "Added at the end of the app's prompt.",
+      "bind": []
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Format",
+      "default": "16:9 (Widescreen)",
+      "options": [
+        {
+          "value": "16:9 (Widescreen)",
+          "label": "16:9"
+        },
+        {
+          "value": "9:16 (Portrait Widescreen)",
+          "label": "9:16"
+        },
+        {
+          "value": "1:1 (Square)",
+          "label": "1:1"
+        },
+        {
+          "value": "4:3 (Standard)",
+          "label": "4:3"
+        },
+        {
+          "value": "3:4 (Portrait Standard)",
+          "label": "3:4"
+        }
+      ],
+      "help": "Your photo is center-cropped to this shape.",
+      "bind": [
+        {
+          "node": "res",
+          "field": "aspect_ratio"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Seconds",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "bind": [
+        {
+          "node": "duration",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 picks a random seed",
+      "bind": [
+        {
+          "node": "seed",
+          "field": "noise_seed"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "steps",
+          "field": "value"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "75",
+      "type": "video",
+      "label": "Video"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 27.14,
+      "phase": "encode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 2.81,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    }
+  ],
+  "credits": [
+    "Effect LoRAs by Remade-AI (Apache-2.0)",
+    "Bullet time, Money rain and Clones LoRAs by joyfox (Apache-2.0; the repos moved there from valiantcat and laozou)",
+    "Dolly zoom LoRA by ostris (Apache-2.0)",
+    "Steam LoRA by lvfengchun (Apache-2.0)",
+    "Wan 2.1 image-to-video 14B by Wan-AI, Alibaba (Apache-2.0)",
+    "Step-distill LoRA by lightx2v, packaged for ComfyUI by Kijai",
+    "Workflow: ComfyUI official template",
+    "FLUX 3 Image Klein by Black Forest Labs (FLUX Kommunity License)"
+  ],
+  "test": {
+    "image": "test/portrait.png",
+    "duration": 2,
+    "subject": "a sprinter in a teal singlet and black shorts"
+  }
+}

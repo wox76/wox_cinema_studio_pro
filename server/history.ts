@@ -300,6 +300,44 @@ export class History {
     return entry;
   }
 
+  addGame(name: string, sceneJson: string, thumbBytes?: Uint8Array | null): Entry {
+    const id = newId();
+    const folder = join(this.dir, id);
+    mkdirSync(folder, { recursive: true });
+    const safeTitle = String(name || "WOX Engine Game").trim().slice(0, 80) || "WOX Engine Game";
+    const slug = safeTitle.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-|-$/g, "") || "wox-game";
+    const jsonFile = `${slug}.woxgame.json`;
+    writeFileSync(join(folder, jsonFile), sceneJson, "utf8");
+
+    const outputs: Entry["outputs"] = [];
+    if (thumbBytes && thumbBytes.length > 0) {
+      const thumbFile = "out-01.png";
+      writeFileSync(join(folder, thumbFile), thumbBytes);
+      outputs.push({ file: thumbFile, type: "image", name: `${safeTitle}.png`, node: "wox-engine" });
+    }
+    outputs.push({ file: jsonFile, type: "file", name: `${safeTitle}.woxgame.json`, node: "wox-engine" });
+
+    const now = new Date().toISOString();
+    const entry: Entry = {
+      id,
+      app: "wox-engine",
+      status: "succeeded",
+      job: null,
+      created: now,
+      started: now,
+      finished: now,
+      seconds: 0,
+      total: 0,
+      values: { prompt: safeTitle, tag: "WOX Engine · Game 3D" },
+      preset: null,
+      inputs: [],
+      outputs,
+      error: null,
+    };
+    this.save(entry);
+    return entry;
+  }
+
   /** The submit failed (bad workflow, backend unreachable, missing models): keep the reason with the run. */
   fail(entry: Entry, message: string, status: Status = "failed"): void {
     entry.status = status;

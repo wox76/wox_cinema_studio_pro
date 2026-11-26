@@ -82,8 +82,8 @@ const CUSTOM_NODES: CustomNodeDef[] = [
   {
     id: "comfyui-ltxvideo",
     name: "ComfyUI-LTXVideo",
-    description: "Nodi ufficiali Lightricks per LTX-2.5 Video, Audio VAE Decode/Encode, IC-LoRA Guide, Latent Upsampler e Inpainting Video.",
-    essential: true,
+    description: "Nodi ufficiali Lightricks per LTX-2.5 Video (opzionale, non richiesto con MiniMax H3).",
+    essential: false,
     type: "git",
     repo: "https://github.com/Lightricks/ComfyUI-LTXVideo",
     commit: "44c8a36b7c31ee00b4271daed11dc2a4aa481140",
@@ -145,6 +145,16 @@ const CUSTOM_NODES: CustomNodeDef[] = [
     usedBy: ["qwen-multiangle"],
   },
   {
+    id: "comfyui-latentsync",
+    name: "ComfyUI-LatentSyncWrapper (Lip-Sync 1.6)",
+    description: "Motore LatentSync 1.6 per sincronizzazione labiale fonema-per-fonema su ritratto + MP3/WAV (Speak Audio & Speak Video Audio).",
+    essential: true,
+    type: "git",
+    repo: "https://github.com/ShmuelRonen/ComfyUI-LatentSyncWrapper",
+    targetRel: "custom_nodes/ComfyUI-LatentSyncWrapper",
+    usedBy: ["speak-audio", "speak-video-audio"],
+  },
+  {
     id: "comfyui-manager",
     name: "ComfyUI-Manager",
     description: "Gestore ufficiale dei pacchetti e dei nodi per ComfyUI.",
@@ -192,8 +202,8 @@ const PACK_META: Record<string, { title: string; description: string; essential:
     essential: true,
   },
   "video-h3": {
-    title: "Cinema Studio Video & Director · MiniMax H3",
-    description: "Modello video principale con audio sincronizzato per Cinema Studio Video, Director, Create Video, Extend e Reshoot.",
+    title: "Cinema Studio Video & Director · MiniMax H3 + Turbo LoRA 8-Step",
+    description: "Modello video principale MiniMax H3 (FL2VA + REF2VA) con audio sincronizzato, Turbo LoRA 8-Step v1.2/v1.1, INT8 Attention, @ref, Speak Audio, Orbit 360 e Reshoot.",
     essential: true,
   },
   "image": {
@@ -202,9 +212,9 @@ const PACK_META: Record<string, { title: string; description: string; essential:
     essential: true,
   },
   "image-qwen-edit": {
-    title: "Character Studio, Edit & Relight · Qwen-Image-Edit 2509",
-    description: "Editing fotografico, preservazione personaggio/vestiti (Character Studio), Relight, Angles, Shots e Zooms.",
-    essential: true,
+    title: "Character Studio, Wonderfull, Edit & Relight · Qwen-Image-Edit",
+    description: "Editing fotografico, Wonderfull, Character Studio, Relight, Angles, Shots e Zooms (opzionale, installabile con 1 clic).",
+    essential: false,
   },
   "upscale": {
     title: "Upscale, Remove BG, Depth & Smooth · SeedVR2 + BiRefNet + MoGe",
@@ -213,8 +223,8 @@ const PACK_META: Record<string, { title: string; description: string; essential:
   },
   "audio": {
     title: "Audio Studio · MiniMax Music 3 & Stable Audio 3",
-    description: "Generazione brani musicali cantati con testo (MiniMax Music 3) ed effetti sonori cinematografici (Stable Audio 3).",
-    essential: true,
+    description: "Generazione brani musicali cantati con testo (MiniMax Music 3) ed effetti sonori cinematografici (Stable Audio 3) (opzionale).",
+    essential: false,
   },
   "reactor-face": {
     title: "Face Swap & Restoration · InsightFace + GFPGAN + CodeFormer",
@@ -364,8 +374,12 @@ const MODEL_ALIASES: Record<string, string[]> = {
   "diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors": ["diffusion_models/qwen_image_edit_fp8_e4m3fn.safetensors"],
   "diffusion_models/z_image_turbo_int8_convrot.safetensors": ["diffusion_models/z-image-turbo-fp8-e4m3fn.safetensors", "diffusion_models/z_image_turbo_bf16.safetensors"],
   "loras/Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors": ["loras/Qwen-Image-Edit-Lightning-4steps-V1.0-bf16.safetensors"],
-  "loras/minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors": ["loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors"],
+  "loras/镜头转换.safetensors": ["loras/qwen-image-edit-2511-multiple-angles-lora.safetensors"],
+  "loras/minimax_h3_fl2v_turbo_8step_v1.2_768p_comfyui_bf16.safetensors": ["loras/minimax_h3_fl2v_turbo_8step_v1.1_768p_comfyui_bf16.safetensors", "loras/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors"],
+  "loras/minimax_h3_ref2v_turbo_8step_v1.1_768p_comfyui_bf16.safetensors": ["loras/minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors", "loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors"],
+  "loras/minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors": ["loras/minimax_h3_ref2v_turbo_8step_v1.1_768p_comfyui_bf16.safetensors", "loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors"],
   "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors": ["text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors"],
+  "text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors": ["text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors"],
   "text_encoders/qwen_3_4b_fp8_mixed.safetensors": ["text_encoders/qwen_3_4b.safetensors"],
   "vae/minimax_h3_video_vae_int8_convrot.safetensors": ["vae/minimax_h3_video_vae_fp16.safetensors"],
 };
@@ -526,6 +540,16 @@ export class InstallerManager {
     return join(this.root, "out", "settings.json");
   }
 
+  private isForeignOsPath(raw: string): boolean {
+    const s = raw.trim();
+    if (!s) return true;
+    // Windows drive path (C:\...) when running on Linux/macOS
+    if (process.platform !== "win32" && /^[A-Za-z]:[\\/]/.test(s)) return true;
+    // POSIX root path (/home/..., /opt/...) when running on Windows
+    if (process.platform === "win32" && s.startsWith("/")) return true;
+    return false;
+  }
+
   private loadSavedSettings() {
     try {
       for (const fname of ["settings.json", "installer-settings.json"]) {
@@ -534,8 +558,12 @@ export class InstallerManager {
           const data = JSON.parse(readFileSync(f, "utf-8"));
           const cDir = data.comfyDir || data.comfy_dir;
           const mDir = data.modelsDir || data.models_dir;
-          if (typeof cDir === "string" && cDir.trim()) this.customComfyDir = resolve(cDir.trim());
-          if (typeof mDir === "string" && mDir.trim()) this.customModelsDir = resolve(mDir.trim());
+          if (typeof cDir === "string" && cDir.trim() && !this.isForeignOsPath(cDir)) {
+            this.customComfyDir = resolve(cDir.trim());
+          }
+          if (typeof mDir === "string" && mDir.trim() && !this.isForeignOsPath(mDir)) {
+            this.customModelsDir = resolve(mDir.trim());
+          }
         }
       }
     } catch {
@@ -731,9 +759,22 @@ export class InstallerManager {
   loadPacksStatus(modelsDir: string): PackStatus[] {
     this.ensureAliasSymlinks(modelsDir);
     const packsDir = join(this.root, "packs");
-    const files = existsSync(packsDir)
-      ? readdirSync(packsDir).filter((f) => f.endsWith(".json") && f !== "index.json").sort()
-      : [];
+    const indexPath = join(packsDir, "index.json");
+    let files: string[] = [];
+    if (existsSync(indexPath)) {
+      try {
+        const idx = JSON.parse(readFileSync(indexPath, "utf-8")) as Record<string, unknown>;
+        files = Object.keys(idx)
+          .sort()
+          .map((id) => `${id}.json`)
+          .filter((f) => existsSync(join(packsDir, f)));
+      } catch {
+        files = [];
+      }
+    }
+    if (!files.length && existsSync(packsDir)) {
+      files = readdirSync(packsDir).filter((f) => f.endsWith(".json") && f !== "index.json").sort();
+    }
 
     const out: PackStatus[] = [];
 
@@ -1138,16 +1179,36 @@ print("Completato:", dest, flush=True)
     }
 
     const pyScript = `
-import os, shutil, sys
+import os, shutil, sys, threading, time
 from pathlib import Path
 from huggingface_hub import hf_hub_download
 
+os.environ["HF_HUB_DISABLE_XET"] = "1"
 repo, file_in_repo, dest_str = sys.argv[1], sys.argv[2], sys.argv[3]
 token = os.environ.get("HF_TOKEN") or None
 dest = Path(dest_str)
 tmp_dir = dest.parent.parent / ".incoming" / repo.replace("/", "__")
 tmp_dir.mkdir(parents=True, exist_ok=True)
-path = hf_hub_download(repo_id=repo, filename=file_in_repo, local_dir=str(tmp_dir), token=token)
+
+stop_evt = threading.Event()
+def watch_progress():
+    last_mb = -1
+    while not stop_evt.wait(5):
+        try:
+            total_b = sum(f.stat().st_size for f in tmp_dir.rglob("*") if f.is_file())
+            mb = total_b // (1024 * 1024)
+            if mb != last_mb:
+                last_mb = mb
+                print(f"  ↓ Download in corso: {mb} MB...", flush=True)
+        except Exception:
+            pass
+
+t = threading.Thread(target=watch_progress, daemon=True)
+t.start()
+try:
+    path = hf_hub_download(repo_id=repo, filename=file_in_repo, local_dir=str(tmp_dir), token=token)
+finally:
+    stop_evt.set()
 dest.parent.mkdir(parents=True, exist_ok=True)
 shutil.move(path, str(dest))
 shutil.rmtree(str(tmp_dir), ignore_errors=True)
@@ -1159,7 +1220,10 @@ print(f"✓ Salvato in {dest}", flush=True)
       pythonBin,
       ["-c", pyScript, model.repo, model.file, dest],
       this.root,
-      hfToken ? { HF_TOKEN: hfToken } : undefined
+      {
+        HF_HUB_DISABLE_XET: "1",
+        ...(hfToken ? { HF_TOKEN: hfToken } : {}),
+      }
     );
   }
 

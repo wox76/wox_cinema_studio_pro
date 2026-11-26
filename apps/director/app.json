@@ -767,7 +767,7 @@
       "id": "resolution",
       "type": "select",
       "label": "Resolution",
-      "default": 720,
+      "default": 480,
       "options": [
         {
           "value": 480,
@@ -816,6 +816,35 @@
       "bind": [
         {
           "node": "398:362",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "turbo",
+      "type": "toggle",
+      "label": "Turbo (8 step)",
+      "default": true,
+      "help": "Usa MiniMax-H3 Turbo LoRA v1.2 (8 step, ~2.5-3x più veloce). Disattiva per 20 step completi senza LoRA.",
+      "bind": [
+        {
+          "node": "turbo_toggle",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 8,
+      "help": "Number of render steps (8 recommended with Turbo, 20 without Turbo).",
+      "bind": [
+        {
+          "node": "140:137",
           "field": "value"
         }
       ]
@@ -889,6 +918,14 @@
       "dir": "vae",
       "gb": 0.61,
       "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "lightx2v/Minimax-h3-Turbo",
+      "file": "minimax_h3_fl2v_turbo_8step_v1.2_768p_comfyui_bf16.safetensors",
+      "dir": "loras",
+      "gb": 1.97,
+      "phase": "denoise",
       "license": "MiniMax H3 Community License"
     }
   ],

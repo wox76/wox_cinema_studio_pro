@@ -28,7 +28,7 @@
         "prompt": "The camera pans to the right across the library, revealing more bookshelves and lamps",
         "negative": "static camera, frozen frame, blurry, distorted",
         "hold": 0.6,
-        "strength": 1.0,
+        "strength": 1,
         "size": 544
       },
       "seed": 42,
@@ -56,7 +56,7 @@
       "values": {
         "prompt": "A cozy old library, dust floating in the lamp light, pages of an open book stirring",
         "camera": "Zoom In",
-        "speed": 1.0,
+        "speed": 1,
         "width": 832,
         "height": 480,
         "frames": 81
@@ -88,7 +88,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 12.92,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -140,7 +140,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 27.0,
+      "seconds": 27,
       "peak_vram_gb": 38.22,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -268,7 +268,7 @@
       ],
       "values": {},
       "seed": null,
-      "seconds": 3.0,
+      "seconds": 3,
       "peak_vram_gb": 4.96,
       "gpu": "NVIDIA L40S, 46068 MiB",
       "run": "20261020-133620-l40s"
@@ -292,7 +292,7 @@
       "values": {
         "azimuth": -30,
         "elevation": 15,
-        "distance": 1.0,
+        "distance": 1,
         "duration": 4,
         "prompt": ""
       },
@@ -397,7 +397,7 @@
         "prompt": "a lighthouse on a cliff during a storm, waves crashing",
         "enhance": false,
         "aspect": "1:1 (Square)",
-        "megapixels": 1.0
+        "megapixels": 1
       },
       "seed": 42,
       "seconds": 26.1,
@@ -418,7 +418,7 @@
         "strength": 0.8,
         "enhance": true,
         "aspect": "1:1 (Square)",
-        "megapixels": 1.0
+        "megapixels": 1
       },
       "seed": 42,
       "seconds": 8.3,
@@ -489,7 +489,7 @@
       ],
       "values": {
         "prompt": "She slowly turns into a bronze statue, a smooth magical transformation",
-        "strength": 1.0,
+        "strength": 1,
         "duration": 4
       },
       "seed": 42,
@@ -565,7 +565,7 @@
       "values": {
         "prompt": "An empty city street with parked cars and shop fronts, no people anywhere in the frame, natural daylight.",
         "negative": "people, pedestrians, person, crowd",
-        "strength": 1.0,
+        "strength": 1,
         "size": 544
       },
       "seed": 42,
@@ -593,7 +593,7 @@
       "values": {
         "prompt": "A realistic nighttime scene, photorealistic moonlight, deep natural shadows. Only the lighting changes from day to night; identical composition, framing, camera movement and motion.",
         "negative": "daytime, bright sunlight, blue sky, overexposed, worst quality, inconsistent motion, blurry, jittery, distorted",
-        "strength": 1.0,
+        "strength": 1,
         "size": 448
       },
       "seed": 42,
@@ -621,7 +621,7 @@
       "values": {
         "prompt": "The street slowly floods with clear rippling water that reflects the buildings, realistic fluid motion.",
         "negative": "blurry, distorted, low quality",
-        "strength": 1.0,
+        "strength": 1,
         "size": 544
       },
       "seed": 42,
@@ -653,7 +653,7 @@
         "aspect": "16:9 (Widescreen)"
       },
       "seed": 42,
-      "seconds": 87.0,
+      "seconds": 87,
       "peak_vram_gb": 41.79,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -753,7 +753,7 @@
       "values": {
         "effect": "cakeify",
         "subject": "a white sneaker with red details",
-        "strength": 1.0,
+        "strength": 1,
         "aspect": "landscape",
         "frames": 81
       },
@@ -772,12 +772,12 @@
             "values": {
               "effect": "angry",
               "subject": "a man with short dark hair and a trimmed beard in a grey t-shirt",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
             "seed": 42,
-            "seconds": 177.0,
+            "seconds": 177,
             "peak_vram_gb": 30.67,
             "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
             "run": "20261021-140940-h100"
@@ -790,7 +790,7 @@
             "values": {
               "effect": "crying",
               "subject": "a young woman with long wavy brown hair in a cream sweater",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
@@ -808,12 +808,12 @@
             "values": {
               "effect": "laughing",
               "subject": "a woman with a short black bob in a navy blazer",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
             "seed": 42,
-            "seconds": 169.0,
+            "seconds": 169,
             "peak_vram_gb": 30.7,
             "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
             "run": "20261024-164909-h100"
@@ -826,7 +826,7 @@
             "values": {
               "effect": "puppies",
               "subject": "a young man with short curly hair in a mustard yellow hoodie",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
@@ -844,7 +844,7 @@
             "values": {
               "effect": "cakeify",
               "subject": "a white sneaker with red details",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -862,7 +862,7 @@
             "values": {
               "effect": "crush",
               "subject": "a red toy car on a workbench",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -880,7 +880,7 @@
             "values": {
               "effect": "deflate",
               "subject": "a pink inflatable flamingo pool float",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -898,7 +898,7 @@
             "values": {
               "effect": "electrify",
               "subject": "a lone oak tree on a hill under storm clouds",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -916,12 +916,12 @@
             "values": {
               "effect": "explode",
               "subject": "an abandoned wooden warehouse in the desert",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
             "seed": 42,
-            "seconds": 169.0,
+            "seconds": 169,
             "peak_vram_gb": 30.67,
             "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
             "run": "20261021-140940-h100"
@@ -934,7 +934,7 @@
             "values": {
               "effect": "inflate",
               "subject": "a woman in a yellow raincoat on a narrow cobblestone street",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
@@ -952,7 +952,7 @@
             "values": {
               "effect": "rotate",
               "subject": "a yellow rubber duck",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "square",
               "frames": 81
             },
@@ -970,7 +970,7 @@
             "values": {
               "effect": "squish",
               "subject": "a small brown plush teddy bear",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "square",
               "frames": 81
             },
@@ -988,7 +988,7 @@
             "values": {
               "effect": "orbit-360",
               "subject": "a white sneaker with red details",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1006,7 +1006,7 @@
             "values": {
               "effect": "arc-shot",
               "subject": "a man in a denim jacket sitting in a busy cafe",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1024,7 +1024,7 @@
             "values": {
               "effect": "bullet-time",
               "subject": "a parkour athlete leaping between two rooftops",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1042,7 +1042,7 @@
             "values": {
               "effect": "car-chase",
               "subject": "a red sports coupe on a winding mountain road at dusk",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1060,7 +1060,7 @@
             "values": {
               "effect": "crane-down",
               "subject": "a cozy old library with tall wooden bookshelves and a leather armchair",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1078,7 +1078,7 @@
             "values": {
               "effect": "crane-over-head",
               "subject": "a woman in a yellow raincoat on a narrow cobblestone street",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
@@ -1096,7 +1096,7 @@
             "values": {
               "effect": "crane-up",
               "subject": "a hiker with a red backpack on a rock by a mountain lake",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1114,7 +1114,7 @@
             "values": {
               "effect": "crash-zoom-in",
               "subject": "a man in a denim jacket sitting in a busy cafe",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1132,7 +1132,7 @@
             "values": {
               "effect": "dolly-zoom",
               "subject": "a man in a denim jacket sitting in a busy cafe",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1150,7 +1150,7 @@
             "values": {
               "effect": "hero-run",
               "subject": "a female sprinter in a teal singlet and black shorts on a stadium track",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "landscape",
               "frames": 81
             },
@@ -1168,7 +1168,7 @@
             "values": {
               "effect": "steam",
               "subject": "a man with short dark hair and a trimmed beard in a grey t-shirt",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
@@ -1186,7 +1186,7 @@
             "values": {
               "effect": "money-rain",
               "subject": "a woman with a short black bob in a navy blazer",
-              "strength": 1.0,
+              "strength": 1,
               "aspect": "portrait",
               "frames": 81
             },
@@ -1273,7 +1273,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.17,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1352,7 +1352,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.18,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261023-225832-h100"
@@ -1378,7 +1378,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.17,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1405,7 +1405,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.18,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261023-225832-h100"
@@ -1433,7 +1433,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.17,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1459,7 +1459,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.17,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1538,7 +1538,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.3,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -1591,7 +1591,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 13.02,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -1617,7 +1617,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 12.86,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1645,7 +1645,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 13.02,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -1698,7 +1698,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.3,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -1724,7 +1724,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.49,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1776,7 +1776,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.52,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1852,7 +1852,7 @@
         "steps": 15
       },
       "seed": 42,
-      "seconds": 8.0,
+      "seconds": 8,
       "peak_vram_gb": 12.78,
       "gpu": "NVIDIA L40S, 46068 MiB",
       "run": "20261024-230058-l40s"
@@ -1931,7 +1931,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 12.86,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1958,7 +1958,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.23,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -1984,7 +1984,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 13.02,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -2036,7 +2036,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.23,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -2089,7 +2089,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.17,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -2141,7 +2141,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.23,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -2167,7 +2167,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 11.17,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035128-h100"
@@ -2221,7 +2221,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 13.0,
+      "seconds": 13,
       "peak_vram_gb": 27.93,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261023-225832-h100"
@@ -2269,7 +2269,7 @@
         }
       ],
       "values": {
-        "move": "\u5c06\u955c\u5934\u5411\u5de6\u65cb\u8f6c45\u5ea6 Rotate the camera 45 degrees to the left.",
+        "move": "将镜头向左旋转45度 Rotate the camera 45 degrees to the left.",
         "details": ""
       },
       "seed": 42,
@@ -2411,7 +2411,7 @@
         "details": "",
         "aspect": "landscape",
         "duration": 4,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
       "seconds": 100.9,
@@ -2448,7 +2448,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 7.0,
+      "seconds": 7,
       "peak_vram_gb": 11.92,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -2473,7 +2473,7 @@
         "details": "",
         "aspect": "portrait",
         "duration": 4,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
       "seconds": 62.2,
@@ -2510,7 +2510,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 12.0,
+      "seconds": 12,
       "peak_vram_gb": 11.32,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -2545,7 +2545,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 7.0,
+      "seconds": 7,
       "peak_vram_gb": 11.95,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -2720,7 +2720,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 7.0,
+      "seconds": 7,
       "peak_vram_gb": 13.02,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -2754,7 +2754,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 7.0,
+      "seconds": 7,
       "peak_vram_gb": 11.92,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -2807,10 +2807,10 @@
         "details": "",
         "aspect": "portrait",
         "duration": 4,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
-      "seconds": 65.0,
+      "seconds": 65,
       "peak_vram_gb": 50.02,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100"
@@ -2832,7 +2832,7 @@
         }
       ],
       "values": {
-        "shot": "\u5c06\u955c\u5934\u8f6c\u4e3a\u7279\u5199\u955c\u5934 Turn the camera to a close-up.",
+        "shot": "将镜头转为特写镜头 Turn the camera to a close-up.",
         "details": ""
       },
       "seed": 42,
@@ -2892,7 +2892,7 @@
         "aspect": "16:9 (Widescreen)"
       },
       "seed": 42,
-      "seconds": 52.0,
+      "seconds": 52,
       "peak_vram_gb": 41.8,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261023-225832-h100"
@@ -2926,7 +2926,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 7.0,
+      "seconds": 7,
       "peak_vram_gb": 11.82,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035829-h100"
@@ -2951,7 +2951,7 @@
         "details": "",
         "aspect": "landscape",
         "duration": 4,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
       "seconds": 63.1,
@@ -3002,11 +3002,11 @@
         }
       ],
       "values": {
-        "zoom": "\u5c06\u955c\u5934\u8f6c\u4e3a\u7279\u5199\u955c\u5934 Turn the camera to a close-up.",
+        "zoom": "将镜头转为特写镜头 Turn the camera to a close-up.",
         "details": ""
       },
       "seed": 42,
-      "seconds": 4.0,
+      "seconds": 4,
       "peak_vram_gb": 29.29,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261022-035829-h100"
@@ -3031,7 +3031,7 @@
         "prompt": "A woman with short black hair in a denim jacket talks to the camera, speaking in Spanish saying: \"Hola. Esta voz y estos labios salen de una sola foto y de un modelo abierto.\"",
         "negative": "blurry, distorted face, warped mouth",
         "size": 544,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
       "seconds": 67.5,
@@ -3060,10 +3060,10 @@
         "negative": "",
         "duration": 5,
         "size": 544,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
-      "seconds": 60.0,
+      "seconds": 60,
       "peak_vram_gb": 40.86,
       "gpu": "NVIDIA H100 NVL, 95830 MiB",
       "run": "20261022-181155-h100"
@@ -3409,7 +3409,7 @@
         "aspect": "9:16",
         "prompt": "",
         "negative": "",
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
       "seconds": 125.1,
@@ -3436,7 +3436,7 @@
       "values": {
         "size": 720,
         "exposure": 0,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
       "seconds": 106.4,
@@ -3465,10 +3465,10 @@
         "details": "",
         "aspect": "portrait",
         "duration": 4,
-        "strength": 1.0
+        "strength": 1
       },
       "seed": 42,
-      "seconds": 64.0,
+      "seconds": 64,
       "peak_vram_gb": 50.02,
       "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
       "run": "20261024-164909-h100",
@@ -3484,10 +3484,10 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
-            "seconds": 64.0,
+            "seconds": 64,
             "peak_vram_gb": 50.02,
             "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
             "run": "20261024-164909-h100"
@@ -3502,7 +3502,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 26.3,
@@ -3520,7 +3520,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 28.5,
@@ -3538,7 +3538,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 27.2,
@@ -3556,7 +3556,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 26.2,
@@ -3574,11 +3574,11 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 89.1,
-            "peak_vram_gb": 50.0,
+            "peak_vram_gb": 50,
             "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
             "run": "20261023-162024-h100"
           },
@@ -3592,7 +3592,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 26.1,
@@ -3610,7 +3610,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 27.2,
@@ -3628,7 +3628,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 27.3,
@@ -3646,7 +3646,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 26.1,
@@ -3664,7 +3664,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 29.1,
@@ -3682,7 +3682,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 26.3,
@@ -3700,7 +3700,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 26.1,
@@ -3718,7 +3718,7 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 26.5,
@@ -3736,11 +3736,11 @@
               "details": "",
               "aspect": "portrait",
               "duration": 4,
-              "strength": 1.0
+              "strength": 1
             },
             "seed": 42,
             "seconds": 28.2,
-            "peak_vram_gb": 50.0,
+            "peak_vram_gb": 50,
             "gpu": "NVIDIA H100 80GB HBM3, 81559 MiB",
             "run": "20261023-162024-h100"
           }
@@ -3781,7 +3781,7 @@
         "steps": 15
       },
       "seed": 42,
-      "seconds": 3.0,
+      "seconds": 3,
       "peak_vram_gb": 9.86,
       "gpu": "NVIDIA L40S, 46068 MiB",
       "run": "20261026-002124-l40s",
@@ -3819,7 +3819,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 9.86,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-002124-l40s"
@@ -3856,7 +3856,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 9.86,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-002124-l40s"
@@ -3893,7 +3893,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 10.14,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-002124-l40s"
@@ -3930,7 +3930,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 9.86,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-002124-l40s"
@@ -3967,7 +3967,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 12.08,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-002124-l40s"
@@ -4004,7 +4004,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 9.86,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-002124-l40s"
@@ -4078,7 +4078,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 9.86,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-003753-l40s"
@@ -4115,7 +4115,7 @@
               "steps": 15
             },
             "seed": 42,
-            "seconds": 3.0,
+            "seconds": 3,
             "peak_vram_gb": 10.02,
             "gpu": "NVIDIA L40S, 46068 MiB",
             "run": "20261026-003153-l40s"
@@ -4142,7 +4142,7 @@
       "values": {
         "subject": "a parkour athlete in a black t-shirt leaping between two rooftops",
         "details": "",
-        "strength": 1.0,
+        "strength": 1,
         "aspect": "portrait",
         "frames": 81
       },
@@ -4171,7 +4171,7 @@
       "values": {
         "subject": "a sprinter in a teal singlet and black shorts",
         "details": "",
-        "strength": 1.0,
+        "strength": 1,
         "aspect": "portrait",
         "frames": 81
       },
@@ -4200,7 +4200,7 @@
       "values": {
         "subject": "a man in a red jacket, jeans and white sneakers",
         "details": "",
-        "strength": 1.0,
+        "strength": 1,
         "aspect": "portrait",
         "frames": 81
       },
@@ -4435,13 +4435,13 @@
         }
       ],
       "values": {
-        "scene": "ordering a coffee at a caf\u00e9 counter, morning light, seen from the side",
+        "scene": "ordering a coffee at a café counter, morning light, seen from the side",
         "aspect": "4:5",
         "resolution": 1,
         "steps": 16
       },
       "seed": 42,
-      "seconds": 13.0,
+      "seconds": 13,
       "peak_vram_gb": 12.18,
       "gpu": "NVIDIA L40S, 46068 MiB",
       "run": "20261026-002124-l40s"
@@ -4475,7 +4475,7 @@
         "steps": 16
       },
       "seed": 42,
-      "seconds": 6.0,
+      "seconds": 6,
       "peak_vram_gb": 11.03,
       "gpu": "NVIDIA L40S, 46068 MiB",
       "run": "20261026-002124-l40s"
@@ -4650,7 +4650,7 @@
         "steps": 8
       },
       "seed": 42,
-      "seconds": 28.0
+      "seconds": 28
     },
     "qwen-multiangle": {
       "case": "qwen-multiangle-portrait",
@@ -4674,7 +4674,7 @@
         "details": ""
       },
       "seed": 42,
-      "seconds": 32.0
+      "seconds": 32
     },
     "trellis-3d": {
       "case": "trellis-3d-portrait",
@@ -4699,7 +4699,7 @@
         "guidance_strength": 6.5
       },
       "seed": 42,
-      "seconds": 95.0
+      "seconds": 95
     },
     "music-video": {
       "case": "music-video-portrait",
@@ -4722,7 +4722,39 @@
         "steps": 20
       },
       "seed": 42,
-      "seconds": 65.0
+      "seconds": 65
+    },
+    "speak-audio": {
+      "case": "speak-audio-custom",
+      "type": "video",
+      "card": "examples/speak-audio/card.mp4",
+      "poster": "examples/speak-audio/poster.jpg",
+      "full": "examples/speak-audio/full.mp4",
+      "inputs": [],
+      "values": {
+        "start_sec": 0,
+        "duration": 10,
+        "lips_expression": 1.5,
+        "steps": 20
+      },
+      "seed": 1247
+    },
+    "speak-video-audio": {
+      "case": "speak-video-audio-custom",
+      "type": "video",
+      "card": "examples/speak-video-audio/card.mp4",
+      "poster": "examples/speak-video-audio/poster.jpg",
+      "full": "examples/speak-video-audio/full.mp4",
+      "inputs": [],
+      "values": {
+        "video_start_sec": 0,
+        "start_sec": 0,
+        "duration": 10,
+        "loop_mode": "pingpong",
+        "lips_expression": 1.5,
+        "steps": 20
+      },
+      "seed": 1247
     }
   },
   "updated_from": "20261026-041209-l40s",

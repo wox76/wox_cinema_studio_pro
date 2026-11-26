@@ -1,0 +1,192 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "speak-video-audio",
+  "name": "Speak - Video + mp3",
+  "section": "video",
+  "modes": [
+    "speak",
+    "speak-audio",
+    "speak-video-audio"
+  ],
+  "mode_label": "Video + mp3",
+  "pack": "video-h3",
+  "status": "ready",
+  "higgsfield_feature": "Speak",
+  "summary": "Carica un video e un file audio (.mp3 / .wav) per un Lip-Sync preciso fonema-per-fonema con LatentSync 1.6.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "ComfyUI-LatentSyncWrapper (LatentSync 1.6 Video + MP3)",
+    "comfyui": "0.42.0",
+    "notes": "Lip-sync fonema-per-fonema su video + MP3/WAV con conversione automatica FPS a 25fps, taglio durata anti-OOM e scala 0.5 MP."
+  },
+  "inputs": [
+    {
+      "id": "video",
+      "type": "video",
+      "label": "Video di partenza (.mp4 / .mov)",
+      "required": true,
+      "limits": {
+        "max_mb": 150,
+        "seconds": [
+          1,
+          180
+        ]
+      },
+      "bind": [
+        {
+          "node": "1",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "type": "audio",
+      "label": "File Audio (.mp3 / .wav)",
+      "required": true,
+      "help": "Carica la traccia vocale o musicale: LatentSync anima la bocca solo quando c'è voce.",
+      "limits": {
+        "max_mb": 50,
+        "seconds": [
+          1,
+          180
+        ]
+      },
+      "bind": [
+        {
+          "node": "2",
+          "field": "audio"
+        }
+      ]
+    },
+    {
+      "id": "video_start_sec",
+      "type": "slider",
+      "label": "Inizio video (secondi)",
+      "min": 0,
+      "max": 120,
+      "step": 0.5,
+      "default": 0,
+      "help": "Punto del video da cui iniziare il lip-sync.",
+      "bind": [
+        {
+          "node": "3",
+          "field": "video_start_sec"
+        }
+      ]
+    },
+    {
+      "id": "start_sec",
+      "type": "slider",
+      "label": "Inizio audio (secondi)",
+      "min": 0,
+      "max": 180,
+      "step": 1,
+      "default": 0,
+      "help": "Salta eventuale intro musicale e parti direttamente dalla voce.",
+      "bind": [
+        {
+          "node": "2t",
+          "field": "start_index"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Durata clip (secondi)",
+      "min": 2,
+      "max": 30,
+      "step": 1,
+      "default": 10,
+      "help": "Limita la durata per restare dentro i 24 GB di VRAM (consigliato 10-20s).",
+      "bind": [
+        {
+          "node": "2t",
+          "field": "duration"
+        }
+      ]
+    },
+    {
+      "id": "loop_mode",
+      "type": "select",
+      "label": "Adattamento video",
+      "default": "pingpong",
+      "help": "Cosa fare se il video di partenza è più corto della durata audio scelta.",
+      "options": [
+        {
+          "value": "pingpong",
+          "label": "Avanti / Indietro fluido (Ping-Pong)"
+        },
+        {
+          "value": "loop_to_audio",
+          "label": "Ripeti dall'inizio (Loop)"
+        },
+        {
+          "value": "normal",
+          "label": "Ferma a fine video"
+        }
+      ],
+      "bind": [
+        {
+          "node": "3",
+          "field": "mode"
+        }
+      ]
+    },
+    {
+      "id": "lips_expression",
+      "type": "slider",
+      "label": "Espressività Labbra",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "default": 1.5,
+      "help": "1.5 = naturale, valori più alti = movimento labbra più marcato.",
+      "bind": [
+        {
+          "node": "4",
+          "field": "lips_expression"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Passi (Steps)",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "default": 20,
+      "bind": [
+        {
+          "node": "4",
+          "field": "inference_steps"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": 1247,
+      "bind": [
+        {
+          "node": "4",
+          "field": "seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "6",
+      "type": "video",
+      "label": "Video"
+    }
+  ],
+  "models": [],
+  "credits": [
+    "ByteDance LatentSync 1.6 (ComfyUI-LatentSyncWrapper)"
+  ]
+}

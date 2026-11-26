@@ -126,7 +126,7 @@ echo ========================================================================
 echo Premi [CTRL+C] in questa finestra per arrestare il server Web.
 echo.
 
-call npm run serve
+call npm start
 goto :eof
 
 :check_comfy

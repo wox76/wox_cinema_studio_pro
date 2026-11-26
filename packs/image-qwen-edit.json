@@ -111,7 +111,7 @@
     },
     {
       "repo": "prithivMLmods/Qwen-Image-Edit-2511-Ultra-Realistic-Portrait",
-      "file": "Qwen-Image-Edit-2511-Ultra-Realistic-Portrait-URP_10.safetensors",
+      "file": "URP_10.safetensors",
       "dir": "loras",
       "gb": 0.24,
       "name": "Qwen-Image-Edit-2511-Ultra-Realistic-Portrait-URP_10.safetensors",
@@ -157,7 +157,7 @@
       ]
     },
     {
-      "repo": "jtydhr88/ComfyUI-qwenmultiangle",
+      "repo": "fal/Qwen-Image-Edit-2511-Multiple-Angles-LoRA",
       "file": "qwen-image-edit-2511-multiple-angles-lora.safetensors",
       "dir": "loras",
       "gb": 0.28,

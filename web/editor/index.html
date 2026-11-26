@@ -38,5 +38,49 @@
   <a class="skip-link" href="#main">Skip to editor</a>
   <div id="app" class="app" aria-busy="true"></div>
   <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <script>
+    // WoxOS inter-window bridge (works inside OS iframes AND across separate browser windows/tabs)
+    (() => {
+      const winId = new URLSearchParams(location.search).get('win_id') || '';
+      const seenTx = new Set();
+      let bc = null;
+      try { if (typeof BroadcastChannel !== 'undefined') bc = new BroadcastChannel('wox-os-bus'); } catch {}
+      if (winId) {
+        window.addEventListener('pointerdown', () => {
+          const msg = { type: 'wox:focus', winId };
+          try { window.parent?.postMessage(msg, location.origin); } catch {}
+          try { bc?.postMessage(msg); } catch {}
+        }, true);
+        window.addEventListener('keydown', (e) => {
+          const isCtrlTab = e.ctrlKey && !e.altKey && !e.metaKey && e.key === 'Tab';
+          const isAltQ = e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyQ' || e.key.toLowerCase() === 'q');
+          const isAltTick = (e.ctrlKey || e.altKey) && !e.metaKey && (e.code === 'Backquote' || e.key === '`' || e.key === '\\' || e.key === '|');
+          if (isCtrlTab || isAltQ || isAltTick) {
+            e.preventDefault();
+            e.stopPropagation();
+            const msg = { type: 'wox:cycle-windows', dir: e.shiftKey ? -1 : 1, _id: 'ed-' + Date.now() + '-' + Math.random() };
+            try { window.parent?.postMessage(msg, location.origin); } catch {}
+            try { bc?.postMessage(msg); } catch {}
+          }
+        }, true);
+      }
+      if (bc) {
+        bc.onmessage = async (ev) => {
+          const d = ev.data;
+          if (!d || d.type !== 'wox:editor-import' || !d.url) return;
+          if (d.targetWinId && winId && d.targetWinId !== winId) return;
+          if (d.txId && seenTx.has(d.txId)) return;
+          if (d.txId) seenTx.add(d.txId);
+          window.postMessage({
+            type: 'WOX_IMPORT_MEDIA',
+            url: d.url,
+            name: d.name || 'clip.mp4',
+            mime: d.mime || 'video/mp4',
+            addToTimeline: d.addToTimeline !== false,
+          }, '*');
+        };
+      }
+    })();
+  </script>
 </body>
 </html>

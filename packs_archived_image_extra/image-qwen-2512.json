@@ -1,0 +1,59 @@
+{
+  "pack": "image-qwen-2512",
+  "apps": [
+    "qwen-image-2512"
+  ],
+  "download_gb": 31.76,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/diffusion_models/qwen_image_2512_fp8_e4m3fn.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.43,
+      "name": "qwen_image_2512_fp8_e4m3fn.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "qwen-image-2512"
+      ]
+    },
+    {
+      "repo": "lightx2v/Qwen-Image-2512-Lightning",
+      "file": "Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors",
+      "dir": "loras",
+      "gb": 1.7,
+      "name": "Qwen-Image-2512-Lightning-4steps-V1.0-fp32.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "qwen-image-2512"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 9.38,
+      "name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "qwen-image-2512"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "name": "qwen_image_vae.safetensors",
+      "gated": false,
+      "license": "Apache-2.0",
+      "used_by": [
+        "qwen-image-2512"
+      ]
+    }
+  ]
+}

@@ -17,13 +17,22 @@ import { hooks, feed } from "./feed.js";
 import { openViewer } from "./viewer.js";
 import { openCompare } from "./compare.js";
 import { flags } from "./flags.js";
+import { isOsEmbedded, getOsWindowId, osBus } from "./os_bus.js";
+import { bootWoxOS } from "./os_desktop.js";
 
 const isWonderfullStandalone =
   new URLSearchParams(location.search).get("wonderfull") === "1" ||
   location.pathname === "/wonderfull" ||
   location.pathname === "/wonderfull/";
+const isClassicMode = new URLSearchParams(location.search).get("classic") === "1";
+const isOsEmbed = isOsEmbedded();
+const osWinId = getOsWindowId();
+
 if (isWonderfullStandalone) {
   document.body.classList.add("wonderfull-standalone");
+}
+if (isOsEmbed) {
+  document.body.classList.add("os-embed");
 }
 
 const main = el("main", { id: "main", class: "view" });
@@ -85,7 +94,7 @@ function render({ keepScroll = false } = {}) {
 }
 
 function buildBar() {
-  if (isWonderfullStandalone) return;
+  if (isWonderfullStandalone || isOsEmbed) return;
   const next = topbar({ onLang: () => { buildBar(); render({ keepScroll: true }); } });
   if (bar) bar.node.replaceWith(next.node); else document.body.prepend(next.node);
   bar = next;
@@ -98,17 +107,58 @@ hooks.compare = (item) => openCompare(item);
 hooks.useIn = (anchor, item, done) => useIn(anchor, item, done);
 hooks.edit = (item) => sendToEdit(item);
 hooks.quickHandoff = (item, done) => quickHandoffBar(item, done);
-hooks.sendItem = (item, targetAppId, slotId) => sendItemToApp(item, targetAppId, slotId);
+hooks.sendItem = (item, targetAppId, slotId) => {
+  if (isOsEmbed && targetAppId && current?.app?.id !== targetAppId) {
+    osBus.send({ type: "wox:send-item", targetAppId, slotId: slotId || null, item });
+    toast(`Inviato alla finestra ${targetAppId}`);
+    return;
+  }
+  return sendItemToApp(item, targetAppId, slotId);
+};
 hooks.rerender = () => render({ keepScroll: true });
 
-// a run starting or ending changes what the GPU pill should say
+// a run starting or ending changes what the GPU pill should say and notifies WoxOS
 let activeRuns = 0;
+let feedBootstrapped = false;
+const knownDoneIds = new Set();
 feed.on(() => {
+  const doneList = feed.list().filter((e) => e.status === "succeeded" && e.outputs?.length);
+  if (!feedBootstrapped) {
+    for (const e of doneList) knownDoneIds.add(e.id);
+    if (feed.list().length > 0) feedBootstrapped = true;
+  } else if (isOsEmbed) {
+    for (const latest of doneList) {
+      if (knownDoneIds.has(latest.id)) continue;
+      knownDoneIds.add(latest.id);
+      const out = latest.outputs[0];
+      osBus.send({
+        type: "wox:generation-done",
+        winId: osWinId,
+        item: {
+          runId: latest.id,
+          url: out.url || `/api/history/${latest.id}/files/${out.file}`,
+          name: out.name || out.file,
+          type: out.type || "image",
+          appId: latest.app,
+          appName: current?.app?.name || latest.app,
+        },
+      });
+    }
+  }
   const n = feed.active().length;
-  if (n !== activeRuns) { activeRuns = n; pollGpu(); }
+  if (n !== activeRuns) {
+    activeRuns = n;
+    pollGpu();
+  }
 });
 
 async function boot() {
+  // Top-level WoxOS Desktop mode
+  if (!isWonderfullStandalone && !isClassicMode && !isOsEmbed) {
+    await bootWoxOS();
+    return;
+  }
+
   document.body.append(main);
   try {
     await loadCatalog();
@@ -121,6 +171,43 @@ async function boot() {
   buildBar();
   window.addEventListener("hashchange", () => render());
   render();
+
+  // Inter-window communication when running inside a WoxOS window
+  if (isOsEmbed) {
+    window.addEventListener("pointerdown", () => {
+      if (osWinId) osBus.send({ type: "wox:focus", winId: osWinId });
+    }, true);
+
+    window.addEventListener("keydown", (e) => {
+      const isCtrlTab = e.ctrlKey && !e.altKey && !e.metaKey && e.key === "Tab";
+      const isAltQ = e.altKey && !e.ctrlKey && !e.metaKey && (e.code === "KeyQ" || e.key.toLowerCase() === "q");
+      const isAltTick = (e.ctrlKey || e.altKey) && !e.metaKey && (e.code === "Backquote" || e.key === "`" || e.key === "\\" || e.key === "|");
+      if (isCtrlTab || isAltQ || isAltTick) {
+        e.preventDefault();
+        e.stopPropagation();
+        osBus.send({ type: "wox:cycle-windows", dir: e.shiftKey ? -1 : 1 });
+      }
+    }, true);
+
+    osBus.on((msg) => {
+      if (msg.type === "wox:inject-media" && msg.item) {
+        const targetId = current?.app?.id;
+        if (targetId) {
+          sendItemToApp(msg.item, targetId, msg.slotId || undefined);
+          toast("Media ricevuto da un'altra finestra WoxOS");
+        }
+      } else if (msg.type === "wox:refresh-feed") {
+        feed.load().catch(() => {});
+      } else if (msg.type === "wox:open-viewer-item" && msg.runId) {
+        window.dispatchEvent(new CustomEvent("wox:select-viewer-item", { detail: { runId: msg.runId } }));
+      }
+    });
+
+    if (osWinId) {
+      osBus.send({ type: "wox:win-ready", winId: osWinId, appId: current?.app?.id || "" });
+    }
+  }
+
   if (hosted) wakeOnce();
 }
 

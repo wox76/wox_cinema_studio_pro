@@ -28,7 +28,7 @@ import { homedir, tmpdir } from "node:os";
 import { loadRegistry, repoRoot, isFileInput, type App } from "./registry.ts";
 import { explainSubmitError, InputError, resolveValues, Runner, type Values } from "./runner.ts";
 import { History } from "./history.ts";
-import { GAMES_DIR, getStudioStatus, startBonsaiServer, listGames, getGame, deleteGame, startGameGeneration, resumeGameGeneration, stopGameGeneration, startGameModification } from "./game_studio.ts";
+import { GAMES_DIR, getStudioStatus, startBonsaiServer, listGames, getGame, deleteGame, startGameGeneration, resumeGameGeneration, stopGameGeneration, startGameModification, generatePlayCanvasScene } from "./game_studio.ts";
 import {
   getWoxCodeStatus,
   listProjects as listCodeProjects,
@@ -182,7 +182,7 @@ const history = new History(join(outDir, "history"), {
 const flags = new Flags(join(root, "lab", "flags.json"), apps);
 
 const MIME: Record<string, string> = {
-  ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
   ".json": "application/json", ".webmanifest": "application/manifest+json", ".txt": "text/plain; charset=utf-8", ".woff2": "font/woff2", ".woff": "font/woff",
   ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
   ".gif": "image/gif", ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime", ".mkv": "video/x-matroska",
@@ -843,6 +843,62 @@ const server = createServer(async (req, res) => {
           return send(res, 404, { error: "game file not found" });
         }
       }
+      if (area === "playcanvas") {
+        if (req.method === "POST" && id === "save") {
+          const body = await (await toRequest(req)).json().catch(() => null) as Record<string, any> | null;
+          const name = String(body?.name || "WOX Engine Game").trim();
+          const scene = body?.scene ?? {};
+          const sceneJson = typeof scene === "string" ? scene : JSON.stringify(scene, null, 2);
+          let thumbBytes: Uint8Array | null = null;
+          if (typeof body?.thumbnail === "string" && body.thumbnail.startsWith("data:image/png;base64,")) {
+            try {
+              thumbBytes = Buffer.from(body.thumbnail.slice("data:image/png;base64,".length), "base64");
+            } catch {}
+          }
+          const entry = history.addGame(name, sceneJson, thumbBytes);
+          return send(res, 201, { ok: true, id: entry.id, entry: history.view(entry) });
+        }
+        if (req.method === "POST" && id === "ai") {
+          const body = await (await toRequest(req)).json().catch(() => null) as Record<string, any> | null;
+          const reqInput = {
+            prompt: String(body?.prompt || ""),
+            sceneState: Array.isArray(body?.sceneState) ? body.sceneState : undefined,
+            sceneSettings: body?.sceneSettings && typeof body.sceneSettings === "object" ? body.sceneSettings : undefined,
+            selectedEntity: typeof body?.selectedEntity === "string" ? body.selectedEntity : undefined,
+            currentScript: typeof body?.currentScript === "string" ? body.currentScript : undefined,
+            clearScene: typeof body?.clearScene === "boolean" ? body.clearScene : undefined,
+            assetSource: (body?.assetSource === "blender" || body?.assetSource === "pixal3d" ? body.assetSource : "library") as "library" | "blender" | "pixal3d",
+            availableAssets: Array.isArray(body?.availableAssets) ? body.availableAssets : undefined,
+            customAssets: Array.isArray(body?.customAssets) ? body.customAssets : undefined,
+          };
+          if (body?.stream) {
+            res.writeHead(200, {
+              "content-type": "text/event-stream; charset=utf-8",
+              "cache-control": "no-cache",
+              "connection": "keep-alive",
+            });
+            try {
+              const plan = await generatePlayCanvasScene(reqInput, (chunk) => {
+                if (!res.writableEnded) {
+                  res.write(`data: ${JSON.stringify({ type: "chunk", ...chunk })}\n\n`);
+                }
+              });
+              if (!res.writableEnded) {
+                res.write(`data: ${JSON.stringify({ type: "done", plan })}\n\n`);
+                res.end();
+              }
+            } catch (err: any) {
+              if (!res.writableEnded) {
+                res.write(`data: ${JSON.stringify({ type: "error", error: err?.message || String(err) })}\n\n`);
+                res.end();
+              }
+            }
+            return;
+          }
+          const plan = await generatePlayCanvasScene(reqInput);
+          return send(res, 200, plan);
+        }
+      }
       if (area === "code") {
         if (req.method === "GET" && id === "status") {
           return send(res, 200, await getWoxCodeStatus());
@@ -948,6 +1004,18 @@ const server = createServer(async (req, res) => {
     if (url.pathname.startsWith("/app/") || url.pathname === "/apps") {
       res.writeHead(302, { Location: `/#${url.pathname}` });
       return res.end();
+    }
+    if (url.pathname === "/playcanvas" || url.pathname.startsWith("/playcanvas/")) {
+      if (url.pathname === "/playcanvas") {
+        res.writeHead(302, { Location: "/playcanvas/" });
+        return res.end();
+      }
+      const pcRoot = join(root, "playcanvas");
+      const sub = normalize(decodeURIComponent(url.pathname.slice("/playcanvas/".length)) || "index.html").replace(/^(\.\.[/\\])+/, "");
+      let pcFile = join(pcRoot, sub);
+      if (existsSync(pcFile) && statSync(pcFile).isDirectory()) pcFile = join(pcFile, "index.html");
+      if (pcFile.startsWith(pcRoot) && existsSync(pcFile) && statSync(pcFile).isFile()) return sendFile(req, res, pcFile);
+      return send(res, 404, { error: "not found" });
     }
     const webRoot = join(root, "web");
     const rel = normalize(url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1))).replace(/^(\.\.[/\\])+/, "");

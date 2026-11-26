@@ -1,0 +1,71 @@
+{
+  "pack": "video-wan-uni3c",
+  "apps": [
+    "fly-path"
+  ],
+  "download_gb": 26.65,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "file": "split_files/clip_vision/clip_vision_h.safetensors",
+      "dir": "clip_vision",
+      "gb": 1.26,
+      "name": "clip_vision_h.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "fly-path"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan-2.1",
+      "file": "split_files/diffusion_models/wan2.1_i2v_720p_14B_fp8_scaled.safetensors",
+      "dir": "diffusion_models",
+      "gb": 16.4,
+      "name": "wan2.1_i2v_720p_14B_fp8_scaled.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "fly-path"
+      ]
+    },
+    {
+      "repo": "Kijai/WanVideo_comfy",
+      "file": "Wan21_Uni3C_controlnet_fp16.safetensors",
+      "dir": "model_patches",
+      "gb": 2.0,
+      "name": "Wan21_Uni3C_controlnet_fp16.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "fly-path"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "file": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 6.74,
+      "name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "fly-path"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+      "file": "split_files/vae/wan_2.1_vae.safetensors",
+      "dir": "vae",
+      "gb": 0.25,
+      "name": "wan_2.1_vae.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "fly-path"
+      ]
+    }
+  ]
+}

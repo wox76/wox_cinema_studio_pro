@@ -1,0 +1,169 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "recast",
+  "name": "Recast",
+  "section": "video",
+  "pack": "video-h3",
+  "status": "ready",
+  "higgsfield_feature": "Character swap",
+  "summary": "Puts your character into a video in place of the person there, keeping their motion (SCAIL-2 with SAM 3.1 tracking).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "video_wan21_scail2_character_replacement_int8.json",
+    "comfyui": "0.42.0",
+    "notes": "First segment only (81 frames): the template's extend subgraph needs 157+ frames and is removed."
+  },
+  "inputs": [
+    {
+      "id": "clip",
+      "type": "video",
+      "label": "Video",
+      "required": true,
+      "limits": {
+        "max_mb": 200
+      },
+      "help": "Uses the first 81 frames, so give it at least that many (about 3 s at 30 fps)",
+      "bind": [
+        {
+          "node": "ref_video",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "character",
+      "type": "image",
+      "label": "Your character",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "help": "One person, full body if the video shows the full body",
+      "bind": [
+        {
+          "node": "ref_image",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "type": "textarea",
+      "label": "Describe the result",
+      "required": true,
+      "default": "A person in a red jacket walks through a sunny park, natural light, realistic",
+      "bind": [
+        {
+          "node": "prompt",
+          "field": "value",
+          "template": "Recast the subject ({target}) in <Video 1> with the character from <Picture 1>, preserving performance, timing, and camera work. {prompt}"
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "type": "text",
+      "label": "Who to replace in the video",
+      "default": "person",
+      "help": "What SAM 3.1 should track, e.g. \"woman\", \"man in a hat\"",
+      "bind": []
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 picks a random seed",
+      "bind": [
+        {
+          "node": "seed",
+          "field": "noise_seed"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Seconds",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "bind": [
+        {
+          "node": "duration",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "steps",
+          "field": "value"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "75",
+      "type": "video",
+      "label": "Video"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 27.14,
+      "phase": "encode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 2.81,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    }
+  ],
+  "notes": "Use footage and photos of yourself, fictional characters, or people who agreed to it.",
+  "credits": [
+    "SCAIL-2 by Zhipu AI / zai-org (MIT)",
+    "SAM 3.1 by Meta (SAM License)",
+    "Lightx2v distill LoRA",
+    "Workflow: ComfyUI official template"
+  ],
+  "test": {
+    "clip": "test/clip.mp4",
+    "character": "test/portrait.png",
+    "width": 512,
+    "height": 512
+  }
+}

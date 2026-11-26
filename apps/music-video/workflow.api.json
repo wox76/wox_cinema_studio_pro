@@ -28,7 +28,7 @@
     "class_type": "BasicScheduler",
     "inputs": {
       "model": [
-        "105:6",
+        "attn_backend",
         0
       ],
       "steps": [
@@ -119,7 +119,7 @@
     "class_type": "BasicGuider",
     "inputs": {
       "model": [
-        "105:6",
+        "attn_backend",
         0
       ],
       "conditioning": [
@@ -225,7 +225,7 @@
   "105:124": {
     "class_type": "PrimitiveInt",
     "inputs": {
-      "value": 20
+      "value": 8
     },
     "_meta": {
       "title": "Int"
@@ -299,6 +299,42 @@
     },
     "_meta": {
       "title": "Add Audio Guide"
+    }
+  },
+  "turbo_lora": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "105:6",
+        0
+      ],
+      "lora_name": "minimax_h3_fl2v_turbo_8step_v1.2_768p_comfyui_bf16.safetensors",
+      "strength_model": 1.0
+    },
+    "_meta": {
+      "title": "MiniMax H3 FL2V Turbo LoRA (8 step v1.2)"
+    }
+  },
+  "attn_backend": {
+    "class_type": "ModelAttentionBackend",
+    "inputs": {
+      "model": [
+        "turbo_lora",
+        0
+      ],
+      "attention": "comfy kitchen attention"
+    },
+    "_meta": {
+      "title": "INT8 Attention Backend"
+    }
+  },
+  "turbo_toggle": {
+    "class_type": "PrimitiveBoolean",
+    "inputs": {
+      "value": true
+    },
+    "_meta": {
+      "title": "Turbo Mode Toggle"
     }
   }
 }

@@ -1,0 +1,59 @@
+{
+  "pack": "image-ideogram4",
+  "apps": [
+    "ideogram4"
+  ],
+  "download_gb": 30.09,
+  "needs_hf_token": false,
+  "custom_nodes": [],
+  "models": [
+    {
+      "repo": "Comfy-Org/Ideogram-4",
+      "file": "diffusion_models/ideogram4_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 9.58,
+      "name": "ideogram4_int8_convrot.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "ideogram4"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Ideogram-4",
+      "file": "diffusion_models/ideogram4_unconditional_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 9.58,
+      "name": "ideogram4_unconditional_int8_convrot.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "ideogram4"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/Ideogram-4",
+      "file": "text_encoders/qwen3vl_8b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "gb": 10.59,
+      "name": "qwen3vl_8b_fp8_scaled.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "ideogram4"
+      ]
+    },
+    {
+      "repo": "Comfy-Org/flux2-dev",
+      "file": "split_files/vae/flux2-vae.safetensors",
+      "dir": "vae",
+      "gb": 0.34,
+      "name": "flux2-vae.safetensors",
+      "gated": false,
+      "license": null,
+      "used_by": [
+        "ideogram4"
+      ]
+    }
+  ]
+}

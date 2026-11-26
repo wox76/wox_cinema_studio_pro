@@ -37,12 +37,17 @@ export function formFor(app) {
   let f = forms.get(app.id);
   if (f) return f;
   const saved = store.get(`values.${app.id}`) || {};
+  const hasTurboInput = app.inputs.some((i) => i.id === "turbo");
+  const isFirstTurboLoad = hasTurboInput && saved.turbo === undefined;
   const values = {};
   for (const inp of app.inputs) {
     if (isMedia(inp.type)) continue;
     const fallback = inp.type === "textarea" || inp.type === "text" ? "" : inp.type === "seed" ? -1 : inp.multiple ? [...(inp.default ?? [])] : inp.default ?? "";
     let val = saved[inp.id];
     if (inp.id === "lens" && val === "a classic anamorphic widescreen look with oval bokeh and blue streak flares") {
+      val = undefined;
+    }
+    if (isFirstTurboLoad && (inp.id === "steps" || inp.id === "resolution")) {
       val = undefined;
     }
     values[inp.id] = validValue(inp, asPicks(inp, val)) ? asPicks(inp, val) : fallback;
@@ -94,7 +99,7 @@ function persist(app) {
   store.set(`values.${app.id}`, { ...f.values, __preset: f.preset, __dynamicRefs: dynRefs, __staticFiles: staticFiles });
 }
 
-const ACCEPT = { image: "image/*", video: "video/*", audio: "audio/*" };
+const ACCEPT = { image: "image/*", video: "video/*", audio: "audio/*,.mp3,.wav,.flac,.ogg,.m4a,.aac" };
 function fileMatches(type, file) {
   if (file.type) return file.type.startsWith(`${type}/`);
   const ext = extOf(file.name);
@@ -192,8 +197,8 @@ export function openLibraryPicker(app, inp, onSelect) {
     feed.load().catch(() => {});
   }
   let activeTab = "mine";
-  const targetType = inp.type === "video" ? "video" : "image";
-  const fileInput = el("input", { type: "file", accept: ACCEPT[inp.type] || (targetType === "video" ? "video/*" : "image/*"), hidden: true });
+  const targetType = inp.type === "video" ? "video" : inp.type === "audio" ? "audio" : "image";
+  const fileInput = el("input", { type: "file", accept: ACCEPT[inp.type] || ACCEPT[targetType], hidden: true });
 
   const close = () => {
     document.removeEventListener("keydown", onKey, true);
@@ -283,7 +288,7 @@ export function openLibraryPicker(app, inp, onSelect) {
     try {
       const src = item.url;
       if (!src) return;
-      const ext = extOf(src) || (targetType === "video" ? "mp4" : "png");
+      const ext = extOf(src) || (targetType === "video" ? "mp4" : targetType === "audio" ? "mp3" : "png");
       const baseName = item.name && item.name.includes(".") ? item.name : `${(item.name || targetType).toLowerCase().replace(/[^a-z0-9._-]/g, "-")}.${ext}`;
       const file = await fileFromUrl(src, baseName);
       if (inp.customHandler) {
@@ -358,7 +363,12 @@ export function openLibraryPicker(app, inp, onSelect) {
     const nodes = currentItems.map((item) => {
       const mediaEl = targetType === "video"
         ? el("video", { src: item.url, muted: true, loop: true, playsinline: true, autoplay: true, style: { width: "100%", height: "100%", objectFit: "cover" } })
-        : el("img", { src: item.url, loading: "lazy", alt: item.name });
+        : targetType === "audio"
+          ? el("div", { class: "media audio wave", style: { width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", padding: "12px" } },
+              icon("audio"),
+              el("audio", { src: item.url, controls: true, preload: "metadata", onclick: (e) => e.stopPropagation(), style: { width: "90%", maxWidth: "220px" } })
+            )
+          : el("img", { src: item.url, loading: "lazy", alt: item.name });
       const tag = el("span", { class: "tag image-name-tag", title: item.name }, item.name);
       const appTag = item.appName ? el("span", { class: "tag app-name-tag", title: item.appName }, item.appName) : null;
       const hover = el("div", { class: "overlay-hover" }, "Select");
@@ -1619,7 +1629,18 @@ function chipFor(app, inp, f) {
   if (inp.type === "toggle") {
     const b = el("button", { class: `chip${f.values[inp.id] ? " on" : ""}`, type: "button", "aria-pressed": String(Boolean(f.values[inp.id])), title: inp.help || inp.label },
       icon(/enhance|reprompt/.test(inp.id) ? "wand" : "check"), inp.label);
-    b.onclick = () => { set(!f.values[inp.id]); b.classList.toggle("on", Boolean(f.values[inp.id])); b.setAttribute("aria-pressed", String(Boolean(f.values[inp.id]))); };
+    b.onclick = () => {
+      const next = !f.values[inp.id];
+      set(next);
+      if (inp.id === "turbo" && app.inputs.some((i) => i.id === "steps")) {
+        f.values.steps = next ? 8 : 20;
+        persistSoon();
+        hooks.rerender?.();
+        return;
+      }
+      b.classList.toggle("on", Boolean(next));
+      b.setAttribute("aria-pressed", String(Boolean(next)));
+    };
     return b;
   }
   const v = el("span", { class: "v" });
@@ -1848,7 +1869,14 @@ function sideField(app, inp, f, ui) {
   if (inp.type === "slider") return el("div", { class: "field" }, rangeInput(inp, f.values[inp.id], set), help);
   if (inp.type === "toggle") {
     const box = el("input", { type: "checkbox", checked: Boolean(f.values[inp.id]), "aria-label": inp.label });
-    box.addEventListener("change", () => set(box.checked));
+    box.addEventListener("change", () => {
+      set(box.checked);
+      if (inp.id === "turbo" && app.inputs.some((i) => i.id === "steps")) {
+        f.values.steps = box.checked ? 8 : 20;
+        persistSoon();
+        hooks.rerender?.();
+      }
+    });
     return el("label", { class: "field" }, el("span", { class: "togrow" }, el("span", { class: "t" }, el("b", { style: { fontSize: "13px" } }, inp.label),
       inp.help ? el("small", {}, inp.help) : null), el("span", { class: "switch" }, box, el("i"))));
   }

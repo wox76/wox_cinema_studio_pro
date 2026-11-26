@@ -2,7 +2,7 @@
 import { el, icon, masonry } from "./util.js";
 import { t } from "./i18n.js";
 import { apps, byId, CATEGORIES, FUOBE_FX_SECTIONS, HERO, START_HERE, hosted, tagline, iconOf, fitOf, categoryOf, studioOf, menuGroups, IMAGE_TABS, VIDEO_TABS, recentApps } from "./catalog.js";
-import { exampleItem, thumb, hoverPlay, optionTile } from "./media.js";
+import { exampleItem, entryItem, thumb, hoverPlay, optionTile } from "./media.js";
 import { feed, feedView, hooks } from "./feed.js";
 import { pickOption, recreate } from "./workspace.js";
 import { flags, flagButton } from "./flags.js";
@@ -320,8 +320,36 @@ export function libraryView() {
   const offFlags = flags.on(() => { if (libTab === "lab") draw(); });
   // the app filter appears once two apps have history; entries of apps outside the catalog (the smoke apps without ?dev) do not count
   const usedApps = () => new Set(feed.list().map((e) => e.app).filter((id) => byId.has(id))).size;
-  const off = feed.on(() => { if (libTab === "mine" && filter.childElementCount === 0 && usedApps() > 1) draw(); });
-  feed.load().catch(() => {});
+  let autoOpenedViewer = false;
+  const tryOpenGalleryViewer = (explicitId) => {
+    const done = feed.list().filter((e) => e.status === "succeeded" && e.outputs?.length);
+    if (!done.length) return false;
+    const hashParams = new URLSearchParams((location.hash.split("?")[1] || ""));
+    const targetId = explicitId || hashParams.get("item") || done[0].id;
+    // Close any previous viewer modal if switching to a specific item
+    if (explicitId) document.querySelector(".modal")?.remove();
+    hooks.open?.(done.map(entryItem), targetId);
+    autoOpenedViewer = true;
+    return true;
+  };
+  const off = feed.on(() => {
+    if (libTab === "mine" && filter.childElementCount === 0 && usedApps() > 1) draw();
+    if (!autoOpenedViewer && location.hash.includes("item=")) {
+      tryOpenGalleryViewer();
+    }
+  });
+  feed.load().then(() => {
+    if (!autoOpenedViewer && location.hash.includes("item=")) {
+      tryOpenGalleryViewer();
+    }
+  }).catch(() => {});
+  if (location.hash.includes("item=")) {
+    tryOpenGalleryViewer();
+  }
+  const onSelectViewerItem = (ev) => {
+    if (ev.detail?.runId) tryOpenGalleryViewer(ev.detail.runId);
+  };
+  window.addEventListener("wox:select-viewer-item", onSelectViewerItem);
   const editorBtn = el("button", {
     class: `btn ghost ve-lib-btn ${isVideoEditorOpen() ? "active" : ""}`,
     type: "button",
@@ -368,6 +396,7 @@ export function libraryView() {
       offFlags();
       window.removeEventListener("wox:video-editor-toggle", onEditorToggle);
       window.removeEventListener("wox:actionforge-toggle", onActionForgeToggle);
+      window.removeEventListener("wox:select-viewer-item", onSelectViewerItem);
     }
   };
 }

@@ -476,6 +476,14 @@ export function applyInputs(
           _meta: { title: "MiniMax H3 Reference to Video" },
         };
 
+        // Use the dedicated MiniMax H3 Reference-to-Video UNET + matching REF2V Turbo LoRA when @ref tags are attached
+        if (g["140:127"]?.inputs?.unet_name === "minimax_h3_fl2va_pruned_int8_convrot.safetensors") {
+          g["140:127"].inputs.unet_name = "minimax_h3_ref2va_pruned_int8_convrot.safetensors";
+        }
+        if (g["turbo_lora"]?.inputs?.lora_name && String(g["turbo_lora"].inputs.lora_name).includes("minimax_h3_fl2v_turbo")) {
+          g["turbo_lora"].inputs.lora_name = "minimax_h3_ref2v_turbo_8step_v1.1_768p_comfyui_bf16.safetensors";
+        }
+
         // Rewrite @refN tags in the motion prompt to <Picture i> / <Video k>
         if (g["398:376"]?.inputs?.value) {
           let motionPrompt = String(g["398:376"].inputs.value);
@@ -520,6 +528,45 @@ export function applyInputs(
         }
       }
     }
+
+  // Handle MiniMax H3 Turbo LoRA toggle across all H3 video workflows
+  if ((wf as any).json) {
+    const g = (wf as any).json as Record<string, any>;
+    const hasTurboLora = Boolean(g["turbo_lora"]);
+    if (g["turbo_toggle"]) {
+      delete g["turbo_toggle"];
+    }
+    if (hasTurboLora) {
+      const useTurbo = values.turbo !== false && String(values.turbo) !== "false";
+      const schedEntry = Object.values(g).find((n: any) => n?.class_type === "BasicScheduler");
+      const stepsRef = schedEntry?.inputs?.steps;
+      const stepsNode = Array.isArray(stepsRef) ? g[String(stepsRef[0])] : null;
+      if (!useTurbo) {
+        // Bypass Turbo LoRA cleanly so ComfyUI does not load it into RAM/VRAM
+        const unetSrc = g["turbo_lora"]?.inputs?.model;
+        if (unetSrc) {
+          if (g["attn_backend"]?.inputs) {
+            g["attn_backend"].inputs.model = unetSrc;
+          } else {
+            for (const n of Object.values(g)) {
+              if (n?.inputs && Array.isArray(n.inputs.model) && n.inputs.model[0] === "turbo_lora") {
+                n.inputs.model = unetSrc;
+              }
+            }
+          }
+        }
+        delete g["turbo_lora"];
+        if (stepsNode?.inputs && typeof stepsNode.inputs.value === "number" && stepsNode.inputs.value <= 10) {
+          stepsNode.inputs.value = 20;
+        }
+      } else {
+        // Guard against stale browser caches sending 20 steps into an 8-step distilled Turbo LoRA
+        if (stepsNode?.inputs && typeof stepsNode.inputs.value === "number" && stepsNode.inputs.value >= 16) {
+          stepsNode.inputs.value = 8;
+        }
+      }
+    }
+  }
   const imageRefs = refEntries.filter((r) => !r.isVideo).slice(0, 3);
   if ((app.id === "cinema-studio" || app.id === "create-image" || app.id === "z-image") && (wf as any).json) {
     const g = (wf as any).json as Record<string, any>;

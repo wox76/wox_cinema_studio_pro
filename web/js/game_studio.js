@@ -254,6 +254,39 @@ function injectStyles() {
 }
 
 export function gameStudioView() {
+  const iframe = el("iframe", {
+    src: "/playcanvas/index.html",
+    title: "WOX Engine",
+    allow: "fullscreen; gamepad; xr-spatial-tracking; clipboard-read; clipboard-write",
+    style: {
+      width: "100%",
+      height: "calc(100vh - 88px)",
+      minHeight: "640px",
+      border: "0",
+      display: "block",
+      background: "#141a1c",
+    },
+  });
+
+  const wrap = el("div", {
+    style: {
+      width: "100%",
+      height: "calc(100vh - 88px)",
+      overflow: "hidden",
+      background: "#141a1c",
+    },
+  }, iframe);
+
+  return {
+    node: wrap,
+    active: "game",
+    dispose() {
+      try { iframe.src = "about:blank"; } catch {}
+    },
+  };
+}
+
+export function legacyGameStudioView() {
   injectStyles();
 
   let statusData = null;

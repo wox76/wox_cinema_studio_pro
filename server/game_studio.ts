@@ -17,7 +17,7 @@ const VENDOR_DIR = join(ROOT, "web", "js", "vendor");
 const BONSAI_HOST = process.env.BONSAI_HOST || "127.0.0.1";
 const BONSAI_PORT = process.env.BONSAI_PORT || "8080";
 const BONSAI_URL = `http://${BONSAI_HOST}:${BONSAI_PORT}`;
-const BONSAI_START_SCRIPT = process.env.BONSAI_START_SCRIPT || "/home/wox76/opt/Bonsai-demo/start_bonsai.sh";
+const BONSAI_START_SCRIPT = process.env.BONSAI_START_SCRIPT || (process.platform === "win32" ? join(ROOT, "bonsai2", "start_bonsai.bat") : "/home/wox76/opt/Bonsai-demo/start_bonsai.sh");
 const BLENDER_BIN = process.env.BLENDER_BIN || "/home/wox76/.local/bin/blender";
 
 export interface GameAssetRecord {
@@ -271,11 +271,18 @@ export async function startBonsaiServer(): Promise<{ ok: boolean; message: strin
   }
   startingBonsai = true;
   try {
-    const child = spawn("bash", [BONSAI_START_SCRIPT, "start"], {
-      detached: true,
-      stdio: "ignore",
-      env: { ...process.env, PORT: BONSAI_PORT, BONSAI_HOST },
-    });
+    const isWinBat = process.platform === "win32" && /\.(bat|cmd)$/i.test(BONSAI_START_SCRIPT);
+    const child = isWinBat
+      ? spawn("cmd.exe", ["/c", BONSAI_START_SCRIPT], {
+          detached: true,
+          stdio: "ignore",
+          env: { ...process.env, PORT: BONSAI_PORT, BONSAI_HOST },
+        })
+      : spawn("bash", [BONSAI_START_SCRIPT, "start"], {
+          detached: true,
+          stdio: "ignore",
+          env: { ...process.env, PORT: BONSAI_PORT, BONSAI_HOST },
+        });
     child.unref();
     // Wait up to 45s for /health
     for (let i = 0; i < 45; i++) {
@@ -299,7 +306,8 @@ async function callBonsai(
   maxTokens = 8192,
   temperature = 0.6,
   job?: GameJob,
-  streamLabel?: string
+  streamLabel?: string,
+  onChunk?: (info: { content: string; reasoning: string; chunks: number }) => void
 ): Promise<string> {
   // Bonsai 2 is a reasoning model (--reasoning-budget 2048), so max_tokens must always
   // leave generous headroom beyond the reasoning budget for the actual answer.
@@ -376,7 +384,10 @@ async function callBonsai(
     }
 
     const now = Date.now();
-    if (job && now - lastPreviewAt > 800) {
+    if (onChunk && now - lastPreviewAt > 120) {
+      lastPreviewAt = now;
+      try { onChunk({ content, reasoning, chunks }); } catch {}
+    } else if (job && now - lastPreviewAt > 800) {
       lastPreviewAt = now;
       const previewSource = content || reasoning;
       const modeTag = content ? "CODICE / OUTPUT" : "RAGIONAMENTO";
@@ -1244,4 +1255,246 @@ export function startGameModification(id: string, instruction: string): GameJob 
   saveManifest(job);
   void runGameModification(job, text).finally(() => activeControllers.delete(job.id));
   return job;
+}
+
+export interface WoxSceneSettings {
+  skyColor?: string;
+  ambientColor?: string;
+  exposure?: number;
+  fogColor?: string;
+  fogDensity?: number;
+  gravity?: number;
+  cameraMode?: "follow" | "top-down" | "first-person" | "side-scroll" | "fixed";
+  cameraOffset?: [number, number, number];
+  cameraFov?: number;
+}
+
+export interface PlayCanvasAIPlan {
+  summary: string;
+  clearScene: boolean;
+  asAsset?: { name: string; icon?: string } | null;
+  sceneSettings?: WoxSceneSettings | null;
+  removeEntities?: string[];
+  entities: Array<{
+    name: string;
+    kind: "box" | "sphere" | "capsule" | "coin" | "plane" | "light" | "glb";
+    pos?: [number, number, number];
+    rot?: [number, number, number];
+    scale?: [number, number, number];
+    color?: string;
+    emissive?: string;
+    metalness?: number;
+    gloss?: number;
+    behavior?: "none" | "player" | "player-fps" | "player-25d" | "follow-player" | "follow-object" | "coin" | "spin" | "hover" | "patrol";
+    followTarget?: string;
+    speed?: number;
+    solid?: boolean;
+    tag?: string;
+    glbUrl?: string;
+    script?: string;
+  }>;
+  editorScript: string;
+  script: string;
+}
+
+export async function generatePlayCanvasScene(input: {
+  prompt: string;
+  sceneState?: Array<Record<string, any>>;
+  sceneSettings?: WoxSceneSettings;
+  selectedEntity?: string;
+  currentScript?: string;
+  clearScene?: boolean;
+  assetSource?: AssetSource;
+  availableAssets?: Array<{ name: string; url: string }>;
+  customAssets?: Array<{ name: string; icon?: string }>;
+}, onChunk?: (info: { content: string; reasoning: string; chunks: number }) => void): Promise<PlayCanvasAIPlan> {
+  const userText = String(input.prompt || "").trim();
+  if (!userText) throw new Error("Scrivi un prompt per Bonsai 2.");
+
+  const healthy = await checkBonsaiHealth();
+  if (!healthy) {
+    const started = await startBonsaiServer();
+    if (!started.ok) {
+      throw new Error(`Bonsai 2 non attivo: ${started.message}`);
+    }
+  }
+
+  const systemPrompt = `You are the AI Director & Lead Programmer of **WOX Engine** (a programmable WebGL2 3D Game Engine powered by PlayCanvas inside Wox Cinema Studio Pro).
+Your job is to take the user's request and output ONLY a single valid JSON object (no markdown, no prose outside JSON) that directly programs and modifies the open WOX Engine project.
+
+JSON schema:
+{
+  "summary": "Short Italian summary of what you built, changed, or programmed",
+  "clearScene": false,
+  "asAsset": null OR { "name": "Stella3D", "icon": "⭐" },
+  "sceneSettings": null OR {
+    "skyColor": "#0b1020",
+    "ambientColor": "#38445c",
+    "exposure": 1.3,
+    "fogColor": "#140a2a",
+    "fogDensity": 0.015,
+    "gravity": 16,
+    "cameraMode": "follow" | "top-down" | "first-person" | "side-scroll" | "fixed",
+    "cameraOffset": [0, 5.5, 8.5],
+    "cameraFov": 50
+  },
+  "removeEntities": ["OptionalNameToDelete"],
+  "entities": [
+    {
+      "name": "UniqueName",
+      "kind": "box" | "sphere" | "capsule" | "coin" | "plane" | "light" | "glb",
+      "pos": [x, y, z],
+      "rot": [rx, ry, rz],
+      "scale": [sx, sy, sz],
+      "color": "#rrggbb",
+      "emissive": "#000000",
+      "metalness": 0.2,
+      "gloss": 0.7,
+      "behavior": "none" | "player" | "player-fps" | "player-25d" | "follow-player" | "follow-object" | "coin" | "spin" | "hover" | "patrol",
+      "followTarget": "OptionalEntityNameForFollowObject",
+      "speed": 5,
+      "solid": true,
+      "tag": "enemy",
+      "glbUrl": "/optional/url/from/availableAssets.glb",
+      "script": "// Optional per-entity JS running every frame in Play Mode with (self, wox, dt, t, state)"
+    }
+  ],
+  "editorScript": "// Optional procedural JS executed ONCE immediately in the Editor with (wox, pc, app) to build grids, stairs, mazes, rings, etc.",
+  "script": "// Optional global Play Mode JS executed every frame with (wox, dt, t, pc, app, entities, keys, find, addScore, state)"
+}
+
+=== WOX ENGINE PROGRAMMABLE SDK v3.0 (available as \`wox\` in editorScript, global script, and per-entity script) ===
+- wox.scene: setSky(hex), setAmbient(hex), setExposure(n), setFog(hex, density), setGravity(g), setCamera(mode, offsetArr, fov), setTimeScale(s), applyPreset('cyberpunk'|'sunset'|'day'|'night'|'horror'|'space'|'matrix')
+- wox.camera: setPos(x,y,z), lookAt(x,y,z), focus(ent), setFov(n), shake(intensity, dur), flash(hex, dur)
+- wox.lights: addPoint(pos, hex, intensity, range), addSpot(pos, rot, hex, intensity, range), addDirectional(opts), setColor(ent, hex), setIntensity(ent, n)
+- wox.entities: list(), count(tag?), find(name), findByTag(tag), selected(), select(ent), spawn(kind, opts), spawnAsset(name, pos), spawnGlb(urlOrName, name, pos), clone(ent, pos), destroy(ent), clear(), attachGlb(ent, urlOrName), setVisible(ent, bool), setTag(ent, tag), setParent(child, parent), getPos(e), getRot(e), getScale(e), move(e,dx,dy,dz), rotate(e,rx,ry,rz), lookAt(e,target), moveToward(e,target,spd,dt), setTransform(e,{pos,rot,scale}), setBehavior(e,beh,spd), getConfig(e), setConfig(e,cfg), setSolid(e,bool), setScript(e,js)
+- wox.materials: get(ent), set(ent, { diffuseColor, emissiveColor, emissiveIntensity, metalness, glossiness, glossInvert, opacity, blendType, clearCoat, tiling, offset, rotation }), pulseEmissive(ent, hex, speed, t), loadTexture(ent, slot, url)
+- wox.player: get(), getHp(), setHp(hp), damage(amt, src?), heal(amt), teleport(x,y,z), jump(force), attack(), isGrounded(), setZoom(z)
+- wox.input: isPressed(key), wasPressed(key) (strings 'W','A','S','D','SPACE','SHIFT','F','E','Q','UP','DOWN','LEFT','RIGHT','1'..'9' OR pc.KEY_*), axis() -> {x,z}
+- wox.physics: isOverlapping(a,b,margin?), isTouching(a,b), getContacts(ent), findInRadius(posOrEnt, radius, tag?), raycast(origin, dir, maxDist, exclude?), knockback(ent, from, force, upForce), jump(ent, force), distance(a,b), setSolid(ent,bool)
+- wox.time: now(), after(sec, fn), every(sec, fn), cooldown(key, sec)
+- wox.tween: to(ent, { pos, rot, scale }, dur, easing='easeOut'|'linear'|'easeIn'|'easeInOut', onDone?)
+- wox.spawner: grid(kind, cols, rows, spacing, opts), ring(kind, count, radius, center, opts), line(kind, from, to, count, opts), stairs(steps, startPos, stepSize, opts), projectile(fromPos, dirVec, { speed, color, damage, size, life, owner })
+- wox.ui: getScore(), setScore(n), addScore(n), setHud(label, val), setBar(label, val, max, color), clearHud(), setCrosshair(bool), toast(msg), showBanner(text), gameOver(title, sub), win(title, sub)
+- wox.audio: play('coin'|'jump'|'bounce'|'laser'|'hit'|'explosion'|'powerup'|'pickup'|'portal'|'shield'|'alarm'|'step'|'click'|'win'|'gameover' OR freqHz), playSequence(notesArr, bpm), setMuted(bool)
+- wox.fx: burst(pos, hex, count), ring(pos, hex, maxRadius, dur), beam(fromPos, toPos, hex, dur)
+- wox.math: clamp, lerp, rand, randInt, pick, vec3, dist2D · wox.storage: set(k,v), get(k,fallback) · wox.events: on, once, off, emit
+
+Rules:
+1. UPDATING EXISTING SCENE: When clearScene is false, ONLY return entities you are ADDING or MODIFYING. NEVER repeat unchanged entities! If modifying an existing entity (e.g. "HeroPlayer"), use its exact existing "name" and WOX Engine updates it in place without duplicating.
+2. SELECTED ENTITY CONTEXT: If the user refers to "questo oggetto", "fallo...", "spostalo", "aggiungigli uno script", apply it to the currently selectedEntity (if provided).
+3. INCREMENTAL SCRIPTING: If Current Global Script already exists and the user asks to ADD a feature (e.g. "aggiungi anche lo sparo laser" or "aggiungi vite e game over"), KEEP existing working logic in "script" and extend it cleanly (or omit "script" / return null if you don't want to change the existing script!).
+4. ASSIGNING .GLB MODELS: If the user asks to assign or spawn a .GLB model from Available .GLB Assets, set "glbUrl": "<exact url>" on that entity. NEVER invent fake PlayCanvas APIs like app.assetLibrary!
+5. SINGLE OBJECT / ASSET MODE: If the user asks to create a single 3D object/prop/model/asset (e.g. "crea una stella 3D come asset"), set "asAsset": { "name": "ShortName", "icon": "emoji" } and "clearScene": false, with sub-parts positioned relative to [0,0,0].
+6. PROCEDURAL GENERATION: For complex patterns (stairs, grids, mazes, rings of pillars, forests, particle arenas), feel free to use "editorScript" with wox.entities.spawn(...)!
+7. COLLISIONS & PHYSICS: WOX Engine has built-in 3D AABB collisions (solid: true) and moving platform riding. NEVER call ent.addComponent('collision') or ent.addComponent('physics') because Ammo.js is not loaded. Use solid: true and wox.physics.isOverlapping(a, b) / wox.physics.distance(a, b).
+8. Output ONLY valid JSON.`;
+
+  const sceneSettingsSummary = input.sceneSettings
+    ? `\nCurrent WOX Scene Settings:\n${JSON.stringify(input.sceneSettings)}\n`
+    : "";
+
+  const selectedSummary = input.selectedEntity
+    ? `\nCurrently Selected Entity: "${input.selectedEntity}"\n`
+    : "";
+
+  const sceneSummary = Array.isArray(input.sceneState) && input.sceneState.length
+    ? `\nCurrent WOX Engine entities (${input.sceneState.length}):\n${JSON.stringify(input.sceneState.slice(0, 50))}\n`
+    : "\nCurrent scene is empty or default.\n";
+
+  const assetsSummary = Array.isArray(input.availableAssets) && input.availableAssets.length
+    ? `\nAvailable .GLB Assets in WOX Engine:\n${JSON.stringify(input.availableAssets.slice(0, 40))}\n`
+    : "";
+
+  const customAssetsSummary = Array.isArray(input.customAssets) && input.customAssets.length
+    ? `\nAvailable Saved Custom AI Assets (spawn via wox.entities.spawnAsset(name, pos)):\n${JSON.stringify(input.customAssets.slice(0, 20))}\n`
+    : "";
+
+  const currentScriptSummary = input.currentScript && input.currentScript.trim() && !input.currentScript.trim().startsWith("// ✅")
+    ? `\nCurrent Global Play Mode Script:\n\`\`\`js\n${input.currentScript.slice(0, 3000)}\n\`\`\`\n`
+    : "";
+
+  const assetMode = input.assetSource || "library";
+  const userPrompt = `User request: ${userText}
+Preferred 3D Asset Source: ${assetMode} (${assetMode === "blender" ? "Blender 3D AI Python" : assetMode === "pixal3d" ? "Pixal3D Z-Image + PBR GLB" : "Open 3D Library / Polyfork / OGA"})${sceneSettingsSummary}${selectedSummary}${sceneSummary}${assetsSummary}${customAssetsSummary}${currentScriptSummary}${
+    typeof input.clearScene === "boolean" ? `\nPreferred clearScene: ${input.clearScene}` : ""
+  }\nRespond ONLY with the JSON object.`;
+
+  const raw = await callBonsai(systemPrompt, userPrompt, 8192, 0.5, undefined, undefined, onChunk);
+  const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace < 0 || lastBrace <= firstBrace) {
+    throw new Error("Bonsai 2 non ha restituito un JSON valido per WOX Engine.");
+  }
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
+  } catch (err: any) {
+    throw new Error(`Errore parsing JSON da Bonsai 2: ${err?.message || err}`);
+  }
+
+  const allowedKinds = new Set(["box", "sphere", "capsule", "coin", "plane", "light", "glb"]);
+  const allowedBehaviors = new Set(["none", "player", "player-fps", "player-25d", "follow-player", "follow-object", "coin", "spin", "hover", "patrol"]);
+  const allowedCameras = new Set(["follow", "top-down", "first-person", "side-scroll", "fixed"]);
+
+  const entities = Array.isArray(parsed.entities)
+    ? parsed.entities.map((e: any, i: number) => ({
+        name: String(e?.name || `Entity_${i + 1}`).slice(0, 48),
+        kind: allowedKinds.has(e?.kind) ? e.kind : "box",
+        pos: Array.isArray(e?.pos) && e.pos.length === 3 ? e.pos.map((n: any) => Number(n) || 0) : undefined,
+        rot: Array.isArray(e?.rot) && e.rot.length === 3 ? e.rot.map((n: any) => Number(n) || 0) : undefined,
+        scale: Array.isArray(e?.scale) && e.scale.length === 3 ? e.scale.map((n: any) => Number(n) || 1) : undefined,
+        color: typeof e?.color === "string" && /^#[0-9a-fA-F]{6}$/.test(e.color) ? e.color : undefined,
+        emissive: typeof e?.emissive === "string" && /^#[0-9a-fA-F]{6}$/.test(e.emissive) ? e.emissive : undefined,
+        metalness: typeof e?.metalness === "number" ? Math.max(0, Math.min(1, e.metalness)) : undefined,
+        gloss: typeof e?.gloss === "number" ? Math.max(0, Math.min(1, e.gloss)) : undefined,
+        behavior: allowedBehaviors.has(e?.behavior) ? e.behavior : undefined,
+        followTarget: typeof e?.followTarget === "string" ? e.followTarget.trim().slice(0, 48) : undefined,
+        speed: typeof e?.speed === "number" ? e.speed : undefined,
+        solid: typeof e?.solid === "boolean" ? e.solid : undefined,
+        tag: typeof e?.tag === "string" ? e.tag.trim().slice(0, 32) : undefined,
+        glbUrl: typeof e?.glbUrl === "string" && e.glbUrl.trim() ? e.glbUrl.trim() : undefined,
+        script: typeof e?.script === "string" ? e.script : undefined,
+      }))
+    : [];
+
+  let sceneSettings: WoxSceneSettings | null = null;
+  if (parsed.sceneSettings && typeof parsed.sceneSettings === "object") {
+    const ss = parsed.sceneSettings;
+    sceneSettings = {};
+    if (typeof ss.skyColor === "string" && /^#[0-9a-fA-F]{6}$/.test(ss.skyColor)) sceneSettings.skyColor = ss.skyColor;
+    if (typeof ss.ambientColor === "string" && /^#[0-9a-fA-F]{6}$/.test(ss.ambientColor)) sceneSettings.ambientColor = ss.ambientColor;
+    if (typeof ss.exposure === "number") sceneSettings.exposure = Math.max(0.2, Math.min(4, ss.exposure));
+    if (typeof ss.fogColor === "string" && /^#[0-9a-fA-F]{6}$/.test(ss.fogColor)) sceneSettings.fogColor = ss.fogColor;
+    if (typeof ss.fogDensity === "number") sceneSettings.fogDensity = Math.max(0, Math.min(0.2, ss.fogDensity));
+    if (typeof ss.gravity === "number") sceneSettings.gravity = Math.max(0, Math.min(60, ss.gravity));
+    if (allowedCameras.has(ss.cameraMode)) sceneSettings.cameraMode = ss.cameraMode;
+    if (Array.isArray(ss.cameraOffset) && ss.cameraOffset.length === 3) {
+      sceneSettings.cameraOffset = ss.cameraOffset.map((n: any) => Number(n) || 0) as [number, number, number];
+    }
+    if (typeof ss.cameraFov === "number") sceneSettings.cameraFov = Math.max(20, Math.min(110, ss.cameraFov));
+  }
+
+  const removeEntities = Array.isArray(parsed.removeEntities)
+    ? parsed.removeEntities.map((n: any) => String(n || "").trim()).filter(Boolean)
+    : [];
+
+  const asAsset = parsed.asAsset && typeof parsed.asAsset === "object" && parsed.asAsset.name
+    ? { name: String(parsed.asAsset.name).slice(0, 40), icon: String(parsed.asAsset.icon || "🧩").slice(0, 4) }
+    : (/\b(asset|oggetto|modello|prop|stella|albero|astronave|spada|scudo|casa|torre)\b/i.test(userText) && !input.clearScene && !parsed.editorScript && entities.length > 1
+        ? { name: entities[0]?.name?.replace(/[_-]?\d+$/, "") || "CustomAsset", icon: "🧩" }
+        : null);
+
+  return {
+    summary: String(parsed.summary || "Progetto aggiornato da Bonsai 2"),
+    clearScene: typeof input.clearScene === "boolean" ? input.clearScene : Boolean(parsed.clearScene),
+    asAsset,
+    sceneSettings,
+    removeEntities,
+    entities,
+    editorScript: typeof parsed.editorScript === "string" ? parsed.editorScript : "",
+    script: typeof parsed.script === "string" ? parsed.script : "",
+  };
 }

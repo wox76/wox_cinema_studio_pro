@@ -1,0 +1,163 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "motion-transfer",
+  "name": "Motion Transfer",
+  "section": "video",
+  "pack": "video-h3",
+  "status": "ready",
+  "higgsfield_feature": "Character swap / Genjutsu-style motion",
+  "summary": "Animates a character image with the motion of a driving clip, with Wan Animate 2.",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "video_wan_animate2_distilled.json",
+    "comfyui": "0.42.0",
+    "notes": "Draft: only with footage and characters you own; Comfy is also preparing its own Openjutsu."
+  },
+  "inputs": [
+    {
+      "id": "character",
+      "type": "image",
+      "label": "Character",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "ref_image",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "motion",
+      "type": "video",
+      "label": "Driving clip",
+      "required": true,
+      "limits": {
+        "max_mb": 200,
+        "seconds": [
+          2,
+          10
+        ]
+      },
+      "bind": [
+        {
+          "node": "ref_video",
+          "field": "file"
+        }
+      ]
+    },
+    {
+      "id": "character_prompt",
+      "type": "textarea",
+      "label": "Character description",
+      "default": "Character appearance description: a stylized clay robot with round eyes",
+      "bind": []
+    },
+    {
+      "id": "action_prompt",
+      "type": "textarea",
+      "label": "Action",
+      "default": "dancing energetically in the street",
+      "bind": [
+        {
+          "node": "prompt",
+          "field": "value",
+          "template": "The character from <Picture 1> ({character_prompt}) performs the exact motion and choreography from <Video 1>. {action_prompt}"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Seconds",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "bind": [
+        {
+          "node": "duration",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "steps",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "bind": [
+        {
+          "node": "seed",
+          "field": "noise_seed"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "75",
+      "type": "video",
+      "label": "Video"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 27.14,
+      "phase": "encode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 2.81,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    }
+  ],
+  "notes": "Use footage and photos of yourself, fictional characters, or people who agreed to it.",
+  "credits": [
+    "Wan Animate 2 by Alibaba Wan (Apache-2.0)"
+  ],
+  "test": {
+    "character": "test/portrait.png",
+    "motion": "test/clip.mp4"
+  }
+}

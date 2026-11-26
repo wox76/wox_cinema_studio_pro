@@ -1,5 +1,6 @@
 // Video Studio (multi-track video editor from HeyPuter/everything) integration for Wox Cinema Studio Pro
 import { el, icon, toast } from "./util.js";
+import { isOsEmbedded, osBus } from "./os_bus.js";
 
 let panel = null;
 let iframe = null;
@@ -88,6 +89,12 @@ export function isVideoEditorOpen() {
 }
 
 export function toggleVideoEditor(force) {
+  if (isOsEmbedded()) {
+    if (force !== false) {
+      osBus.send({ type: "wox:open-app", appId: "video-editor" });
+    }
+    return;
+  }
   initVideoEditor();
   const next = force !== undefined ? force : !isOpen;
   isOpen = next;
@@ -144,8 +151,6 @@ export function createEditorToggleBtn() {
 }
 
 export async function sendToVideoEditor(mediaItem) {
-  openVideoEditor();
-
   const url = mediaItem.url || mediaItem.full || mediaItem.src;
   if (!url) {
     toast("Nessun media trovato da inviare", { error: true });
@@ -156,6 +161,21 @@ export async function sendToVideoEditor(mediaItem) {
   const mime = mediaItem.type === "video" ? "video/mp4" : mediaItem.type === "audio" ? "audio/mpeg" : "image/png";
   const absUrl = new URL(url, location.origin).href;
 
+  if (isOsEmbedded()) {
+    osBus.send({
+      type: "wox:send-to-editor",
+      item: {
+        url: absUrl,
+        name,
+        mime,
+        type: mediaItem.type || (mime.startsWith("video/") ? "video" : mime.startsWith("audio/") ? "audio" : "image"),
+      },
+    });
+    toast(`Invio "${name}" a Video Studio Editor...`, { duration: 2500 });
+    return;
+  }
+
+  openVideoEditor();
   toast(`Caricamento "${name}" in Video Studio...`, { duration: 2500 });
 
   const frame = document.getElementById("wox-video-editor-frame");

@@ -1,0 +1,323 @@
+{
+  "$schema": "../../schema/app.schema.json",
+  "id": "effects",
+  "name": "Effects",
+  "section": "video",
+  "pack": "video-h3",
+  "status": "ready",
+  "higgsfield_feature": "Effects",
+  "summary": "Turns a photo into a 5-second effect clip: 24 open effect LoRAs, from Cakeify and a hydraulic press to money rain and a 360° orbit (Wan 2.1 image-to-video).",
+  "workflow": "workflow.api.json",
+  "source": {
+    "template": "image_to_video_wan.json",
+    "comfyui": "0.42.0",
+    "notes": "fp8 weights instead of fp16. Each effect option swaps the effect LoRA that sits after the model loader (Remade-AI's for 30 effects; joyfox's, ostris's and lvfengchun's for the other 5) and writes a prompt modeled on the example in that LoRA's model card (trigger words included), with your subject in it. lightx2v's step-distill LoRA is added at strength 0 (a no-op) for the fast preset. Flow shift 5, as Remade-AI's cards recommend."
+  },
+  "inputs": [
+    {
+      "id": "image",
+      "type": "image",
+      "label": "Your photo",
+      "required": true,
+      "limits": {
+        "max_mb": 20
+      },
+      "bind": [
+        {
+          "node": "first_frame",
+          "field": "image"
+        }
+      ]
+    },
+    {
+      "id": "effect",
+      "type": "select",
+      "label": "Effect",
+      "default": "cakeify",
+      "options": [
+        {
+          "value": "angry",
+          "label": "Angry face"
+        },
+        {
+          "value": "crying",
+          "label": "Crying"
+        },
+        {
+          "value": "laughing",
+          "label": "Laughing"
+        },
+        {
+          "value": "puppies",
+          "label": "Surrounded by puppies"
+        },
+        {
+          "value": "steam",
+          "label": "Steam from nose and ears"
+        },
+        {
+          "value": "money-rain",
+          "label": "Money rain"
+        },
+        {
+          "value": "cakeify",
+          "label": "Cakeify"
+        },
+        {
+          "value": "crush",
+          "label": "Hydraulic press"
+        },
+        {
+          "value": "deflate",
+          "label": "Deflate"
+        },
+        {
+          "value": "electrify",
+          "label": "Electrify"
+        },
+        {
+          "value": "explode",
+          "label": "Explode"
+        },
+        {
+          "value": "inflate",
+          "label": "Inflate"
+        },
+        {
+          "value": "rotate",
+          "label": "Rotate 360°"
+        },
+        {
+          "value": "squish",
+          "label": "Squish"
+        },
+        {
+          "value": "orbit-360",
+          "label": "360° orbit"
+        },
+        {
+          "value": "arc-shot",
+          "label": "Arc shot"
+        },
+        {
+          "value": "bullet-time",
+          "label": "Bullet time"
+        },
+        {
+          "value": "car-chase",
+          "label": "Car chase"
+        },
+        {
+          "value": "crane-down",
+          "label": "Crane down"
+        },
+        {
+          "value": "crane-over-head",
+          "label": "Crane over the head"
+        },
+        {
+          "value": "crane-up",
+          "label": "Crane up"
+        },
+        {
+          "value": "crash-zoom-in",
+          "label": "Crash zoom in"
+        },
+        {
+          "value": "dolly-zoom",
+          "label": "Dolly zoom"
+        },
+        {
+          "value": "hero-run",
+          "label": "Hero run"
+        }
+      ],
+      "gallery": true,
+      "bind": []
+    },
+    {
+      "id": "subject",
+      "type": "textarea",
+      "label": "Who or what is in the photo",
+      "required": true,
+      "default": "a person",
+      "help": "A few words; the effect's prompt is written around them, e.g. \"a man in a grey t-shirt\", \"an orange cat\", \"a white sneaker\".",
+      "bind": [
+        {
+          "node": "prompt",
+          "field": "value",
+          "template": "Cinematic VFX shot with {effect} effect applied to {subject}. {details}"
+        }
+      ]
+    },
+    {
+      "id": "details",
+      "type": "textarea",
+      "label": "Extra direction",
+      "help": "Added at the end of the effect's prompt.",
+      "bind": []
+    },
+    {
+      "id": "aspect",
+      "type": "select",
+      "label": "Format",
+      "default": "16:9 (Widescreen)",
+      "options": [
+        {
+          "value": "16:9 (Widescreen)",
+          "label": "16:9"
+        },
+        {
+          "value": "9:16 (Portrait Widescreen)",
+          "label": "9:16"
+        },
+        {
+          "value": "1:1 (Square)",
+          "label": "1:1"
+        },
+        {
+          "value": "4:3 (Standard)",
+          "label": "4:3"
+        },
+        {
+          "value": "3:4 (Portrait Standard)",
+          "label": "3:4"
+        }
+      ],
+      "help": "Your photo is center-cropped to this shape.",
+      "bind": [
+        {
+          "node": "res",
+          "field": "aspect_ratio"
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "type": "slider",
+      "label": "Seconds",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "bind": [
+        {
+          "node": "duration",
+          "field": "value"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "seed",
+      "label": "Seed",
+      "default": -1,
+      "help": "-1 picks a random seed",
+      "bind": [
+        {
+          "node": "seed",
+          "field": "noise_seed"
+        }
+      ]
+    },
+    {
+      "id": "steps",
+      "type": "slider",
+      "label": "Steps",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "bind": [
+        {
+          "node": "steps",
+          "field": "value"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "fast",
+      "label": "Fast: 6 steps with the lightx2v LoRA (about 6x quicker; the effect can come out weaker)",
+      "sets": [
+        {
+          "node": "ff_lora_fast",
+          "field": "strength_model",
+          "value": 1
+        },
+        {
+          "node": "3",
+          "field": "steps",
+          "value": 6
+        },
+        {
+          "node": "3",
+          "field": "cfg",
+          "value": 1
+        },
+        {
+          "node": "3",
+          "field": "sampler_name",
+          "value": "euler"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "node": "75",
+      "type": "video",
+      "label": "Video"
+    }
+  ],
+  "models": [
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "gb": 20.97,
+      "phase": "denoise",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "text_encoders/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+      "dir": "text_encoders",
+      "gb": 27.14,
+      "phase": "encode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "dir": "vae",
+      "gb": 2.81,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    },
+    {
+      "repo": "Comfy-Org/MiniMax-H3",
+      "file": "vae/minimax_h3_audio_vae_fp32.safetensors",
+      "dir": "vae",
+      "gb": 0.61,
+      "phase": "decode",
+      "license": "MiniMax H3 Community License"
+    }
+  ],
+  "credits": [
+    "Effect LoRAs by Remade-AI (Apache-2.0)",
+    "Bullet time, Money rain and Clones LoRAs by joyfox (Apache-2.0; the repos moved there from valiantcat and laozou)",
+    "Dolly zoom LoRA by ostris (Apache-2.0)",
+    "Steam LoRA by lvfengchun (Apache-2.0)",
+    "Wan 2.1 image-to-video 14B by Wan-AI, Alibaba (Apache-2.0)",
+    "Step-distill LoRA by lightx2v, packaged for ComfyUI by Kijai",
+    "Workflow: ComfyUI official template"
+  ],
+  "test": {
+    "image": "test/portrait.png",
+    "effect": "squish",
+    "aspect": "square",
+    "frames": 49
+  }
+}

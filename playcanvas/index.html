@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WOX Engine — Wox Cinema Studio Pro</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "playcanvas": "/playcanvas/vendor/playcanvas.esm.js"
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --pc-bg: #20292b;
+      --pc-panel: #293538;
+      --pc-panel-dark: #1b2224;
+      --pc-border: #171e20;
+      --pc-hover: #364549;
+      --pc-accent: #c8ff3d;
+      --pc-lime: #c8ff3d;
+      --pc-text: #e2e8ea;
+      --pc-dim: #8fa1a6;
+      --col-ai: 310px;
+      --col-hier: 210px;
+      --col-insp: 270px;
+      --row-assets: 145px;
+    }
+    * { box-sizing: border-box; user-select: none; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--pc-bg); color: var(--pc-text); font: 12px/1.4 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    input, select, button { font: inherit; color: inherit; }
+    input[type="text"], input[type="number"], select {
+      background: var(--pc-panel-dark); border: 1px solid #13191b; color: var(--pc-text);
+      padding: 4px 6px; border-radius: 3px; outline: none; user-select: text;
+    }
+    input:focus, select:focus { border-color: var(--pc-accent); }
+    input.scrub-num:not(:focus) { cursor: ew-resize; }
+    input.scrub-num:not(:focus):hover { border-color: #4f6368; background: #202a2d; }
+
+    #app {
+      display: grid;
+      grid-template-rows: 40px 1fr 5px var(--row-assets);
+      grid-template-columns: var(--col-ai) 5px var(--col-hier) 5px 1fr 5px var(--col-insp);
+      width: 100vw; height: 100vh;
+    }
+    #app.ai-hidden {
+      grid-template-columns: var(--col-hier) 5px 1fr 5px var(--col-insp);
+    }
+    #app.ai-hidden #ai-panel,
+    #app.ai-hidden #resizer-ai {
+      display: none;
+    }
+    .resizer-v {
+      background: #171e20; cursor: col-resize; transition: background 0.12s;
+    }
+    .resizer-v:hover, .resizer-v.dragging { background: var(--pc-accent); }
+    .resizer-h {
+      grid-column: 1 / -1; background: #171e20; cursor: row-resize; transition: background 0.12s;
+    }
+    .resizer-h:hover, .resizer-h.dragging { background: var(--pc-accent); }
+    header#toolbar {
+      grid-column: 1 / -1; background: var(--pc-panel); border-bottom: 1px solid var(--pc-border);
+      display: flex; align-items: center; gap: 6px; padding: 0 10px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; margin-right: 8px; color: #fff; }
+    .brand-mark {
+      width: 22px; height: 22px; border-radius: 4px; background: var(--pc-accent);
+      display: inline-flex; align-items: center; justify-content: center; font-weight: 900; color: #111618; font-size: 12px;
+    }
+    .sep { width: 1px; height: 22px; background: var(--pc-border); margin: 0 4px; }
+    .tb-btn {
+      background: #2b383b; border: 1px solid #1c2426; border-radius: 4px; padding: 4px 9px;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 5px; color: var(--pc-text); font-weight: 600;
+    }
+    .tb-btn:hover { background: var(--pc-hover); border-color: rgba(200,255,61,0.45); color: #fff; }
+    .tb-btn.active { background: var(--pc-accent); border-color: #d9ff66; color: #111618; font-weight: 800; }
+    .tb-btn.play { background: var(--pc-accent); border-color: #d9ff66; color: #111618; font-weight: 800; margin-left: auto; padding: 5px 14px; }
+    .tb-btn.play:hover { background: #d9ff66; color: #111618; }
+    .tb-btn.play.running { background: #e74c3c; border-color: #c0392b; color: #fff; }
+    .tb-menu-wrap { position: relative; display: inline-flex; }
+    .tb-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; min-width: 155px; z-index: 50;
+      background: #232d30; border: 1px solid rgba(200,255,61,0.35); border-radius: 5px;
+      padding: 4px; display: none; flex-direction: column; gap: 2px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+    }
+    .tb-dropdown.open { display: flex; }
+    .tb-dropdown button {
+      background: transparent; border: 0; border-radius: 3px; padding: 6px 9px;
+      text-align: left; cursor: pointer; color: var(--pc-text); font-weight: 600;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .tb-dropdown button:hover { background: rgba(200,255,61,0.16); color: var(--pc-accent); }
+
+    .beh-trigger {
+      width: 100%; background: #161b1d; border: 1px solid #293337; color: var(--pc-text);
+      padding: 5px 9px; border-radius: 7px; cursor: pointer; display: flex; align-items: center;
+      justify-content: space-between; gap: 8px; text-align: left; font-weight: 600; transition: border-color 0.15s, background 0.15s;
+    }
+    .beh-trigger:hover { border-color: var(--pc-accent); background: #1c2326; }
+    .beh-trigger-left { display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .beh-trigger-ic {
+      width: 20px; height: 20px; border-radius: 5px; background: rgba(200,255,61,0.12);
+      color: var(--pc-accent); display: grid; place-items: center; flex: none;
+    }
+    .beh-menu {
+      position: fixed; width: 240px; background: rgba(18, 20, 23, 0.96); backdrop-filter: blur(14px);
+      border: 1px solid #2b2f36; border-radius: 14px; padding: 8px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.72), 0 0 0 1px rgba(200,255,61,0.08);
+      z-index: 250; display: flex; flex-direction: column; gap: 4px;
+    }
+    .beh-menu-head {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      color: #7c8990; padding: 4px 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .beh-item {
+      position: relative; background: transparent; border: 1px solid transparent; border-radius: 10px;
+      padding: 7px 8px; color: #eceff2; cursor: pointer; display: flex; align-items: center;
+      gap: 10px; width: 100%; text-align: left; transition: background 0.14s, border-color 0.14s;
+    }
+    .beh-item:hover, .beh-item.open { background: #1e2127; border-color: rgba(200,255,61,0.28); }
+    .beh-item.selected { background: rgba(200,255,61,0.1); border-color: rgba(200,255,61,0.4); }
+    .beh-thumb {
+      width: 34px; height: 34px; border-radius: 9px; flex: none; display: grid; place-items: center;
+      background: #1a1c22; box-shadow: inset 0 0 0 1px #2b2f38; color: var(--pc-accent);
+    }
+    .beh-item.selected .beh-thumb { background: rgba(200,255,61,0.16); box-shadow: inset 0 0 0 1px rgba(200,255,61,0.5); }
+    .beh-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+    .beh-title { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #fff; }
+    .beh-item.selected .beh-title { color: var(--pc-accent); }
+    .beh-sub { font-size: 10.5px; color: #8c98a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .beh-tag {
+      font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 4px; letter-spacing: 0.04em;
+      background: rgba(200,255,61,0.15); color: var(--pc-accent); text-transform: uppercase;
+    }
+    .beh-arrow { color: #7c8990; font-size: 11px; flex: none; }
+    .beh-item:hover > .beh-arrow, .beh-item.open > .beh-arrow { color: var(--pc-accent); }
+    .beh-submenu {
+      display: none; position: absolute; top: -8px; right: calc(100% + 6px); width: 278px;
+      max-height: calc(100vh - 24px); overflow-y: auto;
+      background: rgba(18, 20, 23, 0.98); backdrop-filter: blur(14px);
+      border: 1px solid rgba(200,255,61,0.32); border-radius: 14px; padding: 8px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.78); flex-direction: column; gap: 4px;
+    }
+    .beh-submenu::after {
+      content: ""; position: absolute; top: -12px; bottom: -12px; right: -16px; width: 18px;
+    }
+    .beh-item:hover > .beh-submenu, .beh-item.open > .beh-submenu { display: flex; }
+
+    /* PBR Material Preview Card & Full PBR Editor */
+    .pbr-preview-card {
+      display: flex; align-items: center; gap: 12px; padding: 10px;
+      background: #1a2224; border: 1px solid #283336; border-radius: 8px;
+      cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    }
+    .pbr-preview-card:hover { border-color: var(--pc-accent); background: #202a2d; }
+    .pbr-sphere {
+      width: 52px; height: 52px; border-radius: 50%; flex: none; position: relative; overflow: hidden;
+      box-shadow: inset -10px -10px 18px rgba(0,0,0,0.65), inset 6px 6px 14px rgba(255,255,255,0.22), 0 4px 12px rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .pbr-sphere.lg { width: 68px; height: 68px; }
+    .pbr-sec {
+      background: #232d30; border: 1px solid #182022; border-radius: 5px; margin-bottom: 7px; overflow: hidden;
+    }
+    .pbr-sec-head {
+      display: flex; align-items: center; gap: 7px; padding: 6px 8px; cursor: pointer;
+      background: #1e2729; font-weight: 800; font-size: 11px; letter-spacing: 0.05em;
+      text-transform: uppercase; color: #e2e8ea; border-bottom: 1px solid #171e20;
+    }
+    .pbr-sec-head:hover { background: #263235; }
+    .pbr-sec-dot {
+      width: 15px; height: 15px; border-radius: 50%; background: rgba(200,255,61,0.16);
+      border: 1px solid var(--pc-accent); color: var(--pc-accent);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 9px; flex: none;
+    }
+    .pbr-sec.collapsed .pbr-sec-body { display: none; }
+    .pbr-sec.collapsed .pbr-sec-head { border-bottom: 0; }
+    .pbr-sec-body { padding: 8px; display: flex; flex-direction: column; gap: 7px; }
+    .pbr-row { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 6px; }
+    .pbr-row label { color: var(--pc-dim); font-size: 11px; }
+    .pbr-uv { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .pbr-uv-box { display: flex; align-items: center; background: var(--pc-panel-dark); border: 1px solid #13191b; border-radius: 3px; padding-right: 5px; }
+    .pbr-uv-box input { border: 0; background: transparent; width: 100%; padding: 4px 5px; }
+    .pbr-uv-box span { font-size: 10px; color: var(--pc-dim); font-weight: 700; }
+    .pbr-slider-row { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 6px; }
+    .pbr-slider-row input[type="number"] { width: 100%; text-align: right; }
+    .pbr-slider-row input[type="range"] { width: 100%; accent-color: var(--pc-accent); }
+    .pbr-map-row { display: grid; grid-template-columns: 46px 1fr; gap: 8px; align-items: center; }
+    .pbr-checker {
+      width: 46px; height: 46px; border-radius: 4px; border: 1px solid #141a1c; cursor: pointer;
+      background-color: #3a4448;
+      background-image: linear-gradient(45deg, #2b3336 25%, transparent 25%), linear-gradient(-45deg, #2b3336 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2b3336 75%), linear-gradient(-45deg, transparent 75%, #2b3336 75%);
+      background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+      background-repeat: repeat; overflow: hidden; display: grid; place-items: center;
+    }
+    .pbr-checker img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pbr-map-ctrl { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .pbr-map-label { font-size: 11px; color: var(--pc-dim); }
+    .pbr-map-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 4px;
+      background: var(--pc-panel-dark); border: 1px solid #13191b; border-radius: 3px; padding: 3px 6px;
+    }
+    .pbr-map-name { font-size: 11px; color: #b5c3c8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .pbr-map-btn {
+      background: transparent; border: 0; color: var(--pc-dim); cursor: pointer; padding: 0 3px; font-size: 12px;
+    }
+    .pbr-map-btn:hover { color: var(--pc-accent); }
+
+    .panel { background: var(--pc-panel); display: flex; flex-direction: column; overflow: hidden; }
+    #ai-panel { border-right: 1px solid var(--pc-border); }
+    #hierarchy-panel { border-right: 1px solid var(--pc-border); }
+    #inspector-panel { border-left: 1px solid var(--pc-border); }
+    #assets-panel { grid-column: 1 / -1; border-top: 1px solid var(--pc-border); }
+
+    .panel-head {
+      height: 28px; background: #232d30; border-bottom: 1px solid var(--pc-border);
+      padding: 0 10px; display: flex; align-items: center; justify-content: space-between;
+      font-weight: 700; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--pc-dim);
+    }
+    .panel-body { flex: 1; overflow-y: auto; padding: 6px; }
+
+    .tree-item {
+      display: flex; align-items: center; justify-content: space-between; padding: 5px 8px;
+      border-radius: 3px; cursor: pointer; margin-bottom: 2px;
+    }
+    .tree-item:hover { background: var(--pc-hover); }
+    .tree-item.selected { background: rgba(200, 255, 61, 0.16); border-left: 3px solid var(--pc-accent); color: #fff; font-weight: 600; }
+    .tree-item .meta { font-size: 10px; color: var(--pc-dim); }
+
+    #viewport-wrap { position: relative; background: #141a1c; overflow: hidden; }
+    canvas#application-canvas { width: 100%; height: 100%; display: block; outline: none; }
+    .vp-overlay {
+      position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; pointer-events: none;
+    }
+    .vp-pill {
+      background: rgba(20, 26, 28, 0.82); border: 1px solid rgba(255,255,255,0.08);
+      padding: 4px 9px; border-radius: 4px; font-size: 11px; color: var(--pc-dim); backdrop-filter: blur(6px);
+    }
+    .vp-pill b { color: #fff; }
+    #play-banner {
+      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(20, 26, 28, 0.9); border: 1px solid var(--pc-accent); color: #fff;
+      padding: 6px 14px; border-radius: 999px; font-weight: 600; display: none; pointer-events: none;
+    }
+    #wox-toast {
+      position: absolute; top: 46px; left: 50%; transform: translateX(-50%);
+      background: rgba(17, 22, 24, 0.92); border: 1px solid var(--pc-accent); color: var(--pc-accent);
+      padding: 6px 14px; border-radius: 6px; font-weight: 700; display: none; pointer-events: none; z-index: 25;
+    }
+    #wox-gameover {
+      position: absolute; inset: 0; background: rgba(10, 14, 16, 0.78); backdrop-filter: blur(5px);
+      display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; z-index: 30;
+    }
+    #wox-gameover h2 { margin: 0; font-size: 28px; color: var(--pc-accent); letter-spacing: 0.04em; }
+    #wox-gameover p { margin: 0; font-size: 13px; color: var(--pc-text); }
+    #wox-flash {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 24; transition: opacity 0.12s ease-out;
+    }
+    #wox-crosshair {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 18px; height: 18px; pointer-events: none; display: none; z-index: 22;
+    }
+    #wox-crosshair::before, #wox-crosshair::after {
+      content: ""; position: absolute; background: var(--pc-accent); box-shadow: 0 0 6px rgba(0,0,0,0.9);
+    }
+    #wox-crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
+    #wox-crosshair::after { top: 8px; left: 0; width: 18px; height: 2px; }
+    .hud-bar-wrap {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(20, 26, 28, 0.86); border: 1px solid rgba(255,255,255,0.1);
+      padding: 4px 8px; border-radius: 4px; font-size: 11px; color: var(--pc-dim);
+    }
+    .hud-bar-track { width: 72px; height: 7px; background: #141a1c; border-radius: 999px; overflow: hidden; }
+    .hud-bar-fill { height: 100%; background: var(--pc-accent); transition: width 0.12s; }
+    .api-help {
+      display: none; background: #141b1d; border: 1px solid rgba(200,255,61,0.3); border-radius: 4px;
+      padding: 6px 8px; font: 10px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #a9bac0; max-height: 120px; overflow-y: auto; user-select: text;
+    }
+    .api-help.open { display: block; }
+    .api-help b { color: var(--pc-accent); }
+
+    .insp-group { background: #242f32; border: 1px solid #1b2426; border-radius: 4px; padding: 8px; margin-bottom: 8px; }
+    .insp-title { font-weight: 700; font-size: 11px; color: #fff; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .insp-row { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .insp-row:last-child { margin-bottom: 0; }
+    .insp-row label { color: var(--pc-dim); font-size: 11px; }
+    .vec3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+    .vec3 input { width: 100%; text-align: right; }
+
+    .asset-strip { display: flex; gap: 8px; padding: 8px 10px; overflow-x: auto; align-items: center; height: 100%; }
+    .asset-card {
+      position: relative; min-width: 120px; max-width: 140px; height: 98px; background: #222c2e; border: 1px solid #182022;
+      border-radius: 5px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .asset-card:hover { border-color: var(--pc-accent); background: #2c393c; }
+    .asset-del {
+      position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 4px;
+      background: rgba(20, 26, 28, 0.85); border: 1px solid rgba(255,255,255,0.12); color: #9aa8b0;
+      display: grid; place-items: center; font-size: 10px; line-height: 1; cursor: pointer;
+      opacity: 0; transition: opacity 0.14s, background 0.14s, color 0.14s;
+    }
+    .asset-card:hover .asset-del { opacity: 1; }
+    .asset-del:hover { background: #c0392b; border-color: #e74c3c; color: #fff; }
+    .asset-card .ic { font-size: 22px; text-align: center; margin-top: 4px; }
+    .asset-card .nm { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+    .asset-card .sub { font-size: 10px; color: var(--pc-dim); text-align: center; }
+
+    .dock-tabs { display: flex; align-items: center; gap: 6px; }
+    .dock-tab {
+      background: transparent; border: 1px solid transparent; border-radius: 4px;
+      padding: 2px 9px; font-size: 11px; font-weight: 700; color: var(--pc-dim); cursor: pointer; text-transform: none; letter-spacing: 0;
+    }
+    .dock-tab:hover { color: #fff; background: var(--pc-hover); }
+    .dock-tab.active { color: #c8ff3d; background: rgba(200,255,61,0.12); border-color: rgba(200,255,61,0.35); }
+
+    #ai-dock-body {
+      display: flex; flex-direction: column; gap: 10px; padding: 8px; flex: 1; overflow-y: auto; min-height: 0;
+    }
+    .ai-col { display: flex; flex-direction: column; gap: 6px; }
+    .ai-col.grow { flex: 1; min-height: 120px; }
+    .ai-textarea, .ai-code {
+      width: 100%; resize: none; background: var(--pc-panel-dark); border: 1px solid #13191b;
+      color: var(--pc-text); border-radius: 4px; padding: 7px 9px; outline: none; user-select: text;
+      font: 12px/1.45 Inter, -apple-system, sans-serif;
+    }
+    .ai-textarea { min-height: 88px; }
+    .ai-code { flex: 1; min-height: 110px; font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #c8ff3d; }
+    .ai-textarea:focus, .ai-code:focus { border-color: var(--pc-lime); }
+    .ai-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .ai-chip {
+      background: #243033; border: 1px solid #192224; color: var(--pc-dim); border-radius: 999px;
+      padding: 2px 8px; font-size: 10px; cursor: pointer;
+    }
+    .ai-chip:hover { color: #fff; border-color: var(--pc-accent); }
+    .ai-gen-btn {
+      background: var(--pc-lime); color: #111618; border: 1px solid #d9ff66; border-radius: 4px;
+      padding: 5px 12px; font-weight: 800; cursor: pointer; margin-left: auto;
+    }
+    .ai-gen-btn:disabled { opacity: 0.55; cursor: wait; }
+    #ai-status { font-size: 11px; color: var(--pc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header id="toolbar">
+      <div class="brand">
+        <span class="brand-mark">W</span>
+        <span>WOX Engine</span>
+        <span id="pc-ver" style="font-size:10px;color:var(--pc-accent);font-weight:600;"></span>
+      </div>
+      <button class="tb-btn" id="btn-show-ai-col" style="display:none;border-color:rgba(200,255,61,0.45);color:var(--pc-accent);" title="Mostra colonna AI Generator (Bonsai 2)">▶ AI Bonsai 2</button>
+      <div class="sep"></div>
+      <button class="tb-btn active" data-gizmo="translate" title="Sposta (W)">✥ Move</button>
+      <button class="tb-btn" data-gizmo="rotate" title="Ruota (E)">↻ Rotate</button>
+      <button class="tb-btn" data-gizmo="scale" title="Scala (R)">⤢ Scale</button>
+      <button class="tb-btn" id="btn-space" title="Spazio coordinate">🌐 World</button>
+      <div class="sep"></div>
+      <div class="tb-menu-wrap" id="add-menu-wrap">
+        <button class="tb-btn" id="btn-add-menu" style="border-color:rgba(200,255,61,0.45);color:var(--pc-accent);">+ Add ▾</button>
+        <div class="tb-dropdown" id="add-menu-dropdown">
+          <button data-add="box">⬜ Box</button>
+          <button data-add="sphere">⚪ Sphere</button>
+          <button data-add="capsule">🏃 Player WASD</button>
+          <button data-add="coin">🪙 Coin</button>
+          <button data-add="light">💡 Light</button>
+        </div>
+      </div>
+      <button class="tb-btn" id="btn-scene-settings" title="Impostazioni Scena, Cielo, Nebbia, Fisica e Camera">🌍 Scena</button>
+      <div class="sep"></div>
+      <button class="tb-btn" id="btn-import-glb">📦 Importa .GLB</button>
+      <input type="file" id="file-glb" accept=".glb,.gltf" hidden />
+      <button class="tb-btn" id="btn-save" title="Esporta scena JSON">💾 Salva</button>
+      <button class="tb-btn" id="btn-load" title="Carica scena JSON">📂 Apri</button>
+      <input type="file" id="file-scene" accept=".json" hidden />
+
+      <button class="tb-btn play" id="btn-play">▶ PLAY GAME</button>
+    </header>
+
+    <aside class="panel" id="ai-panel">
+      <div class="panel-head">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="tb-btn" id="btn-toggle-ai-col" style="padding:1px 6px;font-size:10px;border-color:rgba(200,255,61,0.45);color:var(--pc-accent);" title="Nascondi colonna AI Generator">◀</button>
+          <span style="color:var(--pc-accent);">AI Generator (Bonsai 2)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span id="bonsai-pill" style="font-size:10px;color:var(--pc-dim);text-transform:none;letter-spacing:0;">verifica...</span>
+          <button class="tb-btn" id="btn-start-bonsai" style="padding:1px 6px;font-size:10px;display:none;">⚡ Avvia</button>
+        </div>
+      </div>
+      <div id="ai-dock-body">
+        <div class="ai-col">
+          <textarea id="ai-prompt" class="ai-textarea" placeholder="Chiedi a Bonsai 2 per il progetto aperto in WOX Engine (es. 'Aggiungi 5 piattaforme neon e un nemico che pattuglia', oppure 'Crea un platform cyberpunk')..."></textarea>
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <label for="ai-asset-source" style="font-size:10px;font-weight:700;color:var(--pc-dim);text-transform:uppercase;">Sorgente Asset 3D</label>
+            <select id="ai-asset-source" style="width:100%;">
+              <option value="library">Librerie Nostre (Polyfork / OGA)</option>
+              <option value="blender">Blender 3D (AI Python)</option>
+              <option value="pixal3d">Pixal3D (Z-Image + PBR .GLB)</option>
+            </select>
+          </div>
+          <div class="ai-bar">
+            <button class="ai-chip" data-preset="Crea un platform 3D cyberpunk al neon con cielo blu notte, nebbia viola, 6 piattaforme a scale, monete e 2 sentinelle">Platform Neon</button>
+            <button class="ai-chip" data-preset="Aggiungi lo sparo laser con tasto F o E con effetto suono laser, particelle verdi e distruzione dei nemici con +25 punti">Sparo Laser</button>
+            <button class="ai-chip" data-preset="Crea una scala a chiocciola procedurale di 16 gradini luminosi usando editorScript">Scala 3D</button>
+            <button class="ai-chip" data-preset="Imposta cielo tramonto, nebbia leggera, camera in terza persona più vicina e aggiungi vite (HP) nell'HUD">Ambiente + HUD</button>
+          </div>
+          <div class="ai-bar">
+            <label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--pc-dim);cursor:pointer;">
+              <input type="checkbox" id="ai-clear-scene" /> Nuova scena (azzera)
+            </label>
+            <button class="ai-gen-btn" id="btn-ai-generate">✨ Genera in WOX Engine</button>
+          </div>
+          <div id="ai-status">Pronto · Tutto WOX Engine è programmabile via API wox e Bonsai 2.</div>
+        </div>
+        <div class="ai-col grow">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+            <span style="font-size:11px;font-weight:700;color:var(--pc-accent);">Codice WOX Engine (Play Mode)</span>
+            <div style="display:flex;gap:4px;">
+              <button class="tb-btn" id="btn-api-help" style="padding:2px 6px;font-size:10px;" title="Mostra API programmabile wox.*">📖 API</button>
+              <button class="tb-btn" id="btn-ai-apply-code" style="padding:2px 8px;font-size:10px;border-color:rgba(200,255,61,0.45);color:var(--pc-accent);">▶ Applica &amp; Gioca</button>
+            </div>
+          </div>
+          <div id="api-help-box" class="api-help">
+            <b>wox.scene</b>: setSky, setAmbient, setFog, setGravity, setCamera, setTimeScale, applyPreset('cyberpunk'|'sunset'|'night'|'space'|'matrix')<br/>
+            <b>wox.camera</b>: setPos, lookAt, focus, setFov, shake(int,dur), flash(hex,dur)<br/>
+            <b>wox.lights</b>: addPoint(pos,hex,int,range), addSpot, addDirectional, setColor, setIntensity<br/>
+            <b>wox.entities</b>: find, findByTag, spawn, spawnAsset, spawnGlb, attachGlb, clone, destroy, move, rotate, lookAt, moveToward, setVisible, setParent, setConfig, setScript<br/>
+            <b>wox.materials</b>: get, set(e,pbr), pulseEmissive(e,hex,spd,t), loadTexture(e,slot,url)<br/>
+            <b>wox.player</b>: get, getHp, setHp, damage, heal, teleport, jump, attack, isGrounded, setZoom<br/>
+            <b>wox.physics</b>: isOverlapping, isTouching, getContacts, findInRadius, raycast, knockback, jump, distance, setSolid<br/>
+            <b>wox.time</b>: now, after(s,fn), every(s,fn), cooldown(k,s) · <b>wox.tween</b>: to(e,{pos,rot,scale},dur,ease)<br/>
+            <b>wox.spawner</b>: grid, ring, line, stairs, projectile(from,dir,opts)<br/>
+            <b>wox.ui</b>: setScore, addScore, setHud, setBar(k,v,max,col), setCrosshair(bool), toast, gameOver, win<br/>
+            <b>wox.audio</b>: play('coin'|'jump'|'laser'|'hit'|'explosion'|'powerup'|'portal'|'bounce'|'win'|'gameover'), playSequence<br/>
+            <b>wox.fx</b>: burst, ring(pos,hex,r,dur), beam(a,b,hex,dur) · <b>wox.math</b>: clamp, lerp, rand, randInt, pick · <b>wox.storage</b>: get, set
+          </div>
+          <textarea id="ai-code" class="ai-code" spellcheck="false" placeholder="// Codice JavaScript Play Mode di WOX Engine (eseguito ad ogni frame).&#10;// Variabili: wox, dt, t, pc, app, entities, keys, find(name), addScore(n), state"></textarea>
+        </div>
+      </div>
+    </aside>
+
+    <div class="resizer-v" id="resizer-ai" title="Trascina per ridimensionare AI Generator"></div>
+
+    <aside class="panel" id="hierarchy-panel">
+      <div class="panel-head">
+        <span>Hierarchy</span>
+        <span id="entity-count">0</span>
+      </div>
+      <div class="panel-body" id="hierarchy-list"></div>
+    </aside>
+
+    <div class="resizer-v" id="resizer-hier" title="Trascina per ridimensionare Hierarchy"></div>
+
+    <main id="viewport-wrap">
+      <canvas id="application-canvas" tabindex="0"></canvas>
+      <div class="vp-overlay">
+        <div class="vp-pill">Engine: <b style="color:var(--pc-accent);">WOX Engine WebGL2</b></div>
+        <div class="vp-pill" id="hud-fps">FPS: <b>60</b></div>
+        <div class="vp-pill" id="hud-score" style="display:none;">Score: <b id="score-val">0</b></div>
+        <div id="hud-custom" style="display:flex;gap:8px;"></div>
+      </div>
+      <div id="wox-toast"></div>
+      <div id="wox-flash"></div>
+      <div id="wox-crosshair"></div>
+      <div id="wox-gameover">
+        <h2 id="wox-go-title">GAME OVER</h2>
+        <p id="wox-go-sub"></p>
+        <button class="tb-btn active" id="btn-go-restart">↻ Rigioca</button>
+      </div>
+      <div id="play-banner">🎮 MODALITÀ GIOCO ATTIVA — Usa WASD / Frecce per muoverti, SPAZIO per saltare · Premi STOP per tornare all'Editor</div>
+    </main>
+
+    <div class="resizer-v" id="resizer-insp" title="Trascina per ridimensionare Inspector"></div>
+
+    <aside class="panel" id="inspector-panel">
+      <div class="panel-head">
+        <span>Inspector</span>
+        <div style="display:flex;gap:4px;">
+          <button class="tb-btn" id="btn-duplicate" style="padding:1px 6px;font-size:10px;border-color:rgba(200,255,61,0.4);color:var(--pc-accent);" title="Duplica selezione (Ctrl+D · Ctrl+C / Ctrl+V)">📋 Duplica</button>
+          <button class="tb-btn" id="btn-delete" style="padding:1px 6px;font-size:10px;background:#5a2323;">🗑 Elimina</button>
+        </div>
+      </div>
+      <div class="panel-body" id="inspector-body">
+        <div style="color:var(--pc-dim);padding:12px;text-align:center;">Seleziona un'entità nella scena o nella Hierarchy.</div>
+      </div>
+    </aside>
+
+    <div class="resizer-h" id="resizer-assets" title="Trascina per ridimensionare pannello Assets"></div>
+
+    <section class="panel" id="assets-panel">
+      <div class="panel-head">
+        <span>📦 Assets &amp; Modelli 3D Wox (.GLB · Drag &amp; Drop nel Viewport)</span>
+        <button class="tb-btn" id="btn-refresh-assets" style="padding:1px 7px;font-size:10px;">↻ Aggiorna Libreria Wox</button>
+      </div>
+      <div class="asset-strip" id="asset-strip"></div>
+    </section>
+  </div>
+
+  <script type="module" src="/playcanvas/editor.js"></script>
+</body>
+</html>
